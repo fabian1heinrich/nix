@@ -1,0 +1,40 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+    "name": "${localWorkspaceFolderBasename}",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "containerUser": "vscode",
+    "runArgs": [
+        "--name",
+        "${localWorkspaceFolderBasename}",
+        "--hostname",
+        "${localWorkspaceFolderBasename}"
+    ],
+    "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "yzhang.markdown-all-in-one",
+                "GitHub.vscode-pull-request-github",
+                "bierner.markdown-checkbox",
+                "bierner.markdown-emoji",
+                "bierner.markdown-footnotes",
+                "bierner.markdown-preview-github-styles",
+                "bierner.markdown-mermaid",
+                "redhat.vscode-yaml",
+                "foxundermoon.shell-format",
+                "esbenp.prettier-vscode",
+                "DavidAnson.vscode-markdownlint",
+                "christian-kohler.path-intellisense",
+                "bierner.markdown-yaml-preamble",
+                "bierner.github-markdown-preview",
+                "GitHub.copilot-chat",
+                "GitHub.copilot",
+                "zh9528.file-size",
+                "tamasfe.even-better-toml",
+                "jnoortheen.nix-ide"
+            ]
+        }
+    }
+}
