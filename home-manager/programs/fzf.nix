@@ -1,7 +1,7 @@
 {
   programs.fzf = {
     enable = true;
-    # enableZshIntegration = true;
+    enableZshIntegration = true;
     changeDirWidgetOptions = [
       "--walker-skip .git,node_modules,target"
       "--preview 'tree -C {}'"
@@ -26,5 +26,4 @@
       "--info=inline"
     ];
   };
-
 }

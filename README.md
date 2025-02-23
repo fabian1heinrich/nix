@@ -1,21 +1,21 @@
 # NIX
 
-## install nix
-
 ```bash
-sh <(curl -L https://nixos.org/nix/install)
 export NIX_USER_CONF_FILES=configuration.nix
 ```
 
-## build devcontainer
+## DevContainer
 
 ```bash
-source /home/vscode/.nix-profile/etc/profile.d/nix.sh && nix --version
 nix run nixpkgs#home-manager -- switch --flake .#devcontainer-aarch64-linux
-# nix run nixpkgs#home-manager -- switch --flake .#devcontainer-aarch64-darwin
+# nix run nixpkgs#home-manager -- switch --flake .#devcontainer-x86_64-linux
 ```
 
-## build with nix-darwin
+## Darwin
+
+```bash
+sh <(curl -L https://nixos.org/nix/install)
+```
 
 ### install homebrew
 

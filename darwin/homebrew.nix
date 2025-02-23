@@ -1,4 +1,3 @@
-# Not using anymore
 { pkgs, ... }:
 {
   homebrew = {
@@ -13,7 +12,6 @@
     #   brewfile = true;
     # };
     casks = [
-      "ccleaner"
       "docker"
       "gifox"
       "jordanbaird-ice"
@@ -23,6 +21,9 @@
       "zoom"
       "nightfall"
       "ghostty"
+      "yubico-yubikey-manager"
+      "bitwarden"
+      "openvpn-connect"
     ];
   };
 }

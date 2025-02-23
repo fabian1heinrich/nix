@@ -6,6 +6,9 @@
     ../programs/starship.nix
     ../programs/zoxide.nix
     ../programs/zsh.nix
+    ../programs/kubecolor.nix
+    ../programs/git.nix
+    # TODO: ghostty
     # ../programs/ghostty.nix
   ];
   programs.zsh.enable = true;
@@ -32,6 +35,7 @@
       vscode
       # ghostty
       zotero
+      openvpn
     ];
   };
 }

@@ -1,9 +1,6 @@
 { pkgs, ... }:
 {
-
   system = {
-    # keyboard.enableKeyMapping = true;
-    # keyboard.remapCapsLockToEscape = true;
     defaults = {
       NSGlobalDomain = {
         AppleInterfaceStyle = "Dark";
@@ -31,4 +28,5 @@
   };
   services.nix-daemon.enable = true;
   system.stateVersion = 6;
+  security.pam.enableSudoTouchIdAuth = true;
 }

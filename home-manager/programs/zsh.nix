@@ -3,6 +3,13 @@
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
+    history = {
+      ignoreDups = true;
+      ignoreAllDups = true;
+      ignoreSpace = true;
+      save = 1000000;
+      size = 1000000;
+    };
     oh-my-zsh = {
       enable = true;
       theme = "robbyrussell";
@@ -15,6 +22,7 @@
         "kubectl"
         "z"
         "zoxide"
+        "kubectl"
       ];
     };
     plugins = [
@@ -42,6 +50,9 @@
     ];
     shellAliases = {
       cat = "bat";
+      k = "kubectl";
+      kns = "kubens";
+      kctx = "kubectx";
     };
     initExtra = ''
       source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh

@@ -11,7 +11,7 @@
         "--hostname",
         "${localWorkspaceFolderBasename}"
     ],
-    "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+    "updateContentCommand": "bash .devcontainer/postCreateCommand.sh",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -33,7 +33,8 @@
                 "GitHub.copilot",
                 "zh9528.file-size",
                 "tamasfe.even-better-toml",
-                "jnoortheen.nix-ide"
+                "jnoortheen.nix-ide",
+                "Gruntfuggly.todo-tree"
             ]
         }
     }
