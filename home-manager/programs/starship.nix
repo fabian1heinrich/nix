@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname$kubernetes$directory$docker_context$python$git_branch ";
+      format = "$username$hostname( $kubernetes)( $directory)( $docker_context)( $python)($git_branch) ";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -12,7 +12,7 @@
       };
       hostname = {
         ssh_only = false;
-        format = "[$ssh_symbol]($style)[$hostname]($style) ";
+        format = "[$ssh_symbol]($style)[$hostname]($style)";
         disabled = false;
         ssh_symbol = "🌍";
         trim_at = ".";
@@ -30,8 +30,12 @@
         format = "[$symbol $version ($virtualenv)]($style)";
         version_format = "v$major.$minor";
       };
+      kubernetes = {
+        symbol = "🪐";
+        disabled = false;
+        format = ''[$symbol$context \($namespace\)]($style)'';
+        detect_env_vars = [ "KUBECONFIG" ];
+      };
     };
   };
 }
-
-

@@ -15,6 +15,8 @@
       kubectl
       kubectx
       kubernetes-helm
+      kubeswitch
+      kubie
       kustomize
       lazydocker
       lazygit
@@ -22,14 +24,13 @@
       nerd-fonts.jetbrains-mono
       nixfmt-rfc-style
       ripgrep
+      stern
       television
       tldr
       tree
       wget
       zarf
       zoxide
-      kubie
-      kubeswitch
     ];
   };
 }

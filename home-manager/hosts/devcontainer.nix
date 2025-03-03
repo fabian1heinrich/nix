@@ -6,7 +6,6 @@
     ../programs/starship.nix
     ../programs/zoxide.nix
     ../programs/zsh.nix
-    ../programs/kubecolor.nix
   ];
   programs.zsh.enable = true;
   home = {

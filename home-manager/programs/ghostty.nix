@@ -1,6 +1,6 @@
 {
   programs.ghostty = {
-    enable = false;
+    enable = true;
     settings = {
       theme = "GitHub Dark";
       font-family = "MesloLGM Nerd Font Mono";

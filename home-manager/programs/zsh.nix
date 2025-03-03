@@ -50,6 +50,7 @@
     ];
     shellAliases = {
       cat = "bat";
+      kubectl = "kubecolor";
       k = "kubectl";
       kns = "kubens";
       kctx = "kubectx";
@@ -89,6 +90,7 @@
         *) fzf --preview 'bat -n --color=always {}' "$@" ;;
         esac
       }
+      compdef kubecolor=kubectl
     '';
   };
 }

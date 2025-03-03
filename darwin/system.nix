@@ -26,7 +26,7 @@
       };
     };
   };
-  services.nix-daemon.enable = true;
+  nix.enable = true;
   system.stateVersion = 6;
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
 }

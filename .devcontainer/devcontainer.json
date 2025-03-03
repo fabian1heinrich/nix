@@ -11,7 +11,7 @@
         "--hostname",
         "${localWorkspaceFolderBasename}"
     ],
-    "updateContentCommand": "bash .devcontainer/postCreateCommand.sh",
+    "updateContentCommand": "bash .devcontainer/updateContentCommand.sh",
     "customizations": {
         "vscode": {
             "extensions": [
