@@ -56,6 +56,14 @@
             ./home-manager/hosts/devcontainer.nix
           ];
         };
+        devcontainer-minimal-x86_64-linux = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+          };
+          modules = [
+            ./home-manager/hosts/devcontainer-minimal.nix
+          ];
+        };
       };
     };
 }
