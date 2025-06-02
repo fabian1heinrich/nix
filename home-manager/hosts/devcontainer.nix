@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   imports = [
     ../programs/fzf.nix
     ../programs/lsd.nix
@@ -11,10 +10,7 @@
   home = {
     username = "vscode";
     homeDirectory = "/home/vscode";
-    stateVersion = "25.05";
-    packages = with pkgs; [
-      nixfmt-rfc-style
-      cowsay
-    ];
+    stateVersion = "25.11";
+    packages = with pkgs; [ cowsay ];
   };
 }

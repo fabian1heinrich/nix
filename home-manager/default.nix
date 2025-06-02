@@ -1,15 +1,14 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   fonts.fontconfig.enable = true;
   programs.home-manager.enable = true;
   home = {
     packages = with pkgs; [
       bat
       fd
+      fluxcd
       fzf
       git
       k9s
-      kind
       kind
       kubecolor
       kubectl
@@ -22,7 +21,8 @@
       lazygit
       meslo-lgs-nf
       nerd-fonts.jetbrains-mono
-      nixfmt-rfc-style
+      nixfmt
+      nixd
       ripgrep
       stern
       television

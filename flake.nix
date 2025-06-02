@@ -38,6 +38,16 @@
         ];
       };
       homeConfigurations = {
+        ubuntu-dev = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+          };
+          modules = [
+            ./home-manager/default.nix
+            ./home-manager/hosts/ubuntu-dev.nix
+          ];
+        };
         devcontainer-aarch64-linux = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "aarch64-linux";

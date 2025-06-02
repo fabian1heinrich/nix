@@ -4,18 +4,20 @@
 export NIX_USER_CONF_FILES=configuration.nix
 ```
 
+## Ubuntu Dev
+
+```bash
+nix run nixpkgs#home-manager -- switch --flake .#ubuntu-dev
+```
+
 ## DevContainer
 
 ```bash
 nix run nixpkgs#home-manager -- switch --flake .#devcontainer-aarch64-linux
-# nix run nixpkgs#home-manager -- switch --flake .#devcontainer-x86_64-linux
+nix run nixpkgs#home-manager -- switch --flake .#devcontainer-x86_64-linux
 ```
 
 ## Darwin
-
-```bash
-sh <(curl -L https://nixos.org/nix/install)
-```
 
 ### install homebrew
 
