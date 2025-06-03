@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname( $kubernetes)( $directory)( $docker_context)( $python)($git_branch) ";
+      format = "$username$hostname( $kubernetes)( $directory)($python)($git_branch) ";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -33,8 +33,8 @@
       kubernetes = {
         symbol = "🪐";
         disabled = false;
-        format = ''[$symbol$context \($namespace\)]($style)'';
-        detect_env_vars = [ "KUBECONFIG" ];
+        format = "[$symbol$context \\($namespace\\)]($style)";
+        detect_env_vars = ["KUBECONFIG"];
       };
     };
   };

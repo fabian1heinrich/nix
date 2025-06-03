@@ -1,16 +1,15 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   imports = [
     ../programs/fzf.nix
+    ../programs/git.nix
     ../programs/lsd.nix
     ../programs/starship.nix
+    ../programs/tmux.nix
     ../programs/zoxide.nix
     ../programs/zsh.nix
-    ../programs/git.nix
     # TODO: ghostty
     # ../programs/ghostty.nix
   ];
-  programs.zsh.enable = true;
   home = {
     username = "fabian";
     homeDirectory = "/Users/fabian";
@@ -26,7 +25,7 @@
       monitorcontrol
       mos
       raycast
-      signal-desktop
+      # signal-desktop
       slack
       stats
       utm

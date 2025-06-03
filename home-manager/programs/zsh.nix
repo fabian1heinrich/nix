@@ -1,5 +1,4 @@
-{ config, pkgs, ... }:
-{
+{pkgs, ...}: {
   programs.zsh = {
     enable = true;
     dotDir = ".config/zsh";
@@ -8,6 +7,7 @@
       ignoreAllDups = true;
       ignoreSpace = true;
       save = 1000000;
+
       size = 1000000;
     };
     oh-my-zsh = {
@@ -33,7 +33,7 @@
       {
         name = "you-should-use";
         src = pkgs.zsh-you-should-use;
-        file = "share/zsh/plugins/you-should-use/you-should-use.plugin.zsh";
+        # file = "share/zsh/plugins/you-should-use/you-should-use.plugin.zsh";
       }
       {
         name = "zsh-autosuggestions";
@@ -91,6 +91,8 @@
         esac
       }
       compdef kubecolor=kubectl
+
+      bindkey "ç" fzf-cd-widget
     '';
   };
 }

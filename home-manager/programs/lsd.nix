@@ -5,14 +5,7 @@
     settings = {
       classic = false;
       date = "date";
-      blocks = [
-        "permission"
-        "user"
-        "group"
-        "size"
-        "date"
-        "name"
-      ];
+      blocks = ["permission" "user" "group" "size" "date" "name"];
     };
     icons = {
       name = {

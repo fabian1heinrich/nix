@@ -1,4 +1,3 @@
-{ pkgs, ... }:
 {
   homebrew = {
     enable = true;

@@ -3,11 +3,15 @@
   programs.home-manager.enable = true;
   home = {
     packages = with pkgs; [
+      alejandra
       bat
+      crane
+      devcontainer
       fd
       fluxcd
       fzf
       git
+      k3d
       k9s
       kind
       kubecolor
@@ -24,13 +28,18 @@
       nixfmt
       nixd
       ripgrep
+      skopeo
       stern
+      talosctl
       television
       tldr
+      tmux
       tree
+      unixtools.ping
       wget
       zarf
       zoxide
+      nixd
     ];
   };
 }

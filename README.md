@@ -30,3 +30,5 @@ nix run nixpkgs#home-manager -- switch --flake .#devcontainer-x86_64-linux
 ```bash
 nix run nix-darwin -- switch --flake .#legendre
 ```
+
+nix flake update --flake .

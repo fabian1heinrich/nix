@@ -2,7 +2,8 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
     "name": "${localWorkspaceFolderBasename}",
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    // "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:alpine",
     "remoteUser": "vscode",
     "containerUser": "vscode",
     "runArgs": [
@@ -35,7 +36,19 @@
                 "tamasfe.even-better-toml",
                 "jnoortheen.nix-ide",
                 "Gruntfuggly.todo-tree"
-            ]
+            ],
+            "settings": {
+                "nix.serverPath": "/home/vscode/.nix-profile/bin/nixd",
+                "nix.serverSettings": {
+                    "nixd": {
+                        "formatting": {
+                            "command": [
+                                "/home/vscode/.nix-profile/bin/alejandra"
+                            ]
+                        }
+                    }
+                }
+            }
         }
     }
 }

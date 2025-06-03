@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   system = {
     defaults = {
       NSGlobalDomain = {
@@ -16,7 +15,7 @@
           "${pkgs.arc-browser}/Applications/Arc.app/"
           "${pkgs.vscode}/Applications/Visual Studio Code.app/"
           "/System/Applications/Calendar.app/"
-          "${pkgs.signal-desktop}/Applications/Signal.app/"
+          # "${pkgs.signal-desktop}/Applications/Signal.app/"
           "${pkgs.slack}/Applications/Slack.app/"
         ];
       };

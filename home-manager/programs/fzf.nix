@@ -2,10 +2,7 @@
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
-    changeDirWidgetOptions = [
-      "--walker-skip .git,node_modules,target"
-      "--preview 'tree -C {}'"
-    ];
+    changeDirWidgetOptions = ["--walker-skip .git,node_modules,target" "--preview 'tree -C {}'"];
     fileWidgetOptions = [
       "--walker-skip .git,node_modules,target"
       "--preview 'bat -n --color=always {}'"
@@ -21,9 +18,6 @@
       "--color header:italic"
       "--header 'Press CTRL-Y to copy command into clipboard'"
     ];
-    defaultOptions = [
-      "--border"
-      "--info=inline"
-    ];
+    defaultOptions = ["--border" "--info=inline"];
   };
 }
