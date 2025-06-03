@@ -13,7 +13,7 @@
   home = {
     username = "fabian";
     homeDirectory = "/Users/fabian";
-    stateVersion = "25.05";
+    stateVersion = "25.11";
     packages = with pkgs; [
       alacritty
       aldente

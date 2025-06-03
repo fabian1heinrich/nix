@@ -1,7 +1,7 @@
 {
   programs.lsd = {
     enable = true;
-    enableAliases = true;
+    enableZshIntegration = true;
     settings = {
       classic = false;
       date = "date";

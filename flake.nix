@@ -8,12 +8,7 @@
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     nixpkgs-stable.url = "nixpkgs/nixos-24.11";
   };
-  outputs = {
-    nixpkgs,
-    home-manager,
-    darwin,
-    ...
-  }: {
+  outputs = { nixpkgs, home-manager, darwin, ... }: {
     darwinConfigurations.legendre = darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       pkgs = import nixpkgs {
@@ -28,19 +23,22 @@
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
-            users.fabian.imports = [./home-manager/default.nix ./home-manager/hosts/legendre.nix];
+            users.fabian.imports =
+              [ ./home-manager/default.nix ./home-manager/hosts/legendre.nix ];
           };
         }
       ];
     };
     homeConfigurations = {
       devcontainer-aarch64-linux = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {system = "aarch64-linux";};
-        modules = [./home-manager/default.nix ./home-manager/hosts/devcontainer.nix];
+        pkgs = import nixpkgs { system = "aarch64-linux"; };
+        modules =
+          [ ./home-manager/default.nix ./home-manager/hosts/devcontainer.nix ];
       };
       devcontainer-x86_64-linux = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {system = "x86_64-linux";};
-        modules = [./home-manager/default.nix ./home-manager/hosts/devcontainer.nix];
+        pkgs = import nixpkgs { system = "x86_64-linux"; };
+        modules =
+          [ ./home-manager/default.nix ./home-manager/hosts/devcontainer.nix ];
       };
     };
   };

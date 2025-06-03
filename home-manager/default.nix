@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   fonts.fontconfig.enable = true;
   programs.home-manager.enable = true;
   home = {
@@ -8,6 +8,7 @@
       crane
       devcontainer
       fd
+      fluxcd
       fzf
       git
       k3d
@@ -25,6 +26,7 @@
       meslo-lgs-nf
       nerd-fonts.jetbrains-mono
       nixfmt
+      nixd
       ripgrep
       skopeo
       stern
