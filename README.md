@@ -28,3 +28,5 @@ sh <(curl -L https://nixos.org/nix/install)
 ```bash
 nix run nix-darwin -- switch --flake .#legendre
 ```
+
+nix flake update --flake .

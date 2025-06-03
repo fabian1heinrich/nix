@@ -3,8 +3,6 @@
     enable = true;
     userEmail = "fabianheinrich@aol.com";
     userName = "Fabian Heinrich";
-    extraConfig = {
-      init.defaultBranch = "main";
-    };
+    extraConfig = {init.defaultBranch = "main";};
   };
 }
