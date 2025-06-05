@@ -1,10 +1,25 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
+  nix = {
+    enable = true;
+    settings = {
+      "experimental-features" = [
+        "nix-command"
+        "flakes"
+      ];
+    };
+  };
+  home-manager.backupFileExtension = "backup";
   system = {
+    primaryUser = "fabian";
+    stateVersion = 6;
     defaults = {
       NSGlobalDomain = {
-        AppleInterfaceStyle = "Dark";
-        AppleShowAllExtensions = true;
         _HIHideMenuBar = false;
+        AppleInterfaceStyle = "Dark";
+        AppleMetricUnits = 1;
+        AppleShowAllExtensions = true;
+        AppleTemperatureUnit = "Celsius";
       };
       dock = {
         autohide = true;
@@ -15,17 +30,17 @@
           "${pkgs.arc-browser}/Applications/Arc.app/"
           "${pkgs.vscode}/Applications/Visual Studio Code.app/"
           "/System/Applications/Calendar.app/"
-          # "${pkgs.signal-desktop}/Applications/Signal.app/"
+          "/Applications/Signal.app/"
           "${pkgs.slack}/Applications/Slack.app/"
+          "/System/Applications/System Settings.app/"
         ];
       };
       finder = {
         AppleShowAllExtensions = true;
         _FXShowPosixPathInTitle = true;
       };
+
     };
   };
-  nix.enable = true;
-  system.stateVersion = 6;
   security.pam.services.sudo_local.touchIdAuth = true;
 }

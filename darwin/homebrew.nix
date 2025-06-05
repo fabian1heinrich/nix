@@ -11,18 +11,23 @@
     #   brewfile = true;
     # };
     casks = [
-      "docker"
+      "aldente"
+      "ccleaner"
+      "ghostty"
       "gifox"
       "jordanbaird-ice"
+      "languagetool"
+      "maccy"
+      "monitorcontrol"
+      "mos"
+      "nightfall"
+      "raycast"
       "selfcontrol"
       "shottr"
-      # "tresorit"
-      "zoom"
-      "nightfall"
-      "ghostty"
+      "signal"
+      "stats"
       "yubico-yubikey-manager"
-      "bitwarden"
-      "openvpn-connect"
+      # "tresorit"
     ];
   };
 }

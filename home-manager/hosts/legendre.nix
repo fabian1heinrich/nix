@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   imports = [
     ../programs/fzf.nix
     ../programs/git.nix
@@ -16,24 +17,18 @@
     stateVersion = "25.11";
     packages = with pkgs; [
       alacritty
-      aldente
       arc-browser
+      colima
       discord
       gh
-      languagetool
-      maccy
-      monitorcontrol
-      mos
-      raycast
-      # signal-desktop
-      slack
-      stats
-      utm
-      vscodium
-      vscode
-      # ghostty
-      zotero
       openvpn
+      slack
+      utm
+      vscode
+      zotero
+      bitwarden-desktop
+      openvpn
+      zoom-us
     ];
   };
 }

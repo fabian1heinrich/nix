@@ -1,6 +1,14 @@
-{ pkgs, ... }: {
-  fonts.fontconfig.enable = true;
+{ pkgs, ... }:
+{
+  # fonts.fontconfig.enable = true;
   programs.home-manager.enable = true;
+  nix = {
+    enable = true;
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+  };
   home = {
     packages = with pkgs; [
       alejandra
@@ -24,8 +32,8 @@
       lazydocker
       lazygit
       meslo-lgs-nf
-      nerd-fonts.jetbrains-mono
-      nixfmt
+      jetbrains-mono
+      nixfmt-rfc-style
       nixd
       ripgrep
       skopeo
@@ -40,6 +48,10 @@
       zarf
       zoxide
       nixd
+      docker-buildx
+      docker-client
+      docker-compose
     ];
   };
+
 }

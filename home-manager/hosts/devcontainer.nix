@@ -1,4 +1,6 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
+  nix.package = pkgs.nix;
   imports = [
     ../programs/fzf.nix
     ../programs/lsd.nix
@@ -7,9 +9,9 @@
     ../programs/zoxide.nix
     ../programs/zsh.nix
   ];
-  programs.zsh.initExtraFirst = ''
-    . $HOME/.nix-profile/etc/profile.d/nix.sh
-  '';
+  # programs.zsh.initExtraFirst = ''
+  #   . $HOME/.nix-profile/etc/profile.d/nix.sh
+  # '';
   home = {
     username = "vscode";
     homeDirectory = "/home/vscode";

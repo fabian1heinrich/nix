@@ -16,39 +16,16 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "yzhang.markdown-all-in-one",
-                "GitHub.vscode-pull-request-github",
-                "bierner.markdown-checkbox",
-                "bierner.markdown-emoji",
-                "bierner.markdown-footnotes",
-                "bierner.markdown-preview-github-styles",
-                "bierner.markdown-mermaid",
-                "redhat.vscode-yaml",
-                "foxundermoon.shell-format",
-                "esbenp.prettier-vscode",
-                "DavidAnson.vscode-markdownlint",
-                "christian-kohler.path-intellisense",
-                "bierner.markdown-yaml-preamble",
-                "bierner.github-markdown-preview",
-                "GitHub.copilot-chat",
-                "GitHub.copilot",
                 "zh9528.file-size",
-                "tamasfe.even-better-toml",
+                "GitHub.copilot",
+                "GitHub.copilot-chat",
+                "GitHub.vscode-pull-request-github",
+                "yzhang.markdown-all-in-one",
+                "DavidAnson.vscode-markdownlint",
                 "jnoortheen.nix-ide",
+                "christian-kohler.path-intellisense",
                 "Gruntfuggly.todo-tree"
-            ],
-            "settings": {
-                "nix.serverPath": "/home/vscode/.nix-profile/bin/nixd",
-                "nix.serverSettings": {
-                    "nixd": {
-                        "formatting": {
-                            "command": [
-                                "/home/vscode/.nix-profile/bin/alejandra"
-                            ]
-                        }
-                    }
-                }
-            }
+            ]
         }
     }
 }
