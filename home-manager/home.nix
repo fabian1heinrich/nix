@@ -1,9 +1,8 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
-  nixpkgs.config.allowUnfree = true;
   programs.home-manager.enable = true;
   nix = {
-    package = pkgs.nix;
+    package = lib.mkDefault pkgs.nix;
     enable = true;
     settings.experimental-features = [
       "nix-command"

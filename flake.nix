@@ -20,6 +20,7 @@
           system = "aarch64-darwin";
           pkgs = import nixpkgs {
             system = "aarch64-darwin";
+            config.allowUnfree = true;
           };
           modules = [
             ./hosts/legendre/darwin.nix
@@ -40,7 +41,7 @@
         ubuntu-dev = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
-            # config.allowUnfree = true;
+            config.allowUnfree = true;
           };
           modules = [
             ./hosts/ubuntu-dev/home.nix

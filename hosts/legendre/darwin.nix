@@ -10,7 +10,6 @@
     };
   };
 
-  # home-manager.backupFileExtension = "backup";
   programs.zsh.enable = true;
   users.users.fabian.home = "/Users/fabian";
   system = {
@@ -55,9 +54,6 @@
       upgrade = true;
     };
     brewPrefix = "/opt/homebrew/bin";
-    # global = {
-    #   brewfile = true;
-    # };
     casks = [
       "aldente"
       "ccleaner"
@@ -78,5 +74,4 @@
       # "tresorit"
     ];
   };
-
 }
