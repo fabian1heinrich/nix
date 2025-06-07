@@ -1,12 +1,11 @@
 {
   description = "Fabian's Nix Configuration";
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager/master";
+    nixpkgs.url = "nixpkgs/nixos-25.05";
+    home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    darwin.url = "github:lnl7/nix-darwin/master";
+    darwin.url = "github:lnl7/nix-darwin/nix-darwin-25.05";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nixpkgs-stable.url = "nixpkgs/nixos-24.11";
   };
   outputs =
     {
@@ -21,19 +20,16 @@
           system = "aarch64-darwin";
           pkgs = import nixpkgs {
             system = "aarch64-darwin";
-            config.allowUnfree = true;
-            config.allowBroken = true;
           };
           modules = [
-            ./darwin
+            ./hosts/legendre/darwin.nix
             home-manager.darwinModules.home-manager
             {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 users.fabian.imports = [
-                  ./home-manager/default.nix
-                  ./home-manager/hosts/legendre.nix
+                  ./hosts/legendre/home.nix
                 ];
               };
             }
@@ -44,37 +40,22 @@
         ubuntu-dev = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
-            config.allowUnfree = true;
+            # config.allowUnfree = true;
           };
           modules = [
-            ./home-manager/default.nix
-            ./home-manager/hosts/ubuntu-dev.nix
-          ];
-        };
-        devcontainer-minimal-aarch64-linux = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { system = "aarch64-linux"; };
-          modules = [
-            ./home-manager/hosts/devcontainer-minimal.nix
-          ];
-        };
-        devcontainer-minimal-x86_64-linux = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { system = "x86_64-linux"; };
-          modules = [
-            ./home-manager/hosts/devcontainer-minimal.nix
+            ./hosts/ubuntu-dev/home.nix
           ];
         };
         devcontainer-aarch64-linux = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs { system = "aarch64-linux"; };
           modules = [
-            ./home-manager/default.nix
-            ./home-manager/hosts/devcontainer.nix
+            ./hosts/devcontainer/home.nix
           ];
         };
         devcontainer-x86_64-linux = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs { system = "x86_64-linux"; };
           modules = [
-            ./home-manager/default.nix
-            ./home-manager/hosts/devcontainer.nix
+            ./hosts/devcontainer/home.nix
           ];
         };
       };

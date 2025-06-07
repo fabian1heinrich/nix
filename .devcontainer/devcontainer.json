@@ -2,7 +2,6 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
     "name": "${localWorkspaceFolderBasename}",
-    // "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "image": "mcr.microsoft.com/devcontainers/base:alpine",
     "remoteUser": "vscode",
     "containerUser": "vscode",
@@ -12,7 +11,8 @@
         "--hostname",
         "${localWorkspaceFolderBasename}"
     ],
-    "updateContentCommand": "bash .devcontainer/updateContentCommand.sh",
+    "postCreateCommand": "sudo apk add acl",
+    "postStartCommand": "sudo setfacl -k /tmp; if [ -e /dev/kvm ]; then sudo chgrp $(id -g) /dev/kvm; fi",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -26,6 +26,14 @@
                 "christian-kohler.path-intellisense",
                 "Gruntfuggly.todo-tree"
             ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/nix:1": {
+            "multiUser": false,
+            "packages": "nixpkgs.nixd,nixpkgs.nixfmt-rfc-style",
+            "useAttributePath": true,
+            "extraNixConfig": "experimental-features = nix-command flakes"
         }
     }
 }
