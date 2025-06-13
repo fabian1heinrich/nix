@@ -11,18 +11,18 @@
     ../../home-manager/programs/zoxide.nix
     ../../home-manager/programs/zsh.nix
   ];
+
+  # needed due to installation w/ determinate installer
+  nix.settings.extra-nix-path = "nixpkgs=flake:nixpkgs";
   home = {
     username = "ubuntu-dev";
     homeDirectory = "/home/ubuntu-dev";
     stateVersion = "25.05";
     packages = with pkgs; [
       colima
-      docker-buildx
-      docker-client
-      docker-compose
+      gh
+      kind
       virt-manager
-      vscode
-      ungoogled-chromium
     ];
   };
 }

@@ -4,13 +4,15 @@
     packages = with pkgs; [
       bat
       crane
-      devcontainer
+      docker-buildx
+      docker-client
+      docker-compose
       fd
       fluxcd
       fzf
       git
+      jetbrains-mono
       k9s
-      kind
       kubecolor
       kubectl
       kubectx
@@ -21,25 +23,18 @@
       lazydocker
       lazygit
       meslo-lgs-nf
-      jetbrains-mono
-      nixfmt-rfc-style
       nixd
+      nixfmt-rfc-style
       ripgrep
       skopeo
       stern
-      talosctl
       television
       tldr
       tmux
       tree
-      unixtools.ping
       wget
       zarf
       zoxide
-      nixd
-      docker-buildx
-      docker-client
-      docker-compose
     ];
   };
 }

@@ -3,7 +3,7 @@
 ## Dev Container
 
 ```bash
-ARCH=$(uname -m)
+export ARCH=$(uname -m)
 nix run nixpkgs#home-manager -- switch --flake .#devcontainer-${ARCH}-linux
 home-manager switch --flake .#devcontainer-${ARCH}-linux
 ```
@@ -13,7 +13,7 @@ home-manager switch --flake .#devcontainer-${ARCH}-linux
 ### initial setup (install home-manager)
 
 ```bash
-NIX_CONF_DIR=$(pwd)
+export NIX_CONF_DIR=$(pwd)
 nix run nixpkgs#home-manager -- switch --flake .#ubuntu-dev
 ```
 
@@ -34,7 +34,7 @@ home-manager switch --flake .#ubuntu-dev
 ### initial setup (install nix-darwin)
 
 ```bash
-NIX_CONF_DIR=$(pwd)
+export NIX_CONF_DIR=$(pwd)
 sudo nix run nix-darwin -- switch --flake .#legendre
 ```
 
