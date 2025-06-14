@@ -4,11 +4,7 @@
     packages = with pkgs; [
       bat
       crane
-      docker-buildx
-      docker-client
-      docker-compose
       fd
-      fluxcd
       fzf
       git
       jetbrains-mono

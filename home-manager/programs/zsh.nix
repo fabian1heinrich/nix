@@ -91,9 +91,12 @@
         *) fzf --preview 'bat -n --color=always {}' "$@" ;;
         esac
       }
+
       compdef kubecolor=kubectl
 
       bindkey "ç" fzf-cd-widget
+      bindkey "^[[1;3C" forward-word
+      bindkey "^[[1;3D" backward-word
     '';
   };
 }
