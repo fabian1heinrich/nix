@@ -4,13 +4,10 @@
     packages = with pkgs; [
       bat
       crane
-      devcontainer
       fd
-      fluxcd
       fzf
       git
       k9s
-      kind
       kubecolor
       kubectl
       kubectx
@@ -27,7 +24,6 @@
       ripgrep
       skopeo
       stern
-      talosctl
       television
       tldr
       tmux

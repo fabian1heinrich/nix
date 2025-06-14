@@ -20,9 +20,11 @@
       docker-buildx
       docker-client
       docker-compose
+      k3d
+      kind
+      ungoogled-chromium
       virt-manager
       vscode
-      ungoogled-chromium
     ];
   };
 }
