@@ -5,8 +5,6 @@
       bat
       crane
       fd
-      fzf
-      git
       jetbrains-mono
       k9s
       kubecolor
@@ -26,11 +24,9 @@
       stern
       television
       tldr
-      tmux
       tree
       wget
       zarf
-      zoxide
     ];
   };
 }

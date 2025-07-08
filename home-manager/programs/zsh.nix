@@ -8,7 +8,6 @@
       ignoreAllDups = true;
       ignoreSpace = true;
       save = 1000000;
-
       size = 1000000;
     };
     oh-my-zsh = {
@@ -97,6 +96,20 @@
       bindkey "ç" fzf-cd-widget
       bindkey "^[[1;3C" forward-word
       bindkey "^[[1;3D" backward-word
+
+      function br {
+          local cmd cmd_file code
+          cmd_file=$(mktemp)
+          if broot --outcmd "$cmd_file" "$@"; then
+              cmd=$(<"$cmd_file")
+              command rm -f "$cmd_file"
+              eval "$cmd"
+          else
+              code=$?
+              command rm -f "$cmd_file"
+              return "$code"
+          fi
+      }
     '';
   };
 }
