@@ -65,13 +65,14 @@
       "monitorcontrol"
       "mos"
       "nightfall"
+      "proton-drive"
       "raycast"
       "selfcontrol"
       "shottr"
       "signal"
       "stats"
       "yubico-yubikey-manager"
-      # "tresorit"
+
     ];
   };
 }

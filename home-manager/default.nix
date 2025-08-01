@@ -16,7 +16,7 @@
       kustomize
       lazydocker
       lazygit
-      nerd-fonts.meslo-lg
+      meslo-lgs-nf
       nixd
       nixfmt-rfc-style
       ripgrep
