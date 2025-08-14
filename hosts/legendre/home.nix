@@ -21,7 +21,6 @@
     stateVersion = "25.05";
     packages = with pkgs; [
       alacritty
-      arc-browser
       bitwarden-desktop
       colima
       discord
