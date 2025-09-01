@@ -22,6 +22,7 @@
     packages = with pkgs; [
       alacritty
       bitwarden-desktop
+      chatgpt
       colima
       discord
       docker-buildx

@@ -55,6 +55,10 @@
       upgrade = true;
     };
     brewPrefix = "/opt/homebrew/bin";
+    brews = [
+      "codex"
+      "cowsay"
+    ];
     casks = [
       "aldente"
       "ccleaner"
@@ -72,7 +76,7 @@
       "shottr"
       "signal"
       "stats"
-      "yubico-yubikey-manager"
+      "yubico-authenticator"
       "zen"
     ];
   };

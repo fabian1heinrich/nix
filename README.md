@@ -43,3 +43,9 @@ sudo nix run nix-darwin -- switch --flake .#legendre
 ```bash
 sudo darwin-rebuild switch --flake .#legendre
 ```
+
+## update
+
+```bash
+nix flake update --flake .  
+```
