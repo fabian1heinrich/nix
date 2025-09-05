@@ -6,8 +6,6 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:lnl7/nix-darwin/nix-darwin-25.05";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    nixgl.url = "github:nix-community/nixgl";
-    nixgl.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =
     {

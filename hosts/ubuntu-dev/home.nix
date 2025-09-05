@@ -29,9 +29,8 @@
       docker-compose
       gh
       kind
-      ungoogled-chromium
+      qemu
       virt-manager
-      vscodium
     ];
   };
 
