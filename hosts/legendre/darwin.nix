@@ -51,7 +51,7 @@
     enable = true;
     onActivation = {
       autoUpdate = true;
-      cleanup = "none";
+      cleanup = "uninstall";
       upgrade = true;
     };
     brewPrefix = "/opt/homebrew/bin";
@@ -65,7 +65,7 @@
       "ghostty"
       "gifox"
       "jordanbaird-ice"
-      "languagetool"
+      "languagetool-desktop"
       "maccy"
       "monitorcontrol"
       "mos"

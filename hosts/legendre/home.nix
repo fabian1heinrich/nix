@@ -28,11 +28,13 @@
       docker-buildx
       docker-client
       docker-compose
+      docker-credential-helpers
       gh
       openvpn
       slack
       utm
       vscode
+      yubikey-manager
       zoom-us
       zotero
     ];
