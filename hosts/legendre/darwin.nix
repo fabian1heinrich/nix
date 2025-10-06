@@ -40,7 +40,15 @@
       };
       finder = {
         AppleShowAllExtensions = true;
+        AppleShowAllFiles = true;
+        FXPreferredViewStyle = "Nlsv";
+        NewWindowTarget = "Other";
+        NewWindowTargetPath = "file:///Users/fabian/";
+        QuitMenuItem = true;
+        ShowPathbar = true;
+        ShowStatusBar = true;
         _FXShowPosixPathInTitle = true;
+        _FXSortFoldersFirst = false;
       };
 
     };
@@ -79,5 +87,8 @@
       "yubico-authenticator"
       "zen"
     ];
+    masApps = {
+      "prime-instant-video" = 545519333; # Amazon Prime Video
+    };
   };
 }
