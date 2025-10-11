@@ -10,8 +10,10 @@
     };
   };
 
-  programs.zsh.enable = true;
-  users.users.fabian.home = "/Users/fabian";
+  users.users.fabian = {
+    home = "/Users/fabian";
+    shell = pkgs.zsh;
+  };
   system = {
     primaryUser = "fabian";
     stateVersion = 6;
@@ -41,6 +43,7 @@
       finder = {
         AppleShowAllExtensions = true;
         AppleShowAllFiles = true;
+        FXDefaultSearchScope = "SCcf";
         FXPreferredViewStyle = "Nlsv";
         NewWindowTarget = "Other";
         NewWindowTargetPath = "file:///Users/fabian/";
@@ -48,9 +51,16 @@
         ShowPathbar = true;
         ShowStatusBar = true;
         _FXShowPosixPathInTitle = true;
-        _FXSortFoldersFirst = false;
       };
-
+      menuExtraClock = {
+        ShowDayOfMonth = true;
+        ShowDayOfWeek = true;
+        ShowSeconds = false;
+        ShowAMPM = true;
+      };
+      trackpad = {
+        # TODO
+      };
     };
   };
   security.pam.services.sudo_local.touchIdAuth = true;
@@ -62,11 +72,14 @@
       cleanup = "uninstall";
       upgrade = true;
     };
+    extraConfig = "";
     brewPrefix = "/opt/homebrew/bin";
     brews = [
       "codex"
       "cowsay"
     ];
+    # TODO: enable when 25.11 is out
+    # greedyCasks = "true";
     casks = [
       "aldente"
       "ccleaner"
