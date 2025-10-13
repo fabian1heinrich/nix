@@ -32,6 +32,7 @@
       tldr
       tree
       wget
+      yq
       zarf
     ];
   };
