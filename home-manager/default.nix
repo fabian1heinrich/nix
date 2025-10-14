@@ -7,6 +7,7 @@
       dua
       dust
       fd
+      fluxcd
       glow
       httpie
       jetbrains-mono
