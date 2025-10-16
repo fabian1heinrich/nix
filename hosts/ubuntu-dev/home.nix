@@ -22,6 +22,7 @@
     homeDirectory = "/home/ubuntu-dev";
     stateVersion = "25.05";
     packages = with pkgs; [
+      codex
       colima
       ctop
       docker-buildx
