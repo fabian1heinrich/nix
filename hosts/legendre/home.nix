@@ -23,6 +23,7 @@
       alacritty
       bitwarden-desktop
       chatgpt
+      codex
       colima
       discord
       docker-buildx
