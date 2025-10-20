@@ -25,7 +25,9 @@
       meslo-lgs-nf
       nixd
       nixfmt-rfc-style
+      oras
       procs
+      regctl
       ripgrep
       skopeo
       stern
