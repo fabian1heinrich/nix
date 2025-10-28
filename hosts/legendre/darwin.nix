@@ -75,11 +75,9 @@
     extraConfig = "";
     brewPrefix = "/opt/homebrew/bin";
     brews = [
-      "codex"
       "cowsay"
     ];
-    # TODO: enable when 25.11 is out
-    # greedyCasks = "true";
+    greedyCasks = true;
     casks = [
       "aldente"
       "ccleaner"
