@@ -15,6 +15,7 @@
       k9s
       kubecolor
       kubectl
+      kubectl-view-secret
       kubectx
       kubernetes-helm
       kubeswitch
