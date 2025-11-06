@@ -14,7 +14,6 @@
     ../../home-manager/programs/zoxide.nix
     ../../home-manager/programs/zsh.nix
   ];
-
   # needed due to installation w/ determinate installer
   nix.settings.extra-nix-path = "nixpkgs=flake:nixpkgs";
   home = {
@@ -34,7 +33,6 @@
       virt-manager
     ];
   };
-
   gtk = {
     enable = true;
     theme = {
@@ -52,7 +50,6 @@
     };
 
   };
-
   home.pointerCursor = {
     name = "Yaru";
     package = pkgs.yaru-theme;

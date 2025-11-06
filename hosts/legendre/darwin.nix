@@ -9,7 +9,6 @@
       ];
     };
   };
-
   users.users.fabian = {
     home = "/Users/fabian";
     shell = pkgs.zsh;

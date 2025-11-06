@@ -1,0 +1,26 @@
+{
+    "nix.enableLanguageServer": true,
+    "nix.serverPath": "nixd",
+    "nix.serverSettings": {
+        "nixd": {
+            "formatting": {
+                "command": [
+                    "nixfmt"
+                ]
+            },
+            "eval": {
+                "target": {
+                    "installable": ".#homeConfigurations.ubuntu-dev.activationPackage"
+                }
+            },
+            "options": {
+                "home-manager": {
+                    "expr": "(builtins.getFlake \"${workspaceFolder}\").homeConfigurations.ubuntu-dev.options"
+                },
+                "nix-darwin": {
+                    "expr": "(builtins.getFlake \"${workspaceFolder}\").darwinConfigurations.legendre.options"
+                }
+            }
+        }
+    },
+}
