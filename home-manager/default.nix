@@ -3,6 +3,7 @@
   home = {
     packages = with pkgs; [
       bat
+      btop
       crane
       dua
       dust
@@ -10,6 +11,7 @@
       fluxcd
       glow
       httpie
+      hyperfine
       jetbrains-mono
       jq
       k9s
@@ -21,6 +23,7 @@
       kubeswitch
       kubie
       kustomize
+      kyverno
       lazydocker
       lazygit
       meslo-lgs-nf
