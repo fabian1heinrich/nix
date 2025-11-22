@@ -1,10 +1,14 @@
 {
   programs.git = {
     enable = true;
-    userEmail = "fabianheinrich@aol.com";
-    userName = "Fabian Heinrich";
-    extraConfig = {
-      init.defaultBranch = "main";
+    settings = {
+      user = {
+        email = "fabianheinrich@aol.com";
+        name = "Fabian Heinrich";
+      };
+      init = {
+        defaultBranch = "main";
+      };
     };
   };
 }
