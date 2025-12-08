@@ -5,6 +5,7 @@
       bat
       btop
       crane
+      devcontainer
       dua
       dust
       fd
