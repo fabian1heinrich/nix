@@ -1,3 +1,4 @@
+{ pkgs, ... }:
 {
   programs.git = {
     enable = true;
@@ -10,11 +11,12 @@
         defaultBranch = "main";
       };
       credential = {
+        helper = "store";
         "https://github.com" = {
-          helper = "!/usr/bin/gh auth git-credential";
+          helper = "!${pkgs.gh}/bin/gh auth git-credential";
         };
         "https://gist.github.com" = {
-          helper = "!/usr/bin/gh auth git-credential";
+          helper = "!${pkgs.gh}/bin/gh auth git-credential";
         };
       };
     };
