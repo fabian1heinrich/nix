@@ -5,6 +5,7 @@
     ../../home-manager/default.nix
     ../../home-manager/programs/broot.nix
     ../../home-manager/programs/fzf.nix
+    ../../home-manager/programs/gh.nix
     ../../home-manager/programs/git.nix
     ../../home-manager/programs/lsd.nix
     ../../home-manager/programs/starship.nix

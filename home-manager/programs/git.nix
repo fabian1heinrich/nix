@@ -9,6 +9,14 @@
       init = {
         defaultBranch = "main";
       };
+      credential = {
+        "https://github.com" = {
+          helper = "!/usr/bin/gh auth git-credential";
+        };
+        "https://gist.github.com" = {
+          helper = "!/usr/bin/gh auth git-credential";
+        };
+      };
     };
   };
 }
