@@ -4,7 +4,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    darwin.url = "github:lnl7/nix-darwin/master";
+    darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs =

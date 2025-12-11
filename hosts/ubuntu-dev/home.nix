@@ -7,6 +7,7 @@
     ../../home-manager/programs/fzf.nix
     ../../home-manager/programs/ghostty.nix
     ../../home-manager/programs/git.nix
+    ../../home-manager/programs/gh.nix
     ../../home-manager/programs/lsd.nix
     ../../home-manager/programs/mcfly.nix
     ../../home-manager/programs/navi.nix
@@ -19,7 +20,7 @@
   home = {
     username = "ubuntu-dev";
     homeDirectory = "/home/ubuntu-dev";
-    stateVersion = "25.05";
+    stateVersion = "25.11";
     packages = with pkgs; [
       codex
       colima
