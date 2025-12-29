@@ -31,7 +31,7 @@
         persistent-apps = [
           "/Applications/Ghostty.app/"
           "/Applications/Zen.app"
-          "${pkgs.vscode}/Applications/Visual Studio Code.app/"
+          "/Applications/Visual\ Studio\ Code.app/"
           "/System/Applications/Calendar.app/"
           "/Applications/Signal.app/"
           "${pkgs.slack}/Applications/Slack.app/"
@@ -78,6 +78,7 @@
     ];
     greedyCasks = true;
     casks = [
+      "visual-studio-code"
       "aldente"
       "ccleaner"
       "ghostty"

@@ -31,11 +31,11 @@
       docker-client
       docker-compose
       docker-credential-helpers
+      flashspace
       gh
       openvpn
       slack
       utm
-      vscode
       yubikey-manager
       zoom-us
       zotero
