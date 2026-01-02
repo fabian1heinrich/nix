@@ -58,7 +58,9 @@
         ShowAMPM = true;
       };
       trackpad = {
-        # TODO
+        Clicking = true;
+        TrackpadRightClick = true;
+        TrackpadThreeFingerDrag = true;
       };
     };
   };
@@ -86,7 +88,7 @@
       "jordanbaird-ice"
       "languagetool-desktop"
       "maccy"
-      "monitorcontrol"
+      "betterdisplay"
       "mos"
       "nightfall"
       "proton-drive"
