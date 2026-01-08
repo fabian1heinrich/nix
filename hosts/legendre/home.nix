@@ -13,8 +13,7 @@
     ../../home-manager/programs/yazi.nix
     ../../home-manager/programs/zoxide.nix
     ../../home-manager/programs/zsh.nix
-    # TODO: ghostty
-    # ../../home-manager/programs/zsh.nix/ghostty.nix
+    ../../home-manager/programs/ghostty.nix
   ];
   home = {
     username = "fabian";
@@ -24,6 +23,7 @@
       alacritty
       bitwarden-desktop
       chatgpt
+      claude-code
       codex
       colima
       discord
@@ -33,6 +33,7 @@
       docker-credential-helpers
       flashspace
       gh
+      opencode
       openvpn
       slack
       utm
