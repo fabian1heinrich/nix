@@ -156,6 +156,7 @@
       "visual-studio-code"
       "aldente"
       "ccleaner"
+      "claude"
       "ghostty"
       "gifox"
       "jordanbaird-ice"
