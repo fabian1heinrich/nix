@@ -1,39 +1,35 @@
-{ pkgs, ... }:
+{ pkgs, userConfig, ... }:
 {
   imports = [
-    ../../home-manager/home.nix
-    ../../home-manager/default.nix
+    ../../profiles/linux-desktop.nix
     ../../home-manager/programs/broot.nix
-    ../../home-manager/programs/fzf.nix
-    ../../home-manager/programs/ghostty.nix
-    ../../home-manager/programs/git.nix
-    ../../home-manager/programs/gh.nix
-    ../../home-manager/programs/lsd.nix
-    ../../home-manager/programs/mcfly.nix
-    ../../home-manager/programs/navi.nix
-    ../../home-manager/programs/starship.nix
-    ../../home-manager/programs/zoxide.nix
-    ../../home-manager/programs/zsh.nix
   ];
-  # needed due to installation w/ determinate installer
+
+  # Needed due to installation w/ determinate installer
   nix.settings.extra-nix-path = "nixpkgs=flake:nixpkgs";
+
   home = {
-    username = "ubuntu-dev";
-    homeDirectory = "/home/ubuntu-dev";
+    username = userConfig.username;
+    homeDirectory = userConfig.homeDirectory;
     stateVersion = "25.11";
+
     packages = with pkgs; [
+      # AI tools
       codex
+
+      # Container & virtualization
       colima
       ctop
       docker-buildx
       docker-client
       docker-compose
-      gh
       kind
       qemu
       virt-manager
     ];
   };
+
+  # GTK theming
   gtk = {
     enable = true;
     theme = {
@@ -49,8 +45,8 @@
       name = "Yaru";
       package = pkgs.yaru-theme;
     };
-
   };
+
   home.pointerCursor = {
     name = "Yaru";
     package = pkgs.yaru-theme;

@@ -1,12 +1,16 @@
-{ pkgs, ... }:
+{ pkgs, userConfig, ... }:
 {
   imports = [
-    ../../home-manager/home.nix
+    ../../profiles/cli-common.nix
   ];
+
   home = {
-    username = "vscode";
-    homeDirectory = "/home/vscode";
+    username = userConfig.username;
+    homeDirectory = userConfig.homeDirectory;
     stateVersion = "25.11";
-    packages = with pkgs; [ cowsay ];
+
+    packages = with pkgs; [
+      cowsay
+    ];
   };
 }

@@ -1,5 +1,6 @@
 {
   description = "Fabian's Nix Configuration";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
@@ -7,6 +8,7 @@
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
+
   outputs =
     {
       nixpkgs,
@@ -14,21 +16,62 @@
       darwin,
       ...
     }:
+    let
+      # Shared user configuration
+      users = {
+        fabian = {
+          name = "Fabian Heinrich";
+          email = "fabianheinrich@aol.com";
+          username = "fabian";
+          homeDirectory = "/Users/fabian";
+        };
+        ubuntu-dev = {
+          name = "Fabian Heinrich";
+          email = "fabianheinrich@aol.com";
+          username = "ubuntu-dev";
+          homeDirectory = "/home/ubuntu-dev";
+        };
+        devcontainer = {
+          name = "Fabian Heinrich";
+          email = "fabianheinrich@aol.com";
+          username = "vscode";
+          homeDirectory = "/home/vscode";
+        };
+      };
+
+      # Helper to create pkgs for a system
+      pkgsFor =
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+    in
     {
+      # Formatters for `nix fmt` (nixfmt-tree handles directories)
+      formatter = {
+        aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-tree;
+        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+        aarch64-linux = nixpkgs.legacyPackages.aarch64-linux.nixfmt-tree;
+      };
+
       darwinConfigurations = {
         legendre = darwin.lib.darwinSystem {
           system = "aarch64-darwin";
-          pkgs = import nixpkgs {
-            system = "aarch64-darwin";
-            config.allowUnfree = true;
+          specialArgs = {
+            userConfig = users.fabian;
           };
           modules = [
+            { nixpkgs.config.allowUnfree = true; }
             ./hosts/legendre/darwin.nix
             home-manager.darwinModules.home-manager
             {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                extraSpecialArgs = {
+                  userConfig = users.fabian;
+                };
                 users.fabian.imports = [
                   ./hosts/legendre/home.nix
                 ];
@@ -37,24 +80,22 @@
           ];
         };
       };
+
       homeConfigurations = {
         ubuntu-dev = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-            config.allowUnfree = true;
+          pkgs = pkgsFor "x86_64-linux";
+          extraSpecialArgs = {
+            userConfig = users.ubuntu-dev;
           };
           modules = [
             ./hosts/ubuntu-dev/home.nix
           ];
         };
-        devcontainer-aarch64-linux = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { system = "aarch64-linux"; };
-          modules = [
-            ./hosts/devcontainer/home.nix
-          ];
-        };
-        devcontainer-x86_64-linux = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { system = "x86_64-linux"; };
+        devcontainer = home-manager.lib.homeManagerConfiguration {
+          pkgs = pkgsFor builtins.currentSystem;
+          extraSpecialArgs = {
+            userConfig = users.devcontainer;
+          };
           modules = [
             ./hosts/devcontainer/home.nix
           ];

@@ -1,18 +1,29 @@
-{ ... }:
+{ pkgs, userConfig, ... }:
 {
   programs.git = {
     enable = true;
     settings = {
       user = {
-        email = "fabianheinrich@aol.com";
-        name = "Fabian Heinrich";
+        email = userConfig.email;
+        name = userConfig.name;
       };
       init = {
         defaultBranch = "main";
       };
       credential = {
-        helper = "store";
+        # Use secure credential storage:
+        # - macOS: osxkeychain (stores in Keychain)
+        # - Linux: libsecret (stores in GNOME Keyring or similar)
+        helper =
+          if pkgs.stdenv.isDarwin then
+            "osxkeychain"
+          else
+            "${pkgs.git-credential-libsecret}/bin/git-credential-libsecret";
       };
+      # Useful defaults
+      pull.rebase = true;
+      push.autoSetupRemote = true;
+      core.autocrlf = "input";
     };
   };
 }

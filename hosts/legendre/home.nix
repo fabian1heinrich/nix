@@ -1,45 +1,45 @@
-{ pkgs, ... }:
+{ pkgs, userConfig, ... }:
 {
   imports = [
-    ../../home-manager/home.nix
-    ../../home-manager/default.nix
-    ../../home-manager/programs/broot.nix
-    ../../home-manager/programs/fzf.nix
-    ../../home-manager/programs/gh.nix
-    ../../home-manager/programs/git.nix
-    ../../home-manager/programs/lsd.nix
-    ../../home-manager/programs/starship.nix
-    ../../home-manager/programs/tmux.nix
-    ../../home-manager/programs/yazi.nix
-    ../../home-manager/programs/zoxide.nix
-    ../../home-manager/programs/zsh.nix
-    ../../home-manager/programs/ghostty.nix
+    ../../profiles/darwin-desktop.nix
   ];
+
   home = {
-    username = "fabian";
-    homeDirectory = "/Users/fabian";
+    username = userConfig.username;
+    homeDirectory = userConfig.homeDirectory;
     stateVersion = "25.11";
+
     packages = with pkgs; [
+      # Terminal emulators
       alacritty
-      bitwarden-desktop
+
+      # AI tools
       chatgpt
       claude-code
       codex
+      opencode
+
+      # Container & virtualization
       colima
-      discord
       docker-buildx
       docker-client
       docker-compose
       docker-credential-helpers
-      flashspace
-      gh
-      opencode
-      openvpn
-      slack
       utm
-      yubikey-manager
+
+      # Communication
+      discord
+      slack
       zoom-us
+
+      # Productivity
+      bitwarden-desktop
+      flashspace
       zotero
+
+      # System tools
+      openvpn
+      yubikey-manager
     ];
   };
 }
