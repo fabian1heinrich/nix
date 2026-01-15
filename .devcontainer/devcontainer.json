@@ -1,39 +1,39 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-    "name": "${localWorkspaceFolderBasename}",
-    "image": "mcr.microsoft.com/devcontainers/base:alpine",
-    "remoteUser": "vscode",
-    "containerUser": "vscode",
-    "runArgs": [
-        "--name",
-        "${localWorkspaceFolderBasename}",
-        "--hostname",
-        "${localWorkspaceFolderBasename}"
-    ],
-    "postCreateCommand": "sudo apk add acl",
-    "postStartCommand": "sudo setfacl -k /tmp; if [ -e /dev/kvm ]; then sudo chgrp $(id -g) /dev/kvm; fi",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "zh9528.file-size",
-                "GitHub.copilot",
-                "GitHub.copilot-chat",
-                "GitHub.vscode-pull-request-github",
-                "yzhang.markdown-all-in-one",
-                "DavidAnson.vscode-markdownlint",
-                "jnoortheen.nix-ide",
-                "christian-kohler.path-intellisense",
-                "Gruntfuggly.todo-tree"
-            ]
-        }
-    },
-    "features": {
-        "ghcr.io/devcontainers/features/nix:1": {
-            "multiUser": false,
-            "packages": "nixpkgs.nixd,nixpkgs.nixfmt-rfc-style",
-            "useAttributePath": true,
-            "extraNixConfig": "experimental-features = nix-command flakes"
-        }
+  "name": "${localWorkspaceFolderBasename}",
+  "image": "mcr.microsoft.com/devcontainers/base:alpine",
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "runArgs": [
+    "--name",
+    "${localWorkspaceFolderBasename}",
+    "--hostname",
+    "${localWorkspaceFolderBasename}"
+  ],
+  "postCreateCommand": "sudo apk add acl",
+  "postStartCommand": "sudo setfacl -k /tmp; if [ -e /dev/kvm ]; then sudo chgrp $(id -g) /dev/kvm; fi",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "zh9528.file-size",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint",
+        "jnoortheen.nix-ide",
+        "christian-kohler.path-intellisense",
+        "Gruntfuggly.todo-tree"
+      ]
     }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "multiUser": false,
+      "packages": "nixpkgs.nixd,nixpkgs.nixfmt-rfc-style",
+      "useAttributePath": true,
+      "extraNixConfig": "experimental-features = nix-command flakes"
+    }
+  }
 }
