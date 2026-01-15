@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, userConfig, ... }:
 {
   nix = {
     enable = true;
@@ -9,12 +9,12 @@
       ];
     };
   };
-  users.users.fabian = {
-    home = "/Users/fabian";
+  users.users.${userConfig.username} = {
+    home = userConfig.homeDirectory;
     shell = pkgs.zsh;
   };
   system = {
-    primaryUser = "fabian";
+    primaryUser = userConfig.username;
     stateVersion = 6;
     defaults = {
       NSGlobalDomain = {
@@ -173,6 +173,7 @@
       "stats"
       "yubico-authenticator"
       "zen"
+      "logi-options+"
     ];
     masApps = {
       "prime-instant-video" = 545519333; # Amazon Prime Video

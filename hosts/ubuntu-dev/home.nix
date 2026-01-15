@@ -11,7 +11,6 @@
   home = {
     username = userConfig.username;
     homeDirectory = userConfig.homeDirectory;
-    stateVersion = "25.11";
 
     packages = with pkgs; [
       # AI tools

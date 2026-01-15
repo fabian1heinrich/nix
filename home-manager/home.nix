@@ -3,6 +3,7 @@
   programs.home-manager.enable = true;
   fonts.fontconfig.enable = true;
   home.shell.enableZshIntegration = true;
+  home.stateVersion = lib.mkDefault "25.11";
   nix = {
     package = lib.mkDefault pkgs.nix;
     enable = true;
