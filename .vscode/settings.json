@@ -1,26 +1,29 @@
 {
-    "nix.enableLanguageServer": true,
-    "nix.serverPath": "nixd",
-    "nix.serverSettings": {
-        "nixd": {
-            "formatting": {
-                "command": [
-                    "nixfmt"
-                ]
-            },
-            "eval": {
-                "target": {
-                    "installable": ".#homeConfigurations.ubuntu-dev.activationPackage"
-                }
-            },
-            "options": {
-                "home-manager": {
-                    "expr": "(builtins.getFlake \"${workspaceFolder}\").homeConfigurations.ubuntu-dev.options"
-                },
-                "nix-darwin": {
-                    "expr": "(builtins.getFlake \"${workspaceFolder}\").darwinConfigurations.legendre.options"
-                }
-            }
+  "[nix]": {
+    "editor.defaultFormatter": "jnoortheen.nix-ide"
+  },
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nixd",
+  "nix.serverSettings": {
+    "nixd": {
+      "eval": {
+        "target": {
+          "installable": ".#homeConfigurations.ubuntu-dev.activationPackage"
         }
-    },
+      },
+      "formatting": {
+        "command": [
+          "nixfmt"
+        ]
+      },
+      "options": {
+        "home-manager": {
+          "expr": "(builtins.getFlake \"${workspaceFolder}\").homeConfigurations.ubuntu-dev.options"
+        },
+        "nix-darwin": {
+          "expr": "(builtins.getFlake \"${workspaceFolder}\").darwinConfigurations.legendre.options"
+        }
+      }
+    }
+  }
 }
