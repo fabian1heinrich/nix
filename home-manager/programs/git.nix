@@ -18,7 +18,7 @@
           if pkgs.stdenv.isDarwin then
             "osxkeychain"
           else
-            "${pkgs.git-credential-libsecret}/bin/git-credential-libsecret";
+            "${pkgs.gitFull}/bin/git-credential-libsecret";
       };
       # Useful defaults
       pull.rebase = true;

@@ -55,6 +55,17 @@
 
     # Fonts
     jetbrains-mono # Programming font
-    meslo-lgs-nf # Powerline font
+    fira-code # FiraCode font
+    fira-code-symbols # FiraCode symbols
+    nerd-fonts.fira-code
+    nerd-fonts.fira-mono
+    nerd-fonts.meslo-lg # Powerline font (includes mono variant)
   ];
+  # TODO fix fontconfig settings
+  fonts.fontconfig = {
+    enable = true;
+    defaultFonts = {
+      monospace = [ "FiraCode" ];
+    };
+  };
 }
