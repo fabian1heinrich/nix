@@ -54,18 +54,13 @@
     nixfmt-rfc-style # Nix formatter
 
     # Fonts
-    jetbrains-mono # Programming font
-    fira-code # FiraCode font
-    fira-code-symbols # FiraCode symbols
-    nerd-fonts.fira-code
-    nerd-fonts.fira-mono
-    nerd-fonts.meslo-lg # Powerline font (includes mono variant)
+    nerd-fonts.meslo-lg
   ];
-  # TODO fix fontconfig settings
+  # Font configuration (Linux only - macOS uses its own font system)
   fonts.fontconfig = {
     enable = true;
     defaultFonts = {
-      monospace = [ "FiraCode" ];
+      monospace = [ "MesloLGS Nerd Font Mono" ];
     };
   };
 }
