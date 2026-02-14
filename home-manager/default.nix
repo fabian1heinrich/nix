@@ -51,7 +51,7 @@
 
     # Nix tooling
     nixd # Nix language server
-    nixfmt-rfc-style # Nix formatter
+    nixfmt # Nix formatter
 
     # Fonts
     nerd-fonts.meslo-lg

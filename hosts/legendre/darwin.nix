@@ -58,7 +58,7 @@
         ShowMountedServersOnDesktop = false;
         ShowRemovableMediaOnDesktop = true;
         _FXSortFoldersFirst = true;
-        NewWindowTargetPath = "file://$\{HOME\}";
+        NewWindowTargetPath = "file://${userConfig.homeDirectory}";
         FXEnableExtensionChangeWarning = false;
       };
       menuExtraClock = {
@@ -160,10 +160,10 @@
       "ghostty"
       "gifox"
       "jordanbaird-ice"
+      "languagetool"
       "languagetool-desktop"
       "maccy"
       "betterdisplay"
-      "mos"
       "nightfall"
       "proton-drive"
       "raycast"

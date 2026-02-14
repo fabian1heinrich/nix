@@ -24,18 +24,21 @@
           email = "fabianheinrich@aol.com";
           username = "fabian";
           homeDirectory = "/Users/fabian";
+          system = "aarch64-darwin";
         };
         ubuntu-dev = {
           name = "Fabian Heinrich";
           email = "fabianheinrich@aol.com";
           username = "ubuntu-dev";
           homeDirectory = "/home/ubuntu-dev";
+          system = "x86_64-linux";
         };
         devcontainer = {
           name = "Fabian Heinrich";
           email = "fabianheinrich@aol.com";
           username = "vscode";
           homeDirectory = "/home/vscode";
+          system = "x86_64-linux";
         };
       };
 
@@ -83,7 +86,7 @@
 
       homeConfigurations = {
         ubuntu-dev = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor "x86_64-linux";
+          pkgs = pkgsFor users.ubuntu-dev.system;
           extraSpecialArgs = {
             userConfig = users.ubuntu-dev;
           };
@@ -92,7 +95,7 @@
           ];
         };
         devcontainer = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor builtins.currentSystem;
+          pkgs = pkgsFor users.devcontainer.system;
           extraSpecialArgs = {
             userConfig = users.devcontainer;
           };

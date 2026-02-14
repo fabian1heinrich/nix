@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 {
 
   programs.zsh = {
@@ -23,30 +23,33 @@
         "kubectl"
         "z"
         "zoxide"
-        "kubectl"
       ];
     };
     plugins = [
       {
         name = "fzf-tab";
-        src = "${pkgs.zsh-fzf-tab}/share/fzf-tab";
+        src = pkgs.zsh-fzf-tab;
+        file = "share/fzf-tab/fzf-tab.plugin.zsh";
       }
       {
         name = "you-should-use";
         src = pkgs.zsh-you-should-use;
-        # file = "share/zsh/plugins/you-should-use/you-should-use.plugin.zsh";
+        file = "share/zsh/plugins/you-should-use/you-should-use.plugin.zsh";
       }
       {
         name = "zsh-autosuggestions";
-        src = "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
+        src = pkgs.zsh-autosuggestions;
+        file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
       }
       {
         name = "zsh-syntax-highlighting";
-        src = "${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting";
+        src = pkgs.zsh-syntax-highlighting;
+        file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
       }
       {
         name = "zsh-history-substring-search";
-        src = "${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search";
+        src = pkgs.zsh-history-substring-search;
+        file = "share/zsh-history-substring-search/zsh-history-substring-search.zsh";
       }
     ];
     shellAliases = {
@@ -58,13 +61,9 @@
     };
     initContent = ''
 
-      export PATH="/opt/homebrew/bin:$PATH"
-
-      source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
-      source ${pkgs.zsh-you-should-use}/share/zsh/plugins/you-should-use/you-should-use.plugin.zsh
-      source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-      source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-      source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+      ${lib.optionalString pkgs.stdenv.isDarwin ''
+        export PATH="/opt/homebrew/bin:$PATH"
+      ''}
 
       export FZF_COMPLETION_TRIGGER='~~'
 
