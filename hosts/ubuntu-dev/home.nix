@@ -25,6 +25,9 @@
       kind
       qemu
       virt-manager
+
+      # Infrastructure as Code (IaC)
+      opentofu
     ];
   };
 
