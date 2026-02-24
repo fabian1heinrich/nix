@@ -40,6 +40,13 @@
           homeDirectory = "/home/vscode";
           system = "x86_64-linux";
         };
+        k8s-devcontainer = {
+          name = "Fabian Heinrich";
+          email = "fabianheinrich@aol.com";
+          username = "vscode";
+          homeDirectory = "/home/vscode";
+          system = "x86_64-linux";
+        };
       };
 
       # Helper to create pkgs for a system
@@ -101,6 +108,15 @@
           };
           modules = [
             ./hosts/devcontainer/home.nix
+          ];
+        };
+        k8s-devcontainer = home-manager.lib.homeManagerConfiguration {
+          pkgs = pkgsFor users.k8s-devcontainer.system;
+          extraSpecialArgs = {
+            userConfig = users.k8s-devcontainer;
+          };
+          modules = [
+            ./hosts/k8s-devcontainer/home.nix
           ];
         };
       };
