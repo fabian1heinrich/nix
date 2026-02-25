@@ -37,7 +37,6 @@
 
       # Container & image tools
       crane # Container registry tool
-      devcontainer # Dev container CLI
       oras # OCI registry client
       regctl # Registry client
       skopeo # Container image utility
@@ -55,7 +54,7 @@
       kyverno # K8s policy engine
       fluxcd # GitOps toolkit
       stern # Multi-pod log tailing
-      zarf # Air-gap K8s deploymentss
+      zarf # Air-gap K8s deployments
     ];
   };
 }
