@@ -29,7 +29,7 @@
 
     # Container & image tools
     crane # Container registry tool
-    devcontainer # Dev container CLI
+    # devcontainer # Dev container CLI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility
