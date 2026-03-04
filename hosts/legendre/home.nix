@@ -24,6 +24,7 @@
       docker-client
       docker-compose
       docker-credential-helpers
+      kind
       utm
 
       # Communication
@@ -34,7 +35,6 @@
       # Productivity
       bitwarden-desktop
       flashspace
-      zotero
 
       # System tools
       openvpn

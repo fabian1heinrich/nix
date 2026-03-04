@@ -1,5 +1,12 @@
 # Common packages shared across all hosts
 { pkgs, ... }:
+let
+  # devcontainer's yarn offline build tries to auto-install node-gyp unless it is already in PATH.
+  devcontainerWithNodeGyp = pkgs.devcontainer.overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.nodePackages."node-gyp" ];
+    npm_config_node_gyp = "${pkgs.nodePackages."node-gyp"}/bin/node-gyp";
+  });
+in
 {
   home.packages = with pkgs; [
     # File & text utilities
@@ -29,7 +36,7 @@
 
     # Container & image tools
     crane # Container registry tool
-    # devcontainer # Dev container CLI
+    devcontainerWithNodeGyp # Dev container CLI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility

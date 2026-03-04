@@ -147,7 +147,7 @@
       upgrade = true;
     };
     extraConfig = "";
-    brewPrefix = "/opt/homebrew/bin";
+    prefix = "/opt/homebrew";
     brews = [
       "cowsay"
     ];
@@ -160,7 +160,6 @@
       "ghostty"
       "gifox"
       "jordanbaird-ice"
-      "languagetool"
       "languagetool-desktop"
       "maccy"
       "betterdisplay"
