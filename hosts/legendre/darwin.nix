@@ -153,16 +153,15 @@
     ];
     greedyCasks = true;
     casks = [
-      "visual-studio-code"
       "aldente"
+      "betterdisplay"
       "ccleaner"
       "claude"
       "ghostty"
       "gifox"
-      "jordanbaird-ice"
       "languagetool-desktop"
+      "logi-options+"
       "maccy"
-      "betterdisplay"
       "nightfall"
       "proton-drive"
       "raycast"
@@ -170,9 +169,10 @@
       "shottr"
       "signal"
       "stats"
+      "thaw"
+      "visual-studio-code"
       "yubico-authenticator"
       "zen"
-      "logi-options+"
     ];
     masApps = {
       "prime-instant-video" = 545519333; # Amazon Prime Video
