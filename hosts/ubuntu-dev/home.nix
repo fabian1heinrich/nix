@@ -3,6 +3,7 @@
   imports = [
     ../../profiles/linux-desktop.nix
     ../../home-manager/programs/broot.nix
+    ../../home-manager/programs/claude-code.nix
   ];
 
   # Needed due to installation w/ determinate installer
