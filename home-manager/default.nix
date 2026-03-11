@@ -42,13 +42,10 @@ in
     skopeo # Container image utility
 
     # Kubernetes tools
-    k9s # Kubernetes TUI
-    kubecolor # Colorized kubectl
     kubectl # Kubernetes CLI
     kubectl-view-secret # View K8s secrets
     kubectx # Switch contexts/namespaces
     kubernetes-helm # Helm package manager
-    kubeswitch # Context switcher
     kubie # K8s context manager
     kustomize # K8s configuration
     kyverno # K8s policy engine

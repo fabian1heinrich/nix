@@ -163,7 +163,6 @@
       "logi-options+"
       "maccy"
       "nightfall"
-      "proton-drive"
       "raycast"
       "selfcontrol"
       "shottr"

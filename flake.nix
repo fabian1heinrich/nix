@@ -7,6 +7,10 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    catppuccin-k9s = {
+      url = "github:catppuccin/k9s";
+      flake = false;
+    };
   };
 
   outputs =
@@ -14,6 +18,7 @@
       nixpkgs,
       home-manager,
       darwin,
+      catppuccin-k9s,
       ...
     }:
     let
@@ -70,6 +75,7 @@
           system = "aarch64-darwin";
           specialArgs = {
             userConfig = users.fabian;
+            inherit catppuccin-k9s;
           };
           modules = [
             { nixpkgs.config.allowUnfree = true; }
@@ -79,8 +85,10 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                backupFileExtension = "backup";
                 extraSpecialArgs = {
                   userConfig = users.fabian;
+                  inherit catppuccin-k9s;
                 };
                 users.fabian.imports = [
                   ./hosts/legendre/home.nix
@@ -96,6 +104,7 @@
           pkgs = pkgsFor users.ubuntu-dev.system;
           extraSpecialArgs = {
             userConfig = users.ubuntu-dev;
+            inherit catppuccin-k9s;
           };
           modules = [
             ./hosts/ubuntu-dev/home.nix
@@ -105,6 +114,7 @@
           pkgs = pkgsFor users.devcontainer.system;
           extraSpecialArgs = {
             userConfig = users.devcontainer;
+            inherit catppuccin-k9s;
           };
           modules = [
             ./hosts/devcontainer/home.nix
@@ -114,6 +124,7 @@
           pkgs = pkgsFor users.k8s-devcontainer.system;
           extraSpecialArgs = {
             userConfig = users.k8s-devcontainer;
+            inherit catppuccin-k9s;
           };
           modules = [
             ./hosts/k8s-devcontainer/home.nix

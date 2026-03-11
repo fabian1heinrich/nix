@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
 
   programs.zsh = {
@@ -54,7 +59,6 @@
     ];
     shellAliases = {
       cat = "bat";
-      kubectl = "kubecolor";
       k = "kubectl";
       kns = "kubens";
       kctx = "kubectx";
@@ -93,8 +97,6 @@
         *) fzf --preview 'bat -n --color=always {}' "$@" ;;
         esac
       }
-
-      compdef kubecolor=kubectl
 
       bindkey "ç" fzf-cd-widget
       bindkey "^[[1;3C" forward-word

@@ -27,6 +27,16 @@ Personal Nix configuration for macOS (nix-darwin), Ubuntu, and devcontainers.
 - [Nix](https://nixos.org/download.html) (with flakes enabled)
 - For macOS: [Homebrew](https://brew.sh/) (managed by nix-darwin)
 
+## Secrets
+
+Secrets are managed via Bitwarden CLI auto-sync.
+
+- `bw-sync-api-keys` runs on shell startup
+- It emits shell exports from Bitwarden item IDs
+- `zsh` evaluates those exports for CLI tools
+
+See `secrets/README.md` for required Bitwarden item IDs and login/unlock behavior.
+
 ## Quick Start
 
 ### macOS (nix-darwin)

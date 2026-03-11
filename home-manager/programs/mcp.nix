@@ -23,12 +23,66 @@ in
   programs.mcp = {
     enable = true;
     servers = {
-      everything = {
-        command = "npx";
+      filesystem = {
+        command = npx;
         args = [
           "-y"
-          "@modelcontextprotocol/server-everything"
+          "@modelcontextprotocol/server-filesystem"
+          userConfig.homeDirectory
         ];
+      };
+
+      memory = {
+        command = npx;
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-memory"
+        ];
+        env = {
+          MEMORY_FILE_PATH = "${userConfig.homeDirectory}/.local/share/mcp/memory.jsonl";
+        };
+      };
+
+      fetch = {
+        command = uvx;
+        args = [ "mcp-server-fetch" ];
+      };
+
+      github = {
+        command = npx;
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-github"
+        ];
+        env = {
+          GITHUB_PERSONAL_ACCESS_TOKEN = "{env:GITHUB_PERSONAL_ACCESS_TOKEN}";
+        };
+      };
+
+      brave-search = {
+        command = npx;
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-brave-search"
+        ];
+        env = {
+          BRAVE_API_KEY = "{env:BRAVE_API_KEY}";
+        };
+      };
+
+      sequential-thinking = {
+        command = npx;
+        args = [
+          "-y"
+          "@modelcontextprotocol/server-sequential-thinking"
+        ];
+      };
+
+      context7 = {
+        url = "https://mcp.context7.com/mcp";
+        headers = {
+          CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
+        };
       };
     };
   };

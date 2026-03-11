@@ -14,7 +14,6 @@
 
       # AI tools
       chatgpt
-      claude-code
       codex
       opencode
 
@@ -39,6 +38,9 @@
       # System tools
       openvpn
       yubikey-manager
+
+      uv
+      nodejs_24
     ];
   };
 }
