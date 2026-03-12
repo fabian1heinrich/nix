@@ -18,48 +18,61 @@ let
   mcpJsonTargets =
     (lib.optionals pkgs.stdenv.isLinux linuxMcpJsonTargets)
     ++ (lib.optionals pkgs.stdenv.isDarwin darwinMcpJsonTargets);
+
+  # Claude Desktop may launch MCP servers with a restricted PATH.
+  # Use the active Home Manager profile binaries explicitly.
+  profileBin = "${config.home.profileDirectory}/bin";
+  npx = "${profileBin}/npx";
+  uvx = "${profileBin}/uvx";
+  mcpPath = lib.concatStringsSep ":" [
+    profileBin
+    "/usr/local/bin"
+    "/opt/homebrew/bin"
+    "/usr/bin"
+    "/bin"
+    "/usr/sbin"
+    "/sbin"
+  ];
+  mkServer =
+    server:
+    server
+    // {
+      env = {
+        PATH = mcpPath;
+      }
+      // (server.env or { });
+    };
 in
 {
   programs.mcp = {
     enable = true;
     servers = {
-      filesystem = {
+      filesystem = mkServer {
         command = npx;
         args = [
           "-y"
           "@modelcontextprotocol/server-filesystem"
-          userConfig.homeDirectory
+          config.home.homeDirectory
         ];
       };
 
-      memory = {
+      memory = mkServer {
         command = npx;
         args = [
           "-y"
           "@modelcontextprotocol/server-memory"
         ];
         env = {
-          MEMORY_FILE_PATH = "${userConfig.homeDirectory}/.local/share/mcp/memory.jsonl";
+          MEMORY_FILE_PATH = "${config.home.homeDirectory}/.local/share/mcp/memory.jsonl";
         };
       };
 
-      fetch = {
+      fetch = mkServer {
         command = uvx;
         args = [ "mcp-server-fetch" ];
       };
 
-      github = {
-        command = npx;
-        args = [
-          "-y"
-          "@modelcontextprotocol/server-github"
-        ];
-        env = {
-          GITHUB_PERSONAL_ACCESS_TOKEN = "{env:GITHUB_PERSONAL_ACCESS_TOKEN}";
-        };
-      };
-
-      brave-search = {
+      brave-search = mkServer {
         command = npx;
         args = [
           "-y"
@@ -70,7 +83,7 @@ in
         };
       };
 
-      sequential-thinking = {
+      sequential-thinking = mkServer {
         command = npx;
         args = [
           "-y"
@@ -78,11 +91,14 @@ in
         ];
       };
 
-      context7 = {
-        url = "https://mcp.context7.com/mcp";
-        headers = {
-          CONTEXT7_API_KEY = "{env:CONTEXT7_API_KEY}";
-        };
+      context7 = mkServer {
+        command = npx;
+        args = [
+          "-y"
+          "@upstash/context7-mcp"
+          "--api-key"
+          "{env:CONTEXT7_API_KEY}"
+        ];
       };
     };
   };

@@ -1,7 +1,7 @@
 { pkgs, userConfig, ... }:
 {
   imports = [
-    ../../profiles/darwin-desktop.nix
+    ../../profiles/desktop-darwin.nix
   ];
 
   home = {

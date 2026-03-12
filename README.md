@@ -1,127 +1,63 @@
 # Nix Configuration
 
-Personal Nix configuration for macOS (nix-darwin), Ubuntu, and devcontainers.
+Personal Nix setup for:
 
-## Directory Structure
+- macOS (`nix-darwin`): `legendre`
+- Linux (`home-manager`): `ubuntu-dev`
+- Devcontainers: `devcontainer`, `k8s-devcontainer`
 
-```text
-.
-├── flake.nix              # Main flake with all system configurations
-├── profiles/              # Reusable configuration profiles
-│   ├── cli-common.nix     # Basic CLI tools (all hosts)
-│   ├── cli-extended.nix   # Extended CLI (workstations)
-│   ├── darwin-desktop.nix # macOS desktop profile
-│   └── linux-desktop.nix  # Linux desktop profile
-├── home-manager/
-│   ├── home.nix           # Core home-manager settings
-│   ├── default.nix        # Common packages (categorized)
-│   └── programs/          # Individual program configurations
-└── hosts/
-    ├── legendre/          # macOS (Apple Silicon)
-    ├── ubuntu-dev/        # Ubuntu workstation
-    └── devcontainer/      # VS Code devcontainers
-```
+## Structure
 
-## Requirements
+- `profiles/common.nix`: shared baseline and common tooling
+- `profiles/desktop-darwin.nix`: macOS desktop
+- `profiles/desktop-linux.nix`: Linux desktop
+- `profiles/devcontainer.nix`: standard devcontainer
+- `profiles/k8s-devcontainer.nix`: K8s-focused devcontainer
+- `home-manager/default.nix`: shared package set for non-minimal profiles
+- `hosts/<name>/home.nix`: host-specific additions
 
-- [Nix](https://nixos.org/download.html) (with flakes enabled)
-- For macOS: [Homebrew](https://brew.sh/) (managed by nix-darwin)
+## Apply
 
-## Secrets
-
-Secrets are managed via Bitwarden CLI auto-sync.
-
-- `bw-sync-api-keys` runs on shell startup
-- It emits shell exports from Bitwarden item IDs
-- `zsh` evaluates those exports for CLI tools
-
-See `secrets/README.md` for required Bitwarden item IDs and login/unlock behavior.
-
-## Quick Start
-
-### macOS (nix-darwin)
-
-Install Homebrew first:
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-Initial setup:
+macOS (first run):
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
 sudo nix run nix-darwin -- switch --flake .#legendre
 ```
 
-Subsequent rebuilds:
+macOS (after setup):
 
 ```bash
 sudo darwin-rebuild switch --flake .#legendre
 ```
 
-### Ubuntu
-
-Initial setup:
+Ubuntu:
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
 nix run nixpkgs#home-manager -- switch --flake .#ubuntu-dev
 ```
 
-Subsequent rebuilds:
-
-```bash
-home-manager switch --flake .#ubuntu-dev
-```
-
-### Dev Container
+Devcontainer:
 
 ```bash
 nix run nixpkgs#home-manager -- switch --flake .#devcontainer
 ```
 
-## Common Operations
+K8s devcontainer:
 
-### Update flake inputs
+```bash
+nix run nixpkgs#home-manager -- switch --flake .#k8s-devcontainer
+```
+
+## Common Commands
 
 ```bash
 nix flake update
-```
-
-### Format Nix files
-
-```bash
 nix fmt
-```
-
-### Check configuration
-
-```bash
 nix flake check
 ```
 
-## Adding a New Host
+## Secrets
 
-1. Create `hosts/<hostname>/home.nix`
-2. Import the appropriate profile from `profiles/`
-3. Add host-specific packages and settings
-4. Add configuration to `flake.nix`:
-   - For macOS: add to `darwinConfigurations`
-   - For Linux: add to `homeConfigurations`
-5. Add user details to the `users` attrset in `flake.nix`
-
-## Adding a New Program
-
-1. Create `home-manager/programs/<program>.nix`
-2. Import it in the appropriate profile or host config
-
-## Troubleshooting
-
-### "experimental-features" error
-
-Ensure flakes are enabled:
-
-```bash
-export NIX_CONF_DIR=$(pwd)  # Uses local nix.conf
-```
+Bitwarden-backed env sync is documented in `secrets/README.md`.

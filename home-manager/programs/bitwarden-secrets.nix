@@ -31,12 +31,19 @@ in
 
   programs.zsh.initContent = lib.mkBefore ''
     if command -v bw-sync-api-keys >/dev/null 2>&1; then
-      if [ -z "''${OPENAI_API_KEY:-}" ] \
+      bw-refresh-api-keys() {
+        eval "$(bw-sync-api-keys --export-shell "$@")"
+      }
+
+      alias bw-refresh-secrets='bw-refresh-api-keys'
+
+      if [ "''${BW_SYNC_API_KEYS_ON_START:-0}" = "1" ] \
+        || [ -z "''${OPENAI_API_KEY:-}" ] \
         || [ -z "''${ANTHROPIC_API_KEY:-}" ] \
         || [ -z "''${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] \
         || [ -z "''${BRAVE_API_KEY:-}" ] \
         || [ -z "''${CONTEXT7_API_KEY:-}" ]; then
-        eval "$(bw-sync-api-keys --export-shell)"
+        bw-refresh-api-keys --no-unlock
       fi
     fi
   '';

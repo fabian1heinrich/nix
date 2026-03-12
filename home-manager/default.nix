@@ -1,4 +1,4 @@
-# Common packages shared across all hosts
+# Common package set shared by non-minimal profiles
 { pkgs, ... }:
 let
   # devcontainer's yarn offline build tries to auto-install node-gyp unless it is already in PATH.

@@ -1,9 +1,7 @@
 { pkgs, userConfig, ... }:
 {
   imports = [
-    ../../profiles/linux-desktop.nix
-    ../../home-manager/programs/broot.nix
-    ../../home-manager/programs/claude-code.nix
+    ../../profiles/desktop-linux.nix
   ];
 
   # Needed due to installation w/ determinate installer

@@ -1,7 +1,7 @@
 { pkgs, userConfig, ... }:
 {
   imports = [
-    ../../profiles/cli-common.nix
+    ../../profiles/devcontainer.nix
   ];
 
   home = {

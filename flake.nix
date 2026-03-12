@@ -22,32 +22,47 @@
       ...
     }:
     let
-      # Shared user configuration
+      owner = {
+        name = "Fabian Heinrich";
+        email = "fabianheinrich@aol.com";
+      };
+
+      mkUser =
+        {
+          username,
+          homeDirectory,
+          system,
+          name ? owner.name,
+          email ? owner.email,
+        }:
+        {
+          inherit
+            name
+            email
+            username
+            homeDirectory
+            system
+            ;
+        };
+
+      # User configurations
       users = {
-        fabian = {
-          name = "Fabian Heinrich";
-          email = "fabianheinrich@aol.com";
+        fabian = mkUser {
           username = "fabian";
           homeDirectory = "/Users/fabian";
           system = "aarch64-darwin";
         };
-        ubuntu-dev = {
-          name = "Fabian Heinrich";
-          email = "fabianheinrich@aol.com";
+        ubuntu-dev = mkUser {
           username = "ubuntu-dev";
           homeDirectory = "/home/ubuntu-dev";
           system = "x86_64-linux";
         };
-        devcontainer = {
-          name = "Fabian Heinrich";
-          email = "fabianheinrich@aol.com";
+        devcontainer = mkUser {
           username = "vscode";
           homeDirectory = "/home/vscode";
           system = "x86_64-linux";
         };
-        k8s-devcontainer = {
-          name = "Fabian Heinrich";
-          email = "fabianheinrich@aol.com";
+        k8s-devcontainer = mkUser {
           username = "vscode";
           homeDirectory = "/home/vscode";
           system = "x86_64-linux";
@@ -86,6 +101,7 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 backupFileExtension = "backup";
+                overwriteBackup = true;
                 extraSpecialArgs = {
                   userConfig = users.fabian;
                   inherit catppuccin-k9s;

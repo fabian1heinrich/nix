@@ -1,15 +1,23 @@
 set -euo pipefail
 
 emit_shell_exports=0
-if [ "${1:-}" = "--export-shell" ]; then
-  emit_shell_exports=1
-  shift
-fi
+allow_unlock=1
 
-if [ "$#" -ne 0 ]; then
-  printf 'bw-sync-api-keys: unknown arguments: %s\n' "$*" >&2
-  exit 2
-fi
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --export-shell)
+      emit_shell_exports=1
+      ;;
+    --no-unlock)
+      allow_unlock=0
+      ;;
+    *)
+      printf 'bw-sync-api-keys: unknown argument: %s\n' "$1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 key_names=(
   OPENAI_API_KEY
@@ -50,11 +58,17 @@ if ! bw login --check >/dev/null 2>&1; then
 fi
 
 if ! session_valid "${BW_SESSION:-}"; then
+  if [ "$allow_unlock" -ne 1 ]; then
+    log "vault is locked; skipping unlock (--no-unlock)"
+    exit 0
+  fi
+
   if ! [ -t 0 ]; then
     log "vault is locked and no TTY is available for unlock"
     exit 0
   fi
 
+  log "vault is locked; waiting for unlock (Ctrl+C to cancel)"
   export BW_SESSION
   BW_SESSION="$(bw unlock --raw)"
 fi
