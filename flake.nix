@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-qemu.url = "github:NixOS/nixpkgs/nixos-25.05";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
@@ -16,6 +17,7 @@
   outputs =
     {
       nixpkgs,
+      nixpkgs-qemu,
       home-manager,
       darwin,
       catppuccin-k9s,
@@ -76,6 +78,11 @@
           inherit system;
           config.allowUnfree = true;
         };
+
+      qemuPkgsFor = system: import nixpkgs-qemu {
+        inherit system;
+        config.allowUnfree = true;
+      };
     in
     {
       # Formatters for `nix fmt` (nixfmt-tree handles directories)
@@ -120,6 +127,7 @@
           pkgs = pkgsFor users.ubuntu-dev.system;
           extraSpecialArgs = {
             userConfig = users.ubuntu-dev;
+            qemuPkgs = qemuPkgsFor users.ubuntu-dev.system;
             inherit catppuccin-k9s;
           };
           modules = [

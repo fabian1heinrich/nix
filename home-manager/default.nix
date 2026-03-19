@@ -28,6 +28,7 @@ in
     wget # File downloader
     tldr # Simplified man pages
     television # TUI file browser
+    yubikey-manager # YubiKey management CLI
 
     # Git & development
     lazygit # Git TUI
