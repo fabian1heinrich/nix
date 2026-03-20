@@ -1,6 +1,6 @@
 {
   programs.codex = {
     enable = true;
-    enableMcpIntegration = true;
+    enableMcpIntegration = false;
   };
 }

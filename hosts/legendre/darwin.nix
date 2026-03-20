@@ -1,5 +1,9 @@
 { pkgs, userConfig, ... }:
 {
+  imports = [
+    ./homebrew.nix
+  ];
+
   nix = {
     enable = true;
     settings = {
@@ -9,10 +13,12 @@
       ];
     };
   };
+
   users.users.${userConfig.username} = {
     home = userConfig.homeDirectory;
     shell = pkgs.zsh;
   };
+
   system = {
     primaryUser = userConfig.username;
     stateVersion = 6;
@@ -137,44 +143,6 @@
       };
     };
   };
-  security.pam.services.sudo_local.touchIdAuth = true;
 
-  homebrew = {
-    enable = true;
-    onActivation = {
-      autoUpdate = true;
-      cleanup = "uninstall";
-      upgrade = true;
-    };
-    extraConfig = "";
-    prefix = "/opt/homebrew";
-    brews = [
-      "cowsay"
-    ];
-    greedyCasks = true;
-    casks = [
-      "aldente"
-      "betterdisplay"
-      "ccleaner"
-      "claude"
-      "ghostty"
-      "gifox"
-      "languagetool-desktop"
-      "logi-options+"
-      "maccy"
-      "nightfall"
-      "raycast"
-      "selfcontrol"
-      "shottr"
-      "signal"
-      "stats"
-      "thaw"
-      "visual-studio-code"
-      "yubico-authenticator"
-      "zen"
-    ];
-    masApps = {
-      "prime-instant-video" = 545519333; # Amazon Prime Video
-    };
-  };
+  security.pam.services.sudo_local.touchIdAuth = true;
 }
