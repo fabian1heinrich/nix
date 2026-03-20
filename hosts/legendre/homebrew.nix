@@ -16,10 +16,12 @@
     casks = [
       "aldente"
       "betterdisplay"
+      "bettershot"
       "ccleaner"
       "claude"
       "ghostty"
       "gifox"
+      "glide"
       "languagetool-desktop"
       "logi-options+"
       "maccy"
