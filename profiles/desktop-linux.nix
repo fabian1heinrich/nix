@@ -3,6 +3,7 @@
 {
   imports = [
     ./common.nix
+    # ../home-manager/programs/bitwarden-secrets.nix
     ../home-manager/programs/broot.nix
     ../home-manager/programs/claude-code.nix
     ../home-manager/programs/codex.nix

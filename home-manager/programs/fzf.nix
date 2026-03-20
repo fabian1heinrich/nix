@@ -37,20 +37,19 @@ in
       "--bind 'shift-up:preview-page-up,shift-down:preview-page-down'"
       "--height=100%"
     ];
-    historyWidgetOptions =
-      [
-        "--preview 'echo {}'"
-        "--preview-window up:3:hidden:wrap"
-        "--bind 'ctrl-/:toggle-preview'"
-        "--color header:italic"
-      ]
-      ++ lib.optionals (clipboardCopyCommand != null) [
-        "--bind 'ctrl-y:execute-silent(echo -n {2..} | ${clipboardCopyCommand})+abort'"
-        "--header 'Press CTRL-Y to copy command into clipboard'"
-      ]
-      ++ lib.optionals (clipboardCopyCommand == null) [
-        "--header 'Clipboard copy binding unavailable on this platform'"
-      ];
+    historyWidgetOptions = [
+      "--preview 'echo {}'"
+      "--preview-window up:3:hidden:wrap"
+      "--bind 'ctrl-/:toggle-preview'"
+      "--color header:italic"
+    ]
+    ++ lib.optionals (clipboardCopyCommand != null) [
+      "--bind 'ctrl-y:execute-silent(echo -n {2..} | ${clipboardCopyCommand})+abort'"
+      "--header 'Press CTRL-Y to copy command into clipboard'"
+    ]
+    ++ lib.optionals (clipboardCopyCommand == null) [
+      "--header 'Clipboard copy binding unavailable on this platform'"
+    ];
     defaultOptions = [
       "--border"
       "--info=inline"

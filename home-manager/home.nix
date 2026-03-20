@@ -4,10 +4,6 @@
   ...
 }:
 {
-  imports = [
-    ./programs/bitwarden-secrets.nix
-  ];
-
   programs.home-manager.enable = true;
   home.shell.enableZshIntegration = true;
   home.sessionVariables = {

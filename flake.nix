@@ -79,10 +79,12 @@
           config.allowUnfree = true;
         };
 
-      qemuPkgsFor = system: import nixpkgs-qemu {
-        inherit system;
-        config.allowUnfree = true;
-      };
+      qemuPkgsFor =
+        system:
+        import nixpkgs-qemu {
+          inherit system;
+          config.allowUnfree = true;
+        };
     in
     {
       # Formatters for `nix fmt` (nixfmt-tree handles directories)

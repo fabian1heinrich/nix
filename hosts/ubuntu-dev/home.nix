@@ -82,6 +82,9 @@ in
       dock-fixed = false;
       autohide = true;
       intellihide = true;
+      show-mounts = false;
+      show-trash = false;
+      show-show-apps-button = false;
     };
 
     "org/gnome/shell" = {
