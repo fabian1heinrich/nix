@@ -19,17 +19,25 @@
       codex
 
       # Container & virtualization
-      colima
+      # colima
       ctop
-      docker-buildx
-      docker-client
-      docker-compose
+      # docker-buildx
+      # docker-client
+      # docker-compose
+
       kind
-      qemuPkgs.qemu
+      # qemuPkgs.qemu
       virt-manager
 
       # Infrastructure as Code (IaC)
       opentofu
+
+      qemu
+      podman
+      podman-compose
+      docker-compose
+      virtiofsd
+      gvproxy
     ];
 
     sessionVariables = {
@@ -38,4 +46,15 @@
       LC_MEASUREMENT = "en_GB.UTF-8";
     };
   };
+
+  xdg.configFile."containers/containers.conf".text = ''
+    [engine]
+    compose_providers = [
+      "${pkgs.podman-compose}/bin/podman-compose",
+    ]
+    helper_binaries_dir = [
+      "${pkgs.podman}/libexec/podman",
+      "${pkgs.gvproxy}/bin",
+    ]
+  '';
 }

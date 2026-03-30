@@ -59,6 +59,9 @@
     ];
     shellAliases = {
       cat = "bat";
+      docker = "podman";
+      rpodman = "sudo ${pkgs.podman}/bin/podman";
+      rpodman-compose = "sudo ${pkgs.podman-compose}/bin/podman-compose";
       k = "kubectl";
       kns = "kubens";
       kctx = "kubectx";
