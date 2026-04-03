@@ -41,6 +41,7 @@
 
       uv
       nodejs_24
+      stats
     ];
   };
 }

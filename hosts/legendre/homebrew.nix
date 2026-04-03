@@ -11,6 +11,7 @@
     prefix = "/opt/homebrew";
     brews = [
       "cowsay"
+      "qemu"
     ];
     greedyCasks = true;
     casks = [
@@ -30,7 +31,6 @@
       "selfcontrol"
       "shottr"
       "signal"
-      "stats"
       "thaw"
       "visual-studio-code"
       "yubico-authenticator"
