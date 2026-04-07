@@ -26,6 +26,7 @@
         "fzf"
         "git"
         "kubectl"
+        "podman"
         "z"
         "zoxide"
       ];
@@ -101,6 +102,13 @@
       bindkey "ç" fzf-cd-widget
       bindkey "^[[1;3C" forward-word
       bindkey "^[[1;3D" backward-word
+
+      # If `docker` resolves to podman, use podman's completion backend.
+      # The oh-my-zsh docker completion parses `docker ps --format 'table'`
+      # output, but podman formats this differently and can crash on `docker exec`.
+      if (( $+commands[podman] && $+commands[docker] )) && command docker --version 2>/dev/null | command grep -qi '^podman version'; then
+        compdef _podman docker
+      fi
 
       function br {
           local cmd cmd_file code

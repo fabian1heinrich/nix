@@ -33,7 +33,6 @@
       '')
       podman
       podman-compose
-      docker-compose
       virtiofsd
       gvproxy
 
