@@ -89,7 +89,7 @@
       mkEvalCheck =
         checkSystem: name: drv:
         (pkgsFor checkSystem).runCommand name { } ''
-          printf '%s\n' ${nixpkgs.lib.escapeShellArg drv.drvPath} > "$out"
+          printf '%s\n' ${nixpkgs.lib.escapeShellArg drv.name} > "$out"
         '';
 
       formatter = {
