@@ -2,6 +2,7 @@
 {
   imports = [
     ../../profiles/desktop-darwin.nix
+    ../../home-manager/programs/mcp.nix
   ];
 
   home = {
@@ -9,39 +10,21 @@
     homeDirectory = userConfig.homeDirectory;
 
     packages = with pkgs; [
-      # Terminal emulators
-      alacritty
-
-      # AI tools
-      chatgpt
+      # CLI tools
       codex
       opencode
 
       # Container & virtualization
-      colima
-      docker-buildx
-      docker-client
-      docker-compose
-      docker-credential-helpers
       kind
-      utm
-
-      # Communication
-      discord
-      slack
-      zoom-us
-
-      # Productivity
-      bitwarden-desktop
-      flashspace
 
       # System tools
       openvpn
       yubikey-manager
-
-      uv
-      nodejs_24
-      stats
     ];
+  };
+
+  programs.zsh.shellAliases = {
+    docker = "podman";
+    "docker-compose" = "podman-compose";
   };
 }

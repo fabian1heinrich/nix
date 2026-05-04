@@ -85,9 +85,13 @@
           inherit system;
           config.allowUnfree = true;
         };
-    in
-    {
-      # Formatters for `nix fmt` (nixfmt-tree handles directories)
+
+      mkEvalCheck =
+        checkSystem: name: drv:
+        (pkgsFor checkSystem).runCommand name { } ''
+          printf '%s\n' ${nixpkgs.lib.escapeShellArg drv.drvPath} > "$out"
+        '';
+
       formatter = {
         aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-tree;
         x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
@@ -157,5 +161,36 @@
           ];
         };
       };
+
+      checkTargets = {
+        legendre = darwinConfigurations.legendre.config.system.build.toplevel;
+        ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
+        devcontainer = homeConfigurations.devcontainer.activationPackage;
+        k8s-devcontainer = homeConfigurations.k8s-devcontainer.activationPackage;
+      };
+
+      checks =
+        nixpkgs.lib.genAttrs
+          [
+            "aarch64-darwin"
+            "x86_64-linux"
+          ]
+          (
+            checkSystem:
+            nixpkgs.lib.mapAttrs' (
+              name: drv:
+              nixpkgs.lib.nameValuePair "${name}-eval" (
+                mkEvalCheck checkSystem "${name}-eval" drv
+              )
+            ) checkTargets
+          );
+    in
+    {
+      inherit
+        formatter
+        darwinConfigurations
+        homeConfigurations
+        checks
+        ;
     };
 }

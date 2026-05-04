@@ -51,6 +51,7 @@ in
     kustomize # K8s configuration
     kyverno # K8s policy engine
     fluxcd # GitOps toolkit
+    talosctl # Talos OS management
     stern # Multi-pod log tailing
     zarf # Air-gap K8s deployments
 

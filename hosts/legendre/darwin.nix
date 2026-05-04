@@ -19,6 +19,11 @@
     shell = pkgs.zsh;
   };
 
+  environment.systemPath = [
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
+  ];
+
   system = {
     primaryUser = userConfig.username;
     stateVersion = 6;
@@ -39,14 +44,14 @@
         minimize-to-application = true;
         mineffect = "scale";
         persistent-apps = [
-          "/Applications/Ghostty.app/"
+          "/Applications/Ghostty.app"
           "/Applications/Zen.app"
-          "/Applications/Visual\ Studio\ Code.app/"
-          "/System/Applications/Calendar.app/"
-          "/Applications/Signal.app/"
-          "${pkgs.slack}/Applications/Slack.app/"
-          "${pkgs.discord}/Applications/Discord.app/"
-          "/System/Applications/System Settings.app/"
+          "/Applications/Visual Studio Code.app"
+          "/System/Applications/Calendar.app"
+          "/Applications/Signal.app"
+          "/Applications/Slack.app"
+          "/Applications/Discord.app"
+          "/System/Applications/System Settings.app"
         ];
       };
       finder = {

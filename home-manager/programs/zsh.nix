@@ -68,6 +68,11 @@
 
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         export PATH="/opt/homebrew/bin:$PATH"
+
+        # Homebrew completions live outside the Nix profile paths.
+        if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
+          fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
+        fi
       ''}
 
       export FZF_COMPLETION_TRIGGER='~~'
@@ -123,6 +128,13 @@
               return "$code"
           fi
       }
+
+      ${lib.optionalString pkgs.stdenv.isDarwin ''
+        if (( $+commands[podman] )); then
+          autoload -Uz _podman
+          compdef _podman podman docker
+        fi
+      ''}
     '';
   };
 }

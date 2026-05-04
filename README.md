@@ -8,7 +8,8 @@ Personal Nix setup for:
 
 ## Structure
 
-- `profiles/common.nix`: shared baseline and common tooling
+- `profiles/base.nix`: shared baseline and common tooling
+- `profiles/desktop.nix`: desktop module imports shared by macOS and Linux
 - `profiles/desktop-darwin.nix`: macOS desktop
 - `profiles/desktop-linux.nix`: Linux desktop
 - `profiles/devcontainer.nix`: standard devcontainer
@@ -18,36 +19,54 @@ Personal Nix setup for:
 
 ## Apply
 
-macOS (first run):
+macOS (`legendre`, first bootstrap):
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
-sudo nix run nix-darwin -- switch --flake .#legendre
+sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#legendre
 ```
 
-macOS (after setup):
+macOS (`legendre`, regular updates):
 
 ```bash
 sudo darwin-rebuild switch --flake .#legendre
 ```
 
-Ubuntu:
+Ubuntu (`ubuntu-dev`, first run):
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
-nix run nixpkgs#home-manager -- switch --flake .#ubuntu-dev
+nix run github:nix-community/home-manager -- switch --flake .#ubuntu-dev
 ```
 
-Devcontainer:
+Ubuntu (`ubuntu-dev`, after setup):
 
 ```bash
-nix run nixpkgs#home-manager -- switch --flake .#devcontainer
+home-manager switch --flake .#ubuntu-dev
 ```
 
-K8s devcontainer:
+Devcontainer (`devcontainer`, first run):
 
 ```bash
-nix run nixpkgs#home-manager -- switch --flake .#k8s-devcontainer
+nix run github:nix-community/home-manager -- switch --flake .#devcontainer
+```
+
+Devcontainer (`devcontainer`, after setup):
+
+```bash
+home-manager switch --flake .#devcontainer
+```
+
+K8s devcontainer (`k8s-devcontainer`, first run):
+
+```bash
+nix run github:nix-community/home-manager -- switch --flake .#k8s-devcontainer
+```
+
+K8s devcontainer (`k8s-devcontainer`, after setup):
+
+```bash
+home-manager switch --flake .#k8s-devcontainer
 ```
 
 ## Common Commands
@@ -57,6 +76,8 @@ nix flake update
 nix fmt
 nix flake check
 ```
+
+`nix flake check` evaluates all declared targets (`legendre`, `ubuntu-dev`, `devcontainer`, `k8s-devcontainer`), and CI runs it on every push and pull request.
 
 ## Secrets
 
