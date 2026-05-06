@@ -1,7 +1,8 @@
 { pkgs, userConfig, ... }:
 {
   imports = [
-    ../../profiles/desktop-darwin.nix
+    ../../profiles/desktop.nix
+    ../../home-manager/programs/bitwarden-secrets.nix
     ../../home-manager/programs/mcp.nix
   ];
 
@@ -11,7 +12,6 @@
 
     packages = with pkgs; [
       # CLI tools
-      codex
       opencode
 
       # Container & virtualization
@@ -22,6 +22,8 @@
       yubikey-manager
     ];
   };
+
+  programs.codex.package = null;
 
   programs.zsh.shellAliases = {
     docker = "podman";

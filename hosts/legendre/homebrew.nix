@@ -3,19 +3,20 @@
   homebrew = {
     enable = true;
     onActivation = {
-      autoUpdate = true;
-      cleanup = "uninstall";
-      upgrade = true;
+      autoUpdate = false;
+      cleanup = "none";
+      upgrade = false;
     };
     extraConfig = "";
     prefix = "/opt/homebrew";
     brews = [
       "cowsay"
+      "mas"
       "podman"
       "podman-compose"
       "qemu"
     ];
-    greedyCasks = true;
+    greedyCasks = false;
     casks = [
       "aldente"
       "betterdisplay"
@@ -24,6 +25,7 @@
       "ccleaner"
       "chatgpt"
       "claude"
+      "codex"
       "discord"
       "flashspace"
       "ghostty"

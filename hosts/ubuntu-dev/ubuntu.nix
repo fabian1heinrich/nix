@@ -16,6 +16,7 @@ in
       name = "Yaru";
       package = pkgs.yaru-theme;
     };
+    gtk4.theme = config.gtk.theme;
     cursorTheme = {
       name = "Yaru";
       package = pkgs.yaru-theme;

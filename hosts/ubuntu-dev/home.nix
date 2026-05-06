@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ../../profiles/desktop-linux.nix
+    ../../profiles/desktop.nix
     ./ubuntu.nix
   ];
 

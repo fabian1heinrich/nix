@@ -8,13 +8,11 @@ Personal Nix setup for:
 
 ## Structure
 
-- `profiles/base.nix`: shared baseline and common tooling
-- `profiles/desktop.nix`: desktop module imports shared by macOS and Linux
-- `profiles/desktop-darwin.nix`: macOS desktop
-- `profiles/desktop-linux.nix`: Linux desktop
+- `profiles/base.nix`: minimal shared baseline
+- `home-manager/stacks/*.nix`: reusable tool bundles selected by profiles
+- `profiles/desktop.nix`: shared desktop profile
 - `profiles/devcontainer.nix`: standard devcontainer
 - `profiles/k8s-devcontainer.nix`: K8s-focused devcontainer
-- `home-manager/default.nix`: shared package set for non-minimal profiles
 - `hosts/<name>/home.nix`: host-specific additions
 
 ## Apply
@@ -30,6 +28,16 @@ macOS (`legendre`, regular updates):
 
 ```bash
 sudo darwin-rebuild switch --flake .#legendre
+```
+
+Homebrew app updates are intentionally kept out of `darwin-rebuild` activation so rebuilds stay fast and predictable. Run them explicitly when you want to update Homebrew-managed apps:
+
+```bash
+brew update
+brew upgrade
+brew upgrade --cask
+brew upgrade --cask --greedy
+mas upgrade
 ```
 
 Ubuntu (`ubuntu-dev`, first run):
@@ -74,10 +82,10 @@ home-manager switch --flake .#k8s-devcontainer
 ```bash
 nix flake update
 nix fmt
-nix flake check
+nix flake check --all-systems --no-build
 ```
 
-`nix flake check` evaluates all declared targets (`legendre`, `ubuntu-dev`, `devcontainer`, `k8s-devcontainer`), and CI runs it on every push and pull request.
+`nix flake check --all-systems --no-build` evaluates all declared targets (`legendre`, `ubuntu-dev`, `devcontainer`, `k8s-devcontainer`), and CI runs it on every push and pull request.
 
 ## Secrets
 

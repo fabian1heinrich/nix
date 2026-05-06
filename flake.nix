@@ -3,8 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Keep QEMU on the stable release branch while the rest of the config tracks unstable.
     nixpkgs-qemu.url = "github:NixOS/nixpkgs/nixos-25.05";
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
@@ -24,6 +25,20 @@
       ...
     }:
     let
+      lib = nixpkgs.lib;
+
+      systems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      # Only check systems that currently have configured hosts.
+      checkSystems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+      ];
+
       owner = {
         name = "Fabian Heinrich";
         email = "fabianheinrich@aol.com";
@@ -89,14 +104,28 @@
       mkEvalCheck =
         checkSystem: name: drv:
         (pkgsFor checkSystem).runCommand name { } ''
-          printf '%s\n' ${nixpkgs.lib.escapeShellArg drv.name} > "$out"
+          printf '%s\n' ${lib.escapeShellArg drv.name} > "$out"
         '';
 
-      formatter = {
-        aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixfmt-tree;
-        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
-        aarch64-linux = nixpkgs.legacyPackages.aarch64-linux.nixfmt-tree;
-      };
+      mkHome =
+        {
+          user,
+          modules,
+          extraSpecialArgs ? { },
+        }:
+        let
+          userConfig = users.${user};
+        in
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = pkgsFor userConfig.system;
+          extraSpecialArgs = {
+            inherit userConfig catppuccin-k9s;
+          }
+          // extraSpecialArgs;
+          inherit modules;
+        };
+
+      formatter = lib.genAttrs systems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
       darwinConfigurations = {
         legendre = darwin.lib.darwinSystem {
@@ -114,7 +143,6 @@
                 useGlobalPkgs = true;
                 useUserPackages = true;
                 backupFileExtension = "backup";
-                overwriteBackup = true;
                 extraSpecialArgs = {
                   userConfig = users.fabian;
                   inherit catppuccin-k9s;
@@ -129,33 +157,23 @@
       };
 
       homeConfigurations = {
-        ubuntu-dev = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor users.ubuntu-dev.system;
+        ubuntu-dev = mkHome {
+          user = "ubuntu-dev";
           extraSpecialArgs = {
-            userConfig = users.ubuntu-dev;
             qemuPkgs = qemuPkgsFor users.ubuntu-dev.system;
-            inherit catppuccin-k9s;
           };
           modules = [
             ./hosts/ubuntu-dev/home.nix
           ];
         };
-        devcontainer = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor users.devcontainer.system;
-          extraSpecialArgs = {
-            userConfig = users.devcontainer;
-            inherit catppuccin-k9s;
-          };
+        devcontainer = mkHome {
+          user = "devcontainer";
           modules = [
             ./hosts/devcontainer/home.nix
           ];
         };
-        k8s-devcontainer = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor users.k8s-devcontainer.system;
-          extraSpecialArgs = {
-            userConfig = users.k8s-devcontainer;
-            inherit catppuccin-k9s;
-          };
+        k8s-devcontainer = mkHome {
+          user = "k8s-devcontainer";
           modules = [
             ./hosts/k8s-devcontainer/home.nix
           ];
@@ -169,21 +187,12 @@
         k8s-devcontainer = homeConfigurations.k8s-devcontainer.activationPackage;
       };
 
-      checks =
-        nixpkgs.lib.genAttrs
-          [
-            "aarch64-darwin"
-            "x86_64-linux"
-          ]
-          (
-            checkSystem:
-            nixpkgs.lib.mapAttrs' (
-              name: drv:
-              nixpkgs.lib.nameValuePair "${name}-eval" (
-                mkEvalCheck checkSystem "${name}-eval" drv
-              )
-            ) checkTargets
-          );
+      checks = lib.genAttrs checkSystems (
+        checkSystem:
+        lib.mapAttrs' (
+          name: drv: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" drv)
+        ) checkTargets
+      );
     in
     {
       inherit

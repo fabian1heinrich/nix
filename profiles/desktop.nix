@@ -3,6 +3,8 @@
 {
   imports = [
     ./base.nix
+    ../home-manager/stacks/development.nix
+    ../home-manager/stacks/kubernetes.nix
     ../home-manager/programs/broot.nix
     ../home-manager/programs/claude-code.nix
     ../home-manager/programs/codex.nix
