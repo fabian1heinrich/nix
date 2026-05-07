@@ -4,16 +4,15 @@ Personal Nix setup for:
 
 - macOS (`nix-darwin`): `legendre`
 - Linux (`home-manager`): `ubuntu-dev`
-- Devcontainers: `devcontainer`, `k8s-devcontainer`
 
 ## Structure
 
 - `profiles/base.nix`: minimal shared baseline
-- `home-manager/stacks/*.nix`: reusable tool bundles selected by profiles
-- `profiles/desktop.nix`: shared desktop profile
-- `profiles/devcontainer.nix`: standard devcontainer
-- `profiles/k8s-devcontainer.nix`: K8s-focused devcontainer
+- `profiles/desktop.nix`: shared desktop baseline
+- `home-manager/stacks/*.nix`: reusable workflow bundles for terminal, development, containers, and Kubernetes
 - `hosts/<name>/home.nix`: host-specific additions
+
+Hosts compose small role stacks; `homeManagerModules` is exported for external flake consumers.
 
 ## Apply
 
@@ -53,31 +52,15 @@ Ubuntu (`ubuntu-dev`, after setup):
 home-manager switch --flake .#ubuntu-dev
 ```
 
-Devcontainer (`devcontainer`, first run):
-
-```bash
-nix run github:nix-community/home-manager -- switch --flake .#devcontainer
-```
-
-Devcontainer (`devcontainer`, after setup):
-
-```bash
-home-manager switch --flake .#devcontainer
-```
-
-K8s devcontainer (`k8s-devcontainer`, first run):
-
-```bash
-nix run github:nix-community/home-manager -- switch --flake .#k8s-devcontainer
-```
-
-K8s devcontainer (`k8s-devcontainer`, after setup):
-
-```bash
-home-manager switch --flake .#k8s-devcontainer
-```
-
 ## Common Commands
+
+```bash
+just --list
+just check
+just fmt
+```
+
+Equivalent direct commands:
 
 ```bash
 nix flake update
@@ -85,7 +68,12 @@ nix fmt
 nix flake check --all-systems --no-build
 ```
 
-`nix flake check --all-systems --no-build` evaluates all declared targets (`legendre`, `ubuntu-dev`, `devcontainer`, `k8s-devcontainer`), and CI runs it on every push and pull request.
+## Dev Shells
+
+```bash
+nix develop
+nix develop .#kubernetes
+```
 
 ## Secrets
 

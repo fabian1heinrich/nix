@@ -2,6 +2,8 @@
 {
   imports = [
     ../../profiles/desktop.nix
+    ../../home-manager/stacks/development.nix
+    ../../home-manager/stacks/kubernetes.nix
     ../../home-manager/programs/bitwarden-secrets.nix
     ../../home-manager/programs/mcp.nix
   ];
@@ -24,9 +26,4 @@
   };
 
   programs.codex.package = null;
-
-  programs.zsh.shellAliases = {
-    docker = "podman";
-    "docker-compose" = "podman-compose";
-  };
 }

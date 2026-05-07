@@ -21,12 +21,8 @@
       theme = "robbyrussell";
       plugins = [
         "dirhistory"
-        "docker-compose"
-        "docker"
         "fzf"
         "git"
-        "kubectl"
-        "podman"
         "z"
         "zoxide"
       ];
@@ -60,9 +56,6 @@
     ];
     shellAliases = {
       cat = "bat";
-      k = "kubectl";
-      kns = "kubens";
-      kctx = "kubectx";
     };
     initContent = ''
 
@@ -108,12 +101,48 @@
       bindkey "^[[1;3C" forward-word
       bindkey "^[[1;3D" backward-word
 
-      # If `docker` resolves to podman, use podman's completion backend.
-      # The oh-my-zsh docker completion parses `docker ps --format 'table'`
-      # output, but podman formats this differently and can crash on `docker exec`.
-      if (( $+commands[podman] && $+commands[docker] )) && command docker --version 2>/dev/null | command grep -qi '^podman version'; then
-        compdef _podman docker
-      fi
+      _select_backward_char() {
+        (( REGION_ACTIVE )) || zle set-mark-command
+        zle backward-char
+      }
+
+      _select_forward_char() {
+        (( REGION_ACTIVE )) || zle set-mark-command
+        zle forward-char
+      }
+
+      _copy_region_to_clipboard() {
+        (( REGION_ACTIVE )) || return
+
+        local start=$MARK
+        local end=$CURSOR
+
+        if (( start > end )); then
+          local tmp=$start
+          start=$end
+          end=$tmp
+        fi
+
+        if (( end == start )); then
+          return
+        fi
+
+        if command -v pbcopy >/dev/null 2>&1; then
+          print -rn -- "''${BUFFER:$start:$(( end - start ))}" | pbcopy
+        elif command -v wl-copy >/dev/null 2>&1; then
+          print -rn -- "''${BUFFER:$start:$(( end - start ))}" | wl-copy
+        elif command -v xclip >/dev/null 2>&1; then
+          print -rn -- "''${BUFFER:$start:$(( end - start ))}" | xclip -selection clipboard
+        fi
+      }
+
+      zle -N _select_backward_char
+      zle -N _select_forward_char
+      zle -N _copy_region_to_clipboard
+
+      bindkey "^[[1;2D" _select_backward_char
+      bindkey "^[[1;2C" _select_forward_char
+      bindkey "^[[99;9u" _copy_region_to_clipboard
 
       function br {
           local cmd cmd_file code
@@ -129,12 +158,6 @@
           fi
       }
 
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
-        if (( $+commands[podman] )); then
-          autoload -Uz _podman
-          compdef _podman podman docker
-        fi
-      ''}
     '';
   };
 }

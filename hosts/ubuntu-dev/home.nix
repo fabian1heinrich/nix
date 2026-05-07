@@ -1,12 +1,13 @@
 {
   pkgs,
-  qemuPkgs ? pkgs,
   userConfig,
   ...
 }:
 {
   imports = [
     ../../profiles/desktop.nix
+    ../../home-manager/stacks/development.nix
+    ../../home-manager/stacks/kubernetes.nix
     ./ubuntu.nix
   ];
 
@@ -20,17 +21,9 @@
 
       # Container & virtualization
       ctop
-      (lib.hiPrio (
-        writeShellScriptBin "kind" ''
-          exec systemd-run --scope --user -p "Delegate=yes" ${kind}/bin/kind "$@"
-        ''
-      ))
       kind
-      qemuPkgs.qemu
+      qemu
       virt-manager
-      (writeShellScriptBin "docker" ''
-        exec podman "$@"
-      '')
       podman
       podman-compose
       virtiofsd

@@ -1,5 +1,12 @@
-{ pkgs, catppuccin-k9s, ... }:
+{ pkgs, ... }:
 let
+  catppuccin-k9s = pkgs.fetchFromGitHub {
+    owner = "catppuccin";
+    repo = "k9s";
+    rev = "fdbec82284744a1fc2eb3e2d24cb92ef87ffb8b4";
+    hash = "sha256-9h+jyEO4w0OnzeEKQXJbg9dvvWGZYQAO4MbgDn6QRzM=";
+  };
+
   skinsPath =
     if pkgs.stdenv.isDarwin then "Library/Application Support/k9s/skins" else ".config/k9s/skins";
 in

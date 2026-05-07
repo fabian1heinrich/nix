@@ -3,25 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # Keep QEMU on the stable release branch while the rest of the config tracks unstable.
-    nixpkgs-qemu.url = "github:NixOS/nixpkgs/nixos-25.05";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    catppuccin-k9s = {
-      url = "github:catppuccin/k9s";
-      flake = false;
-    };
   };
 
   outputs =
     {
       nixpkgs,
-      nixpkgs-qemu,
       home-manager,
       darwin,
-      catppuccin-k9s,
       ...
     }:
     let
@@ -74,29 +66,12 @@
           homeDirectory = "/home/ubuntu-dev";
           system = "x86_64-linux";
         };
-        devcontainer = mkUser {
-          username = "vscode";
-          homeDirectory = "/home/vscode";
-          system = "x86_64-linux";
-        };
-        k8s-devcontainer = mkUser {
-          username = "vscode";
-          homeDirectory = "/home/vscode";
-          system = "x86_64-linux";
-        };
       };
 
       # Helper to create pkgs for a system
       pkgsFor =
         system:
         import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        };
-
-      qemuPkgsFor =
-        system:
-        import nixpkgs-qemu {
           inherit system;
           config.allowUnfree = true;
         };
@@ -119,7 +94,7 @@
         home-manager.lib.homeManagerConfiguration {
           pkgs = pkgsFor userConfig.system;
           extraSpecialArgs = {
-            inherit userConfig catppuccin-k9s;
+            inherit userConfig;
           }
           // extraSpecialArgs;
           inherit modules;
@@ -127,12 +102,50 @@
 
       formatter = lib.genAttrs systems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
+      mkDevShells =
+        system:
+        let
+          pkgs = pkgsFor system;
+        in
+        {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              git
+              just
+              nixfmt-tree
+            ];
+          };
+
+          kubernetes = pkgs.mkShell {
+            packages = with pkgs; [
+              just
+              kind
+              kubectl
+              kubernetes-helm
+              kustomize
+            ];
+          };
+        };
+
+      homeManagerModules = {
+        profiles = {
+          base = ./profiles/base.nix;
+          desktop = ./profiles/desktop.nix;
+        };
+
+        stacks = {
+          development = ./home-manager/stacks/development.nix;
+          containers = ./home-manager/stacks/containers.nix;
+          kubernetes = ./home-manager/stacks/kubernetes.nix;
+          terminal = ./home-manager/stacks/terminal.nix;
+        };
+      };
+
       darwinConfigurations = {
         legendre = darwin.lib.darwinSystem {
           system = "aarch64-darwin";
           specialArgs = {
             userConfig = users.fabian;
-            inherit catppuccin-k9s;
           };
           modules = [
             { nixpkgs.config.allowUnfree = true; }
@@ -145,7 +158,6 @@
                 backupFileExtension = "backup";
                 extraSpecialArgs = {
                   userConfig = users.fabian;
-                  inherit catppuccin-k9s;
                 };
                 users.fabian.imports = [
                   ./hosts/legendre/home.nix
@@ -159,23 +171,8 @@
       homeConfigurations = {
         ubuntu-dev = mkHome {
           user = "ubuntu-dev";
-          extraSpecialArgs = {
-            qemuPkgs = qemuPkgsFor users.ubuntu-dev.system;
-          };
           modules = [
             ./hosts/ubuntu-dev/home.nix
-          ];
-        };
-        devcontainer = mkHome {
-          user = "devcontainer";
-          modules = [
-            ./hosts/devcontainer/home.nix
-          ];
-        };
-        k8s-devcontainer = mkHome {
-          user = "k8s-devcontainer";
-          modules = [
-            ./hosts/k8s-devcontainer/home.nix
           ];
         };
       };
@@ -183,22 +180,63 @@
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
-        devcontainer = homeConfigurations.devcontainer.activationPackage;
-        k8s-devcontainer = homeConfigurations.k8s-devcontainer.activationPackage;
       };
+
+      mkModuleCheckTargets =
+        checkSystem:
+        let
+          pkgs = pkgsFor checkSystem;
+          userConfig = mkUser {
+            username = "module-check";
+            homeDirectory = if pkgs.stdenv.isDarwin then "/Users/module-check" else "/home/module-check";
+            system = checkSystem;
+          };
+          mkModuleActivation =
+            module:
+            (home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              extraSpecialArgs = {
+                inherit userConfig;
+              };
+              modules = [
+                {
+                  home = {
+                    username = userConfig.username;
+                    homeDirectory = userConfig.homeDirectory;
+                    stateVersion = "25.11";
+                  };
+                }
+                module
+              ];
+            }).activationPackage;
+        in
+        {
+          module-profile-base = mkModuleActivation homeManagerModules.profiles.base;
+          module-profile-desktop = mkModuleActivation homeManagerModules.profiles.desktop;
+          module-stack-containers = mkModuleActivation homeManagerModules.stacks.containers;
+          module-stack-development = mkModuleActivation homeManagerModules.stacks.development;
+          module-stack-kubernetes = mkModuleActivation homeManagerModules.stacks.kubernetes;
+          module-stack-terminal = mkModuleActivation homeManagerModules.stacks.terminal;
+        };
 
       checks = lib.genAttrs checkSystems (
         checkSystem:
+        let
+          targets = checkTargets // (mkModuleCheckTargets checkSystem);
+        in
         lib.mapAttrs' (
           name: drv: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" drv)
-        ) checkTargets
+        ) targets
       );
     in
     {
+      devShells = lib.genAttrs systems mkDevShells;
+
       inherit
         formatter
         darwinConfigurations
         homeConfigurations
+        homeManagerModules
         checks
         ;
     };
