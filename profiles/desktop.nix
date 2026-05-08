@@ -12,6 +12,7 @@
     ../home-manager/programs/mcfly.nix
     ../home-manager/programs/navi.nix
     ../home-manager/programs/nh.nix
+    ../home-manager/programs/podman.nix
     ../home-manager/programs/tmux.nix
     ../home-manager/programs/yazi.nix
   ];

@@ -22,9 +22,4 @@
       yubikey-manager
     ];
   };
-
-  programs.zsh.shellAliases = {
-    docker = "podman";
-    "docker-compose" = "podman-compose";
-  };
 }

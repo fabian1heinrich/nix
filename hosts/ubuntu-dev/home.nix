@@ -28,13 +28,7 @@
       kind
       qemuPkgs.qemu
       virt-manager
-      (writeShellScriptBin "docker" ''
-        exec podman "$@"
-      '')
-      podman
-      podman-compose
       virtiofsd
-      gvproxy
 
       # Infrastructure as Code (IaC)
       opentofu
@@ -47,14 +41,4 @@
     };
   };
 
-  xdg.configFile."containers/containers.conf".text = ''
-    [engine]
-    compose_providers = [
-      "${pkgs.podman-compose}/bin/podman-compose",
-    ]
-    helper_binaries_dir = [
-      "${pkgs.podman}/libexec/podman",
-      "${pkgs.gvproxy}/bin",
-    ]
-  '';
 }

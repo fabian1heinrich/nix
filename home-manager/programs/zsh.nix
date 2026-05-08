@@ -129,12 +129,6 @@
           fi
       }
 
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
-        if (( $+commands[podman] )); then
-          autoload -Uz _podman
-          compdef _podman podman docker
-        fi
-      ''}
     '';
   };
 }
