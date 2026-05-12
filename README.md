@@ -1,18 +1,33 @@
 # Nix Configuration
 
-Personal Nix setup for:
-
-- macOS (`nix-darwin`): `legendre`
-- Linux (`home-manager`): `ubuntu-dev`
+Personal Nix setup for macOS (`legendre`) and Linux (`ubuntu-dev`).
 
 ## Structure
 
 - `profiles/base.nix`: minimal shared baseline
 - `profiles/desktop.nix`: shared desktop baseline
-- `home-manager/stacks/*.nix`: reusable workflow bundles for terminal, development, containers, and Kubernetes
+- `home-manager/stacks/*.nix`: reusable workflow bundles
 - `hosts/<name>/home.nix`: host-specific additions
 
-Hosts compose small role stacks; `homeManagerModules` is exported for external flake consumers.
+Hosts compose small role stacks. Reusable Home Manager modules are exported as
+`homeManagerModules`.
+
+## External Consumers
+
+Add this repo as a flake input:
+
+```nix
+inputs.fabian-nix.url = "github:fabianheinrich/nix";
+```
+
+### Home Manager Devcontainers
+
+For devcontainers, compose `homeManagerModules` directly. Do not import
+`homeConfigurations.ubuntu-dev`; it includes desktop and machine-specific config.
+Start with `profiles.base`, add only the needed stacks, then build and activate
+the resulting Home Manager activation package as the container user. For mutable
+containers, run activation at startup or switch the flake from inside the
+container.
 
 ## Apply
 
@@ -50,22 +65,6 @@ Ubuntu (`ubuntu-dev`, after setup):
 
 ```bash
 home-manager switch --flake .#ubuntu-dev
-```
-
-## Common Commands
-
-```bash
-just --list
-just check
-just fmt
-```
-
-Equivalent direct commands:
-
-```bash
-nix flake update
-nix fmt
-nix flake check --all-systems --no-build
 ```
 
 ## Dev Shells

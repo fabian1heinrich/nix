@@ -1,7 +1,7 @@
 set shell := ["bash", "-uc"]
 
 os := `uname -s`
-cluster := env_var_or_default("KIND_CLUSTER", "dev")
+cluster := env("KIND_CLUSTER", "dev")
 
 default:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" --list

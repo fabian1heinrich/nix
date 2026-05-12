@@ -82,6 +82,46 @@
           printf '%s\n' ${lib.escapeShellArg drv.name} > "$out"
         '';
 
+      mkHomeConfiguration =
+        {
+          system,
+          username,
+          homeDirectory,
+          modules,
+          name ? owner.name,
+          email ? owner.email,
+          extraSpecialArgs ? { },
+          pkgs ? pkgsFor system,
+        }:
+        let
+          userConfig = mkUser {
+            inherit
+              username
+              homeDirectory
+              system
+              name
+              email
+              ;
+          };
+        in
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = {
+            inherit userConfig;
+          }
+          // extraSpecialArgs;
+          modules = [
+            {
+              home = {
+                username = lib.mkDefault userConfig.username;
+                homeDirectory = lib.mkDefault userConfig.homeDirectory;
+                stateVersion = lib.mkDefault "25.11";
+              };
+            }
+          ]
+          ++ modules;
+        };
+
       mkHome =
         {
           user,
@@ -91,13 +131,18 @@
         let
           userConfig = users.${user};
         in
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor userConfig.system;
-          extraSpecialArgs = {
-            inherit userConfig;
-          }
-          // extraSpecialArgs;
-          inherit modules;
+        mkHomeConfiguration {
+          inherit
+            modules
+            extraSpecialArgs
+            ;
+          inherit (userConfig)
+            system
+            username
+            homeDirectory
+            name
+            email
+            ;
         };
 
       formatter = lib.genAttrs systems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
@@ -231,12 +276,21 @@
     in
     {
       devShells = lib.genAttrs systems mkDevShells;
+      legacyPackages = lib.genAttrs systems (_: {
+        inherit homeManagerModules;
+      });
+      lib = {
+        inherit
+          mkHomeConfiguration
+          mkUser
+          ;
+      };
 
       inherit
         formatter
+        homeManagerModules
         darwinConfigurations
         homeConfigurations
-        homeManagerModules
         checks
         ;
     };
