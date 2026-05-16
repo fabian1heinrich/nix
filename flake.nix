@@ -145,7 +145,7 @@
             ;
         };
 
-      formatter = lib.genAttrs systems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
+      formatter = lib.genAttrs systems (system: (pkgsFor system).nixfmt-tree);
 
       mkDevShells =
         system:
@@ -171,20 +171,6 @@
             ];
           };
         };
-
-      homeManagerModules = {
-        profiles = {
-          base = ./profiles/base.nix;
-          desktop = ./profiles/desktop.nix;
-        };
-
-        stacks = {
-          development = ./home-manager/stacks/development.nix;
-          containers = ./home-manager/stacks/containers.nix;
-          kubernetes = ./home-manager/stacks/kubernetes.nix;
-          terminal = ./home-manager/stacks/terminal.nix;
-        };
-      };
 
       darwinConfigurations = {
         legendre = darwin.lib.darwinSystem {
@@ -227,68 +213,18 @@
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
       };
 
-      mkModuleCheckTargets =
-        checkSystem:
-        let
-          pkgs = pkgsFor checkSystem;
-          userConfig = mkUser {
-            username = "module-check";
-            homeDirectory = if pkgs.stdenv.isDarwin then "/Users/module-check" else "/home/module-check";
-            system = checkSystem;
-          };
-          mkModuleActivation =
-            module:
-            (home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              extraSpecialArgs = {
-                inherit userConfig;
-              };
-              modules = [
-                {
-                  home = {
-                    username = userConfig.username;
-                    homeDirectory = userConfig.homeDirectory;
-                    stateVersion = "25.11";
-                  };
-                }
-                module
-              ];
-            }).activationPackage;
-        in
-        {
-          module-profile-base = mkModuleActivation homeManagerModules.profiles.base;
-          module-profile-desktop = mkModuleActivation homeManagerModules.profiles.desktop;
-          module-stack-containers = mkModuleActivation homeManagerModules.stacks.containers;
-          module-stack-development = mkModuleActivation homeManagerModules.stacks.development;
-          module-stack-kubernetes = mkModuleActivation homeManagerModules.stacks.kubernetes;
-          module-stack-terminal = mkModuleActivation homeManagerModules.stacks.terminal;
-        };
-
       checks = lib.genAttrs checkSystems (
         checkSystem:
-        let
-          targets = checkTargets // (mkModuleCheckTargets checkSystem);
-        in
         lib.mapAttrs' (
           name: drv: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" drv)
-        ) targets
+        ) checkTargets
       );
     in
     {
       devShells = lib.genAttrs systems mkDevShells;
-      legacyPackages = lib.genAttrs systems (_: {
-        inherit homeManagerModules;
-      });
-      lib = {
-        inherit
-          mkHomeConfiguration
-          mkUser
-          ;
-      };
 
       inherit
         formatter
-        homeManagerModules
         darwinConfigurations
         homeConfigurations
         checks

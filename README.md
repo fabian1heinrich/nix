@@ -6,28 +6,10 @@ Personal Nix setup for macOS (`legendre`) and Linux (`ubuntu-dev`).
 
 - `profiles/base.nix`: minimal shared baseline
 - `profiles/desktop.nix`: shared desktop baseline
-- `home-manager/stacks/*.nix`: reusable workflow bundles
+- `home-manager/stacks/*.nix`: workflow bundles
 - `hosts/<name>/home.nix`: host-specific additions
 
-Hosts compose small role stacks. Reusable Home Manager modules are exported as
-`homeManagerModules`.
-
-## External Consumers
-
-Add this repo as a flake input:
-
-```nix
-inputs.fabian-nix.url = "github:fabianheinrich/nix";
-```
-
-### Home Manager Devcontainers
-
-For devcontainers, compose `homeManagerModules` directly. Do not import
-`homeConfigurations.ubuntu-dev`; it includes desktop and machine-specific config.
-Start with `profiles.base`, add only the needed stacks, then build and activate
-the resulting Home Manager activation package as the container user. For mutable
-containers, run activation at startup or switch the flake from inside the
-container.
+Hosts compose local profiles and role stacks.
 
 ## Apply
 
