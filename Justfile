@@ -21,6 +21,9 @@ switch-legendre:
 switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
 
+build-proxmox-cloud:
+    nix build .#nixosConfigurations.proxmox-cloud.config.system.build.VMA
+
 kind-up cluster=cluster:
     case "{{ os }}" in \
       Darwin) KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster --name {{ cluster }} ;; \

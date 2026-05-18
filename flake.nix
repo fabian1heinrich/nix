@@ -208,9 +208,20 @@
         };
       };
 
+      nixosConfigurations = {
+        proxmox-cloud = lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            { nixpkgs.config.allowUnfree = true; }
+            ./hosts/proxmox-cloud/nixos.nix
+          ];
+        };
+      };
+
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
+        proxmox-cloud = nixosConfigurations.proxmox-cloud.config.system.build.VMA;
       };
 
       checks = lib.genAttrs checkSystems (
@@ -227,6 +238,7 @@
         formatter
         darwinConfigurations
         homeConfigurations
+        nixosConfigurations
         checks
         ;
     };
