@@ -100,6 +100,7 @@
       bindkey "ç" fzf-cd-widget
       bindkey "^[[1;3C" forward-word
       bindkey "^[[1;3D" backward-word
+      bindkey "^U" backward-kill-line
 
       _select_backward_char() {
         (( REGION_ACTIVE )) || zle set-mark-command

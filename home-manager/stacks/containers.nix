@@ -26,6 +26,18 @@
     };
 
     initContent = lib.mkAfter ''
+      # Prefer Podman's Docker-compatible socket when it is available.
+      # macOS uses the Podman machine API socket; Linux rootless Podman uses XDG_RUNTIME_DIR.
+      if [[ -z "''${DOCKER_HOST:-}" ]]; then
+        if [[ -S "''${HOME}/.tmp/podman/podman-machine-default-api.sock" ]]; then
+          export DOCKER_HOST="unix://''${HOME}/.tmp/podman/podman-machine-default-api.sock"
+        elif [[ -n "''${XDG_RUNTIME_DIR:-}" && -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
+          export DOCKER_HOST="unix://''${XDG_RUNTIME_DIR}/podman/podman.sock"
+        elif [[ -S "/run/user/$(id -u)/podman/podman.sock" ]]; then
+          export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
+        fi
+      fi
+
       # If `docker` resolves to podman, use podman's completion backend.
       if (( $+commands[podman] && $+commands[docker] )) && command docker --version 2>/dev/null | command grep -qi '^podman version'; then
         compdef _podman docker

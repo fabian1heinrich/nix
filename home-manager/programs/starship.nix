@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname($directory)($kubernetes)($python)($git_branch) ";
+      format = "$username$hostname($directory)($kubernetes)($docker_context)(\${custom.podman_context})($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -24,6 +24,31 @@
         truncation_symbol = "";
         format = "[$symbol$branch(:$remote_branch)]($style) ";
       };
+      git_status = {
+        format = "[$all_status$ahead_behind]($style) ";
+        style = "bold red";
+        conflicted = "!";
+        ahead = "⇡$count";
+        behind = "⇣$count";
+        diverged = "⇕$ahead_count/$behind_count";
+        up_to_date = "";
+        untracked = "?";
+        stashed = "\\$";
+        modified = "~";
+        staged = "+";
+        renamed = ">";
+        deleted = "x";
+      };
+      character = {
+        success_symbol = "[❯](bold green)";
+        error_symbol = "[❯](bold red)";
+        vimcmd_symbol = "[❮](bold green)";
+      };
+      cmd_duration = {
+        min_time = 1000;
+        format = "[$duration]($style) ";
+        style = "yellow";
+      };
       python = {
         symbol = "🐍";
         style = "yellow bold";
@@ -34,7 +59,39 @@
         symbol = "🪐";
         disabled = false;
         format = "[$symbol$context]($style)[\\($namespace\\)](cyan) ";
-        detect_env_vars = [ "KUBECONFIG" ];
+      };
+      docker_context = {
+        detect_files = [
+          "Containerfile"
+          "Dockerfile"
+          "compose.yml"
+          "compose.yaml"
+          "podman-compose.yml"
+          "podman-compose.yaml"
+          "docker-compose.yml"
+          "docker-compose.yaml"
+        ];
+        symbol = "📦";
+        format = "[$symbol$context]($style) ";
+        style = "blue bold";
+        only_with_files = true;
+      };
+      custom.podman_context = {
+        detect_files = [
+          "Containerfile"
+          "Dockerfile"
+          "compose.yml"
+          "compose.yaml"
+          "podman-compose.yml"
+          "podman-compose.yaml"
+          "docker-compose.yml"
+          "docker-compose.yaml"
+        ];
+        when = ''[[ -n "''${DOCKER_HOST:-}" && "''${DOCKER_HOST}" == *podman* ]]'';
+        command = "podman info --format 'podman:{{if .Host.Security.Rootless}}rootless{{else}}rootful{{end}}'";
+        symbol = "📦";
+        format = "[$symbol$output]($style) ";
+        style = "blue bold";
       };
     };
   };

@@ -2,6 +2,8 @@ set shell := ["bash", "-uc"]
 
 os := `uname -s`
 cluster := env("KIND_CLUSTER", "dev")
+podman_rootless_machine := env("PODMAN_ROOTLESS_MACHINE", "podman-machine-default")
+podman_rootful_machine := env("PODMAN_ROOTFUL_MACHINE", "podman-machine-rootful")
 
 default:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" --list
@@ -20,6 +22,20 @@ switch-legendre:
 
 switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
+
+homebrew-upgrade:
+    brew update
+    brew upgrade
+    mas upgrade
+
+homebrew-upgrade-greedy:
+    brew update
+    brew upgrade --greedy
+    mas upgrade
+
+homebrew-cleanup:
+    brew cleanup -s
+    rm -rf "$(brew --cache)"
 
 kind-up cluster=cluster:
     case "{{ os }}" in \
@@ -44,17 +60,54 @@ k9s cluster=cluster:
     k9s --context kind-{{ cluster }}
 
 podman-up:
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-up-rootless
+
+podman-up-rootless machine=podman_rootless_machine:
     case "{{ os }}" in \
-      Darwin) podman machine start || podman machine init --now ;; \
+      Darwin) \
+        if podman machine inspect "{{ machine }}" >/dev/null 2>&1; then \
+          podman machine start "{{ machine }}"; \
+        else \
+          podman machine init --now "{{ machine }}"; \
+        fi ;; \
       Linux) systemctl --user start podman.socket || true ;; \
       *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
     esac
 
-podman-down:
+podman-up-rootful machine=podman_rootful_machine:
     case "{{ os }}" in \
-      Darwin) podman machine stop ;; \
+      Darwin) \
+        if podman machine inspect "{{ machine }}" >/dev/null 2>&1; then \
+          podman machine start "{{ machine }}"; \
+        else \
+          podman machine init --rootful --now "{{ machine }}"; \
+        fi ;; \
+      *) echo "Rootful Podman machine recipes are only supported on macOS" >&2; exit 1 ;; \
+    esac
+
+podman-down:
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-down-rootless
+
+podman-down-rootless machine=podman_rootless_machine:
+    case "{{ os }}" in \
+      Darwin) podman machine stop "{{ machine }}" ;; \
       Linux) systemctl --user stop podman.socket || true ;; \
       *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
+    esac
+
+podman-down-rootful machine=podman_rootful_machine:
+    case "{{ os }}" in \
+      Darwin) podman machine stop "{{ machine }}" ;; \
+      *) echo "Rootful Podman machine recipes are only supported on macOS" >&2; exit 1 ;; \
+    esac
+
+podman-machines:
+    podman machine list
+
+podman-reset:
+    case "{{ os }}" in \
+      Darwin) podman machine reset ;; \
+      *) echo "Podman machine reset is only supported on macOS" >&2; exit 1 ;; \
     esac
 
 podman-status:
