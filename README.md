@@ -56,6 +56,10 @@ nix develop
 nix develop .#kubernetes
 ```
 
+## Tests
+
+- `tests/test-podman-capabilities.sh`: checks the Ubuntu/Linux Podman setup by exercising rootless and rootful containers, `podman info`, `podman machine list`, and the user `podman.socket` state.
+
 ## Secrets
 
 Bitwarden-backed env sync is documented in `secrets/README.md`.
