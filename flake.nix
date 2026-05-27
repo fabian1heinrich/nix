@@ -157,17 +157,10 @@
             packages = with pkgs; [
               git
               just
+              nixd
+              nixfmt
               nixfmt-tree
-            ];
-          };
-
-          kubernetes = pkgs.mkShell {
-            packages = with pkgs; [
-              just
-              kind
-              kubectl
-              kubernetes-helm
-              kustomize
+              shellcheck
             ];
           };
         };

@@ -8,8 +8,11 @@
     "nixd": {
       "eval": {
         "target": {
-          "installable": ".#homeConfigurations.ubuntu-dev.activationPackage"
+          "installable": ".#darwinConfigurations.legendre.config.system.build.toplevel"
         }
+      },
+      "nixpkgs": {
+        "expr": "import (builtins.getFlake \"${workspaceFolder}\").inputs.nixpkgs { system = builtins.currentSystem; config.allowUnfree = true; }"
       },
       "formatting": {
         "command": [
@@ -17,8 +20,11 @@
         ]
       },
       "options": {
-        "home-manager": {
+        "home-manager-ubuntu-dev": {
           "expr": "(builtins.getFlake \"${workspaceFolder}\").homeConfigurations.ubuntu-dev.options"
+        },
+        "home-manager-legendre": {
+          "expr": "((builtins.getFlake \"${workspaceFolder}\").darwinConfigurations.legendre.options.home-manager.users.type.getSubOptions [])"
         },
         "nix-darwin": {
           "expr": "(builtins.getFlake \"${workspaceFolder}\").darwinConfigurations.legendre.options"

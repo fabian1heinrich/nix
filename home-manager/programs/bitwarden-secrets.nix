@@ -43,7 +43,7 @@ in
         || [ -z "''${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] \
         || [ -z "''${BRAVE_API_KEY:-}" ] \
         || [ -z "''${CONTEXT7_API_KEY:-}" ]; then
-        bw-refresh-api-keys --no-unlock
+        bw-refresh-api-keys --no-unlock --quiet
       fi
     fi
   '';

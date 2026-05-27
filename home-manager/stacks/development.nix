@@ -13,5 +13,6 @@
   home.packages = with pkgs; [
     httpie # HTTP client
     lazygit # Git TUI
+    shellcheck # Shell script linter
   ];
 }

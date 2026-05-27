@@ -1,4 +1,7 @@
 { pkgs, userConfig, ... }:
+let
+  screenshotDirectory = "${userConfig.homeDirectory}/Downloads/screenshots";
+in
 {
   imports = [
     ./homebrew.nix
@@ -6,39 +9,103 @@
 
   nix = {
     enable = true;
+    channel.enable = false;
+    gc = {
+      automatic = true;
+      options = "--delete-older-than 30d";
+    };
+    optimise.automatic = true;
     settings = {
-      "experimental-features" = [
+      experimental-features = [
         "nix-command"
         "flakes"
       ];
+      trusted-users = [
+        "@admin"
+        userConfig.username
+      ];
     };
   };
+
+  networking = {
+    computerName = "legendre";
+    hostName = "legendre";
+    localHostName = "legendre";
+    applicationFirewall = {
+      enable = true;
+      allowSigned = true;
+      allowSignedApp = true;
+      enableStealthMode = true;
+    };
+  };
+
+  time.timeZone = "Europe/Berlin";
+
+  programs.zsh.enable = true;
 
   users.users.${userConfig.username} = {
     home = userConfig.homeDirectory;
     shell = pkgs.zsh;
   };
 
-  environment.systemPath = [
-    "/opt/homebrew/bin"
-    "/opt/homebrew/sbin"
+  environment = {
+    shells = [
+      pkgs.zsh
+    ];
+    systemPath = [
+      "/opt/homebrew/bin"
+      "/opt/homebrew/sbin"
+    ];
+  };
+
+  fonts.packages = [
+    pkgs.nerd-fonts.meslo-lg
   ];
 
   system = {
     primaryUser = userConfig.username;
     stateVersion = 6;
+    activationScripts.screenshotDirectory.text = ''
+      mkdir -p '${screenshotDirectory}'
+      chown ${userConfig.username}:staff '${screenshotDirectory}'
+    '';
     defaults = {
       NSGlobalDomain = {
         _HIHideMenuBar = false;
+        AppleKeyboardUIMode = 3;
         AppleInterfaceStyle = "Dark";
+        AppleMeasurementUnits = "Centimeters";
         AppleMetricUnits = 1;
+        ApplePressAndHoldEnabled = false;
         AppleShowAllExtensions = true;
+        AppleShowScrollBars = "WhenScrolling";
         AppleTemperatureUnit = "Celsius";
+        AppleWindowTabbingMode = "manual";
+        InitialKeyRepeat = 15;
+        KeyRepeat = 2;
+        NSAutomaticCapitalizationEnabled = false;
+        NSAutomaticDashSubstitutionEnabled = false;
+        NSAutomaticInlinePredictionEnabled = false;
+        NSAutomaticPeriodSubstitutionEnabled = false;
+        NSAutomaticQuoteSubstitutionEnabled = false;
+        NSAutomaticSpellingCorrectionEnabled = false;
+        NSDocumentSaveNewDocumentsToCloud = false;
+        NSNavPanelExpandedStateForSaveMode = true;
+        NSNavPanelExpandedStateForSaveMode2 = true;
+        PMPrintingExpandedStateForPrint = true;
+        PMPrintingExpandedStateForPrint2 = true;
+      };
+      controlcenter = {
+        BatteryShowPercentage = true;
       };
       dock = {
         autohide = true;
+        mru-spaces = false;
         orientation = "right";
         show-recents = false;
+        show-process-indicators = true;
+        showhidden = true;
+        scroll-to-open = true;
         launchanim = false;
         tilesize = 64;
         minimize-to-application = true;
@@ -63,6 +130,7 @@
         QuitMenuItem = true;
         ShowPathbar = true;
         ShowStatusBar = true;
+        _FXEnableColumnAutoSizing = true;
         _FXShowPosixPathInTitle = true;
         ShowExternalHardDrivesOnDesktop = true;
         ShowHardDrivesOnDesktop = false;
@@ -78,6 +146,20 @@
         ShowSeconds = false;
         ShowAMPM = true;
       };
+      screencapture = {
+        location = screenshotDirectory;
+        show-thumbnail = false;
+        type = "png";
+      };
+
+      screensaver = {
+        askForPassword = true;
+        askForPasswordDelay = 0;
+      };
+      loginwindow = {
+        DisableConsoleAccess = true;
+        GuestEnabled = false;
+      };
       trackpad = {
         Clicking = true;
         TrackpadRightClick = true;
@@ -90,32 +172,16 @@
           AppleFirstWeekday = {
             gregorian = 2;
           };
-          AppleMeasurementUnits = "Centimeters";
           AppleICUDateFormatStrings = {
             "1" = "MM/dd/yyyy";
           };
           AppleICUNumberFormatStrings = {
             "1" = "#,##0.###";
           };
-          ApplePressAndHoldEnabled = false;
-          InitialKeyRepeat = 15;
-          KeyRepeat = 2;
-          NSAutomaticCapitalizationEnabled = false;
-          NSAutomaticDashSubstitutionEnabled = false;
-          NSAutomaticPeriodSubstitutionEnabled = false;
-          NSAutomaticQuoteSubstitutionEnabled = false;
-          NSAutomaticSpellingCorrectionEnabled = false;
         };
         "com.apple.desktopservices" = {
           DSDontWriteNetworkStores = true;
           DSDontWriteUSBStores = true;
-        };
-        "com.apple.screensaver" = {
-          askForPassword = 1;
-          askForPasswordDelay = 0;
-        };
-        "com.apple.loginwindow" = {
-          GuestEnabled = false;
         };
         "com.apple.AdLib" = {
           allowApplePersonalizedAdvertising = false;
@@ -149,5 +215,8 @@
     };
   };
 
-  security.pam.services.sudo_local.touchIdAuth = true;
+  security.pam.services.sudo_local = {
+    touchIdAuth = true;
+    reattach = true;
+  };
 }

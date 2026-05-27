@@ -5,7 +5,6 @@
   ...
 }:
 {
-
   programs.zsh = {
     enable = true;
     dotDir = "${config.home.homeDirectory}/.config/zsh";
@@ -27,6 +26,7 @@
         "zoxide"
       ];
     };
+
     plugins = [
       {
         name = "fzf-tab";

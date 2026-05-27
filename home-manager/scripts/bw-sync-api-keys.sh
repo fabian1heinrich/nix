@@ -1,7 +1,10 @@
+#!/usr/bin/env bash
+
 set -euo pipefail
 
 emit_shell_exports=0
 allow_unlock=1
+quiet=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -10,6 +13,9 @@ while [ "$#" -gt 0 ]; do
       ;;
     --no-unlock)
       allow_unlock=0
+      ;;
+    --quiet)
+      quiet=1
       ;;
     *)
       printf 'bw-sync-api-keys: unknown argument: %s\n' "$1" >&2
@@ -44,6 +50,11 @@ log() {
   printf 'bw-sync-api-keys: %s\n' "$*" >&2
 }
 
+info() {
+  [ "$quiet" -ne 1 ] || return 0
+  log "$@"
+}
+
 session_valid() {
   local session="$1"
   [ -n "$session" ] || return 1
@@ -53,22 +64,22 @@ session_valid() {
 if ! bw login --check >/dev/null 2>&1; then
   bw config server "https://vault.bitwarden.eu" >/dev/null
 
-  log "not logged in; run 'bw login' once on this host"
+  info "not logged in; run 'bw login' once on this host"
   exit 0
 fi
 
 if ! session_valid "${BW_SESSION:-}"; then
   if [ "$allow_unlock" -ne 1 ]; then
-    log "vault is locked; skipping unlock (--no-unlock)"
+    info "vault is locked; skipping unlock (--no-unlock)"
     exit 0
   fi
 
   if ! [ -t 0 ]; then
-    log "vault is locked and no TTY is available for unlock"
+    info "vault is locked and no TTY is available for unlock"
     exit 0
   fi
 
-  log "vault is locked; waiting for unlock (Ctrl+C to cancel)"
+  info "vault is locked; waiting for unlock (Ctrl+C to cancel)"
   export BW_SESSION
   BW_SESSION="$(bw unlock --raw)"
 fi

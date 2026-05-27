@@ -87,8 +87,27 @@
           "docker-compose.yml"
           "docker-compose.yaml"
         ];
-        when = ''[[ -n "''${DOCKER_HOST:-}" && "''${DOCKER_HOST}" == *podman* ]]'';
-        command = "podman info --format 'podman:{{if .Host.Security.Rootless}}rootless{{else}}rootful{{end}}'";
+        when = ''
+          command -v podman >/dev/null 2>&1 && [[ -e Containerfile || -e Dockerfile || -e compose.yml || -e compose.yaml || -e podman-compose.yml || -e podman-compose.yaml || -e docker-compose.yml || -e docker-compose.yaml ]]
+        '';
+        command = ''
+          machine="''${PODMAN_MACHINE:-podman-machine-default}"
+          if info="$(podman machine inspect "$machine" --format '{{.State}} {{.Rootful}}' 2>/dev/null)"; then
+            state="''${info%% *}"
+            rootful="''${info##* }"
+            if [[ "$state" == "running" ]]; then
+              if [[ "$rootful" == "true" ]]; then
+                printf 'podman:rootful'
+              else
+                printf 'podman:rootless'
+              fi
+            else
+              printf 'podman:down'
+            fi
+          elif [[ "$(uname -s)" == "Darwin" ]]; then
+            printf 'podman:down'
+          fi
+        '';
         symbol = "📦";
         format = "[$symbol$output]($style) ";
         style = "blue bold";

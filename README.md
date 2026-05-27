@@ -53,7 +53,6 @@ home-manager switch --flake .#ubuntu-dev
 
 ```bash
 nix develop
-nix develop .#kubernetes
 ```
 
 ## Secrets
