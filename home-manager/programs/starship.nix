@@ -58,7 +58,18 @@
       kubernetes = {
         symbol = "🪐";
         disabled = false;
-        format = "[$symbol$context]($style)[\\($namespace\\)](cyan) ";
+        format = "[$symbol$context]($style)([\\($namespace\\)](cyan)) ";
+        detect_files = [
+          "kustomization.yaml"
+          "values.yaml"
+          "zarf.yaml"
+        ];
+        detect_folders = [
+          "k8s"
+          "kubernetes"
+          "manifests"
+          "charts"
+        ];
       };
       docker_context = {
         detect_files = [
@@ -91,7 +102,22 @@
           command -v podman >/dev/null 2>&1 && [[ -e Containerfile || -e Dockerfile || -e compose.yml || -e compose.yaml || -e podman-compose.yml || -e podman-compose.yaml || -e docker-compose.yml || -e docker-compose.yaml ]]
         '';
         command = ''
-          machine="''${PODMAN_MACHINE:-podman-machine-default}"
+          machine="''${PODMAN_MACHINE:-}"
+          if [[ -z "$machine" && "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
+            socket="''${DOCKER_HOST#unix://}"
+            socket="''${socket##*/}"
+            machine="''${socket%-api.sock}"
+          fi
+          if [[ -z "$machine" ]]; then
+            machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
+          fi
+          if [[ -n "$machine" ]] && ! podman machine inspect "$machine" >/dev/null 2>&1; then
+            machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
+          fi
+          if [[ -z "$machine" ]]; then
+            machine="podman-machine-default"
+          fi
+
           if info="$(podman machine inspect "$machine" --format '{{.State}} {{.Rootful}}' 2>/dev/null)"; then
             state="''${info%% *}"
             rootful="''${info##* }"

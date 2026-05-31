@@ -18,6 +18,7 @@
 
       # Container & virtualization
       kind
+      cloud-provider-kind
 
       # System tools
       openvpn

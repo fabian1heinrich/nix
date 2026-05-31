@@ -65,7 +65,10 @@ podman-up:
 podman-up-rootless machine=podman_rootless_machine:
     case "{{ os }}" in \
       Darwin) \
-        if podman machine inspect "{{ machine }}" >/dev/null 2>&1; then \
+        running="$(podman machine list --format json | jq -r --arg machine "{{ machine }}" '.[] | select(.Name == $machine) | .Running' | head -n1)"; \
+        if [[ "$running" == "true" ]]; then \
+          true; \
+        elif [[ "$running" == "false" ]]; then \
           podman machine start "{{ machine }}"; \
         else \
           podman machine init --now "{{ machine }}"; \
@@ -77,12 +80,38 @@ podman-up-rootless machine=podman_rootless_machine:
 podman-up-rootful machine=podman_rootful_machine:
     case "{{ os }}" in \
       Darwin) \
-        if podman machine inspect "{{ machine }}" >/dev/null 2>&1; then \
+        running="$(podman machine list --format json | jq -r --arg machine "{{ machine }}" '.[] | select(.Name == $machine) | .Running' | head -n1)"; \
+        if [[ "$running" == "true" ]]; then \
+          true; \
+        elif [[ "$running" == "false" ]]; then \
           podman machine start "{{ machine }}"; \
         else \
           podman machine init --rootful --now "{{ machine }}"; \
         fi ;; \
       *) echo "Rootful Podman machine recipes are only supported on macOS" >&2; exit 1 ;; \
+    esac
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-env "{{ machine }}"
+
+podman-env machine=podman_rootful_machine:
+    @case "{{ os }}" in \
+      Darwin) \
+        socket="$HOME/.tmp/podman/{{ machine }}-api.sock"; \
+        if [[ -S "$socket" ]]; then \
+          printf "export PODMAN_MACHINE=%q\n" "{{ machine }}"; \
+          printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+        else \
+          echo "Podman API socket not found: $socket" >&2; \
+          exit 1; \
+        fi ;; \
+      Linux) \
+        socket="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"; \
+        if [[ -S "$socket" ]]; then \
+          printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+        else \
+          echo "Podman API socket not found: $socket" >&2; \
+          exit 1; \
+        fi ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
     esac
 
 podman-down:
@@ -115,3 +144,19 @@ podman-status:
 
 podman-prune:
     podman system prune
+
+podman-clean-all:
+    podman container stop --all || true
+    podman pod rm --all --force || true
+    podman container rm --all --force --volumes || true
+    podman secret rm --all --ignore || true
+    podman volume rm --all --force || true
+    podman image rm --all --force --ignore || true
+    podman system prune --all --build --volumes --force
+    podman image prune --all --build-cache --force || true
+    podman network prune --force || true
+    case "{{ os }}" in \
+      Darwin) podman machine ssh sudo fstrim -av || true ;; \
+      Linux) true ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
+    esac
