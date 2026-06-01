@@ -1,4 +1,23 @@
 {
+  lib,
+  ...
+}:
+let
+  containerFiles = [
+    "Containerfile"
+    "Dockerfile"
+    "compose.yml"
+    "compose.yaml"
+    "podman-compose.yml"
+    "podman-compose.yaml"
+    "docker-compose.yml"
+    "docker-compose.yaml"
+  ];
+  containerFileTest = lib.concatMapStringsSep " || " (
+    file: "[[ -e ${lib.escapeShellArg file} ]]"
+  ) containerFiles;
+in
+{
   programs.starship = {
     enable = true;
     settings = {
@@ -72,35 +91,17 @@
         ];
       };
       docker_context = {
-        detect_files = [
-          "Containerfile"
-          "Dockerfile"
-          "compose.yml"
-          "compose.yaml"
-          "podman-compose.yml"
-          "podman-compose.yaml"
-          "docker-compose.yml"
-          "docker-compose.yaml"
-        ];
+        detect_files = containerFiles;
         symbol = "📦";
         format = "[$symbol$context]($style) ";
         style = "blue bold";
         only_with_files = true;
       };
       custom.podman_context = {
-        detect_files = [
-          "Containerfile"
-          "Dockerfile"
-          "compose.yml"
-          "compose.yaml"
-          "podman-compose.yml"
-          "podman-compose.yaml"
-          "docker-compose.yml"
-          "docker-compose.yaml"
-        ];
+        detect_files = containerFiles;
         when = ''
           command -v podman >/dev/null 2>&1 &&
-            [[ -e Containerfile || -e Dockerfile || -e compose.yml || -e compose.yaml || -e podman-compose.yml || -e podman-compose.yaml || -e docker-compose.yml || -e docker-compose.yaml ]] &&
+            (${containerFileTest}) &&
             (! command -v docker >/dev/null 2>&1 || docker --version 2>/dev/null | grep -qi '^podman version')
         '';
         command = ''
@@ -111,7 +112,7 @@
             fi
 
             if [[ -z "$socket" ]]; then
-              if [[ -n "''${XDG_RUNTIME_DIR:-}" && -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
+              if [[ -n "''${XDG_RUNTIME_DIR:-}" ]] && [[ -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
                 socket="''${XDG_RUNTIME_DIR}/podman/podman.sock"
               elif [[ -S "/run/user/$(id -u)/podman/podman.sock" ]]; then
                 socket="/run/user/$(id -u)/podman/podman.sock"
@@ -122,7 +123,7 @@
 
             if [[ "$socket" == /run/user/*/podman/podman.sock ]]; then
               printf 'podman:rootless'
-            elif [[ "$socket" == /run/podman/podman.sock || "$(id -u)" == "0" ]]; then
+            elif [[ "$socket" == /run/podman/podman.sock ]] || [[ "$(id -u)" == "0" ]]; then
               printf 'podman:rootful'
             elif [[ -n "''${DOCKER_HOST:-}" ]]; then
               printf 'podman:remote'
@@ -131,15 +132,12 @@
             fi
           else
             machine="''${PODMAN_MACHINE:-}"
-            if [[ -z "$machine" && "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
+            if [[ -z "$machine" ]] && [[ "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
               socket="''${DOCKER_HOST#unix://}"
               socket="''${socket##*/}"
               machine="''${socket%-api.sock}"
             fi
-            if [[ -z "$machine" ]]; then
-              machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
-            fi
-            if [[ -n "$machine" ]] && ! podman machine inspect "$machine" >/dev/null 2>&1; then
+            if [[ -z "$machine" ]] || ! podman machine inspect "$machine" >/dev/null 2>&1; then
               machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
             fi
             if [[ -z "$machine" ]]; then
