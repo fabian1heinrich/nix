@@ -4,6 +4,9 @@ os := `uname -s`
 cluster := env("KIND_CLUSTER", "dev")
 podman_rootless_machine := env("PODMAN_ROOTLESS_MACHINE", "podman-machine-default")
 podman_rootful_machine := env("PODMAN_ROOTFUL_MACHINE", "podman-machine-rootful")
+podman_rootless_context := env("PODMAN_ROOTLESS_CONTEXT", "podman-rootless")
+podman_rootful_context := env("PODMAN_ROOTFUL_CONTEXT", "podman-rootful")
+podman_ubuntu_dev_rootful_context := env("PODMAN_UBUNTU_DEV_ROOTFUL_CONTEXT", "ubuntu-dev-rootful")
 
 default:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" --list
@@ -88,9 +91,30 @@ podman-up-rootful machine=podman_rootful_machine:
         else \
           podman machine init --rootful --now "{{ machine }}"; \
         fi ;; \
-      *) echo "Rootful Podman machine recipes are only supported on macOS" >&2; exit 1 ;; \
+      Linux) \
+        socket="/run/podman/podman.sock"; \
+        if [[ ! -S "$socket" ]]; then \
+          if systemctl cat podman.socket >/dev/null 2>&1; then \
+            sudo systemctl start podman.socket; \
+          else \
+            podman_bin="$(readlink -f "$(command -v podman)")"; \
+            sudo install -d -m 0755 /run/podman; \
+            sudo systemctl stop podman-rootful-api.service >/dev/null 2>&1 || true; \
+            sudo rm -f "$socket"; \
+            sudo systemd-run --unit=podman-rootful-api --collect --property=Restart=on-failure "$podman_bin" system service --time=0 "unix://$socket"; \
+          fi; \
+          for _ in {1..50}; do \
+            [[ -S "$socket" ]] && break; \
+            sleep 0.1; \
+          done; \
+        fi; \
+        if [[ -S "$socket" ]]; then \
+          sudo chgrp "$(id -gn)" "$socket"; \
+          sudo chmod 0660 "$socket"; \
+        fi ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
     esac
-    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-env "{{ machine }}"
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-env-rootful "{{ machine }}"
 
 podman-env machine=podman_rootful_machine:
     @case "{{ os }}" in \
@@ -99,6 +123,7 @@ podman-env machine=podman_rootful_machine:
         if [[ -S "$socket" ]]; then \
           printf "export PODMAN_MACHINE=%q\n" "{{ machine }}"; \
           printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
         else \
           echo "Podman API socket not found: $socket" >&2; \
           exit 1; \
@@ -107,12 +132,103 @@ podman-env machine=podman_rootful_machine:
         socket="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"; \
         if [[ -S "$socket" ]]; then \
           printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
         else \
           echo "Podman API socket not found: $socket" >&2; \
           exit 1; \
         fi ;; \
       *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
     esac
+
+podman-env-rootful machine=podman_rootful_machine:
+    @case "{{ os }}" in \
+      Darwin) \
+        socket="$HOME/.tmp/podman/{{ machine }}-api.sock"; \
+        if [[ -S "$socket" ]]; then \
+          printf "export PODMAN_MACHINE=%q\n" "{{ machine }}"; \
+          printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
+        else \
+          echo "Podman API socket not found: $socket" >&2; \
+          exit 1; \
+        fi ;; \
+      Linux) \
+        socket="/run/podman/podman.sock"; \
+        if [[ -S "$socket" ]]; then \
+          printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
+        else \
+          echo "Rootful Podman API socket not found: $socket" >&2; \
+          exit 1; \
+        fi ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
+    esac
+
+podman-context:
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-context-rootless
+
+podman-context-rootless context=podman_rootless_context machine=podman_rootless_machine:
+    case "{{ os }}" in \
+      Darwin) \
+        just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-up-rootless "{{ machine }}" >/dev/null; \
+        socket="$HOME/.tmp/podman/{{ machine }}-api.sock" ;; \
+      Linux) \
+        systemctl --user start podman.socket || true; \
+        socket="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock" ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
+    esac; \
+    if [[ -S "$socket" ]]; then \
+      podman system connection remove "{{ context }}" >/dev/null 2>&1 || true; \
+      podman system connection add --default "{{ context }}" "unix://$socket"; \
+      printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+      printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
+      printf "export CONTAINER_CONNECTION=%q\n" "{{ context }}"; \
+    else \
+      echo "Podman API socket not found: $socket" >&2; \
+      exit 1; \
+    fi
+
+podman-context-rootful context=podman_rootful_context machine=podman_rootful_machine:
+    case "{{ os }}" in \
+      Darwin) \
+        just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-up-rootful "{{ machine }}" >/dev/null; \
+        socket="$HOME/.tmp/podman/{{ machine }}-api.sock" ;; \
+      Linux) \
+        just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-up-rootful "{{ machine }}" >/dev/null; \
+        socket="/run/podman/podman.sock" ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
+    esac; \
+    if [[ -S "$socket" ]]; then \
+      podman system connection remove "{{ context }}" >/dev/null 2>&1 || true; \
+      podman system connection add --default "{{ context }}" "unix://$socket"; \
+      printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+      printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
+      printf "export CONTAINER_CONNECTION=%q\n" "{{ context }}"; \
+    else \
+      echo "Rootful Podman API socket not found: $socket" >&2; \
+      exit 1; \
+    fi
+
+podman-context-ubuntu-dev-rootful context=podman_ubuntu_dev_rootful_context:
+    case "{{ os }}" in \
+      Linux) \
+        just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-up-rootful >/dev/null; \
+        socket="/run/podman/podman.sock"; \
+        if [[ -S "$socket" ]]; then \
+          podman system connection remove "{{ context }}" >/dev/null 2>&1 || true; \
+          podman system connection add --default "{{ context }}" "unix://$socket"; \
+          printf "export DOCKER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_HOST=%q\n" "unix://$socket"; \
+          printf "export CONTAINER_CONNECTION=%q\n" "{{ context }}"; \
+        else \
+          echo "Rootful Podman API socket not found: $socket" >&2; \
+          exit 1; \
+        fi ;; \
+      *) echo "ubuntu-dev rootful Podman context is only supported on Linux" >&2; exit 1 ;; \
+    esac
+
+podman-connections:
+    podman system connection list
 
 podman-down:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" podman-down-rootless
@@ -127,7 +243,13 @@ podman-down-rootless machine=podman_rootless_machine:
 podman-down-rootful machine=podman_rootful_machine:
     case "{{ os }}" in \
       Darwin) podman machine stop "{{ machine }}" ;; \
-      *) echo "Rootful Podman machine recipes are only supported on macOS" >&2; exit 1 ;; \
+      Linux) \
+        if systemctl cat podman.socket >/dev/null 2>&1; then \
+          sudo systemctl stop podman.socket podman.service || true; \
+        fi; \
+        sudo systemctl stop podman-rootful-api.service >/dev/null 2>&1 || true; \
+        sudo rm -f /run/podman/podman.sock || true ;; \
+      *) echo "Unsupported OS: {{ os }}" >&2; exit 1 ;; \
     esac
 
 podman-machines:

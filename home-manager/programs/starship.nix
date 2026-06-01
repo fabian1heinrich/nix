@@ -99,39 +99,68 @@
           "docker-compose.yaml"
         ];
         when = ''
-          command -v podman >/dev/null 2>&1 && [[ -e Containerfile || -e Dockerfile || -e compose.yml || -e compose.yaml || -e podman-compose.yml || -e podman-compose.yaml || -e docker-compose.yml || -e docker-compose.yaml ]]
+          command -v podman >/dev/null 2>&1 &&
+            [[ -e Containerfile || -e Dockerfile || -e compose.yml || -e compose.yaml || -e podman-compose.yml || -e podman-compose.yaml || -e docker-compose.yml || -e docker-compose.yaml ]] &&
+            (! command -v docker >/dev/null 2>&1 || docker --version 2>/dev/null | grep -qi '^podman version')
         '';
         command = ''
-          machine="''${PODMAN_MACHINE:-}"
-          if [[ -z "$machine" && "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
+          if [[ "$(uname -s)" == "Linux" ]]; then
             socket="''${DOCKER_HOST#unix://}"
-            socket="''${socket##*/}"
-            machine="''${socket%-api.sock}"
-          fi
-          if [[ -z "$machine" ]]; then
-            machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
-          fi
-          if [[ -n "$machine" ]] && ! podman machine inspect "$machine" >/dev/null 2>&1; then
-            machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
-          fi
-          if [[ -z "$machine" ]]; then
-            machine="podman-machine-default"
-          fi
+            if [[ "$socket" == "''${DOCKER_HOST:-}" ]]; then
+              socket=""
+            fi
 
-          if info="$(podman machine inspect "$machine" --format '{{.State}} {{.Rootful}}' 2>/dev/null)"; then
-            state="''${info%% *}"
-            rootful="''${info##* }"
-            if [[ "$state" == "running" ]]; then
-              if [[ "$rootful" == "true" ]]; then
-                printf 'podman:rootful'
+            if [[ -z "$socket" ]]; then
+              if [[ -n "''${XDG_RUNTIME_DIR:-}" && -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
+                socket="''${XDG_RUNTIME_DIR}/podman/podman.sock"
+              elif [[ -S "/run/user/$(id -u)/podman/podman.sock" ]]; then
+                socket="/run/user/$(id -u)/podman/podman.sock"
+              elif [[ -S "/run/podman/podman.sock" ]]; then
+                socket="/run/podman/podman.sock"
+              fi
+            fi
+
+            if [[ "$socket" == /run/user/*/podman/podman.sock ]]; then
+              printf 'podman:rootless'
+            elif [[ "$socket" == /run/podman/podman.sock || "$(id -u)" == "0" ]]; then
+              printf 'podman:rootful'
+            elif [[ -n "''${DOCKER_HOST:-}" ]]; then
+              printf 'podman:remote'
+            else
+              printf 'podman:rootless'
+            fi
+          else
+            machine="''${PODMAN_MACHINE:-}"
+            if [[ -z "$machine" && "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
+              socket="''${DOCKER_HOST#unix://}"
+              socket="''${socket##*/}"
+              machine="''${socket%-api.sock}"
+            fi
+            if [[ -z "$machine" ]]; then
+              machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
+            fi
+            if [[ -n "$machine" ]] && ! podman machine inspect "$machine" >/dev/null 2>&1; then
+              machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
+            fi
+            if [[ -z "$machine" ]]; then
+              machine="podman-machine-default"
+            fi
+
+            if info="$(podman machine inspect "$machine" --format '{{.State}} {{.Rootful}}' 2>/dev/null)"; then
+              state="''${info%% *}"
+              rootful="''${info##* }"
+              if [[ "$state" == "running" ]]; then
+                if [[ "$rootful" == "true" ]]; then
+                  printf 'podman:rootful'
+                else
+                  printf 'podman:rootless'
+                fi
               else
-                printf 'podman:rootless'
+                printf 'podman:down'
               fi
             else
               printf 'podman:down'
             fi
-          elif [[ "$(uname -s)" == "Darwin" ]]; then
-            printf 'podman:down'
           fi
         '';
         symbol = "📦";
