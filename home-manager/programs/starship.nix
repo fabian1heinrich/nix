@@ -1,7 +1,4 @@
-{
-  lib,
-  ...
-}:
+{ ... }:
 let
   containerFiles = [
     "Containerfile"
@@ -13,16 +10,13 @@ let
     "docker-compose.yml"
     "docker-compose.yaml"
   ];
-  containerFileTest = lib.concatMapStringsSep " || " (
-    file: "[[ -e ${lib.escapeShellArg file} ]]"
-  ) containerFiles;
 in
 {
   programs.starship = {
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname($directory)($kubernetes)($docker_context)(\${custom.podman_context})($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "$username$hostname($directory)($kubernetes)($docker_context)($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -96,74 +90,6 @@ in
         format = "[$symbol$context]($style) ";
         style = "blue bold";
         only_with_files = true;
-      };
-      custom.podman_context = {
-        detect_files = containerFiles;
-        when = ''
-          command -v podman >/dev/null 2>&1 &&
-            (${containerFileTest}) &&
-            (! command -v docker >/dev/null 2>&1 || docker --version 2>/dev/null | grep -qi '^podman version')
-        '';
-        command = ''
-          if [[ "$(uname -s)" == "Linux" ]]; then
-            socket="''${DOCKER_HOST#unix://}"
-            if [[ "$socket" == "''${DOCKER_HOST:-}" ]]; then
-              socket=""
-            fi
-
-            if [[ -z "$socket" ]]; then
-              if [[ -n "''${XDG_RUNTIME_DIR:-}" ]] && [[ -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
-                socket="''${XDG_RUNTIME_DIR}/podman/podman.sock"
-              elif [[ -S "/run/user/$(id -u)/podman/podman.sock" ]]; then
-                socket="/run/user/$(id -u)/podman/podman.sock"
-              elif [[ -S "/run/podman/podman.sock" ]]; then
-                socket="/run/podman/podman.sock"
-              fi
-            fi
-
-            if [[ "$socket" == /run/user/*/podman/podman.sock ]]; then
-              printf 'podman:rootless'
-            elif [[ "$socket" == /run/podman/podman.sock ]] || [[ "$(id -u)" == "0" ]]; then
-              printf 'podman:rootful'
-            elif [[ -n "''${DOCKER_HOST:-}" ]]; then
-              printf 'podman:remote'
-            else
-              printf 'podman:rootless'
-            fi
-          else
-            machine="''${PODMAN_MACHINE:-}"
-            if [[ -z "$machine" ]] && [[ "''${DOCKER_HOST:-}" == unix://*/podman-machine-*-api.sock ]]; then
-              socket="''${DOCKER_HOST#unix://}"
-              socket="''${socket##*/}"
-              machine="''${socket%-api.sock}"
-            fi
-            if [[ -z "$machine" ]] || ! podman machine inspect "$machine" >/dev/null 2>&1; then
-              machine="$(podman machine list --format json 2>/dev/null | jq -r '.[] | select(.Running == true) | .Name' | head -n1)"
-            fi
-            if [[ -z "$machine" ]]; then
-              machine="podman-machine-default"
-            fi
-
-            if info="$(podman machine inspect "$machine" --format '{{.State}} {{.Rootful}}' 2>/dev/null)"; then
-              state="''${info%% *}"
-              rootful="''${info##* }"
-              if [[ "$state" == "running" ]]; then
-                if [[ "$rootful" == "true" ]]; then
-                  printf 'podman:rootful'
-                else
-                  printf 'podman:rootless'
-                fi
-              else
-                printf 'podman:down'
-              fi
-            else
-              printf 'podman:down'
-            fi
-          fi
-        '';
-        symbol = "📦";
-        format = "[$symbol$output]($style) ";
-        style = "blue bold";
       };
     };
   };

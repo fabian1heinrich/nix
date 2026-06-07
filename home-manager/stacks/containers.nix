@@ -4,14 +4,27 @@
   pkgs,
   ...
 }:
+let
+  containerContext = pkgs.writeShellApplication {
+    name = "container-context";
+    runtimeInputs = with pkgs; [
+      coreutils
+      jq
+    ];
+    text = builtins.readFile ../scripts/container-context.sh;
+  };
+in
 {
-  home.packages = with pkgs; [
+  home.packages = [
+    containerContext
+  ]
+  ++ (with pkgs; [
     crane # Container registry tool
     lazydocker # Docker TUI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility
-  ];
+  ]);
 
   programs.zsh = {
     oh-my-zsh.plugins = [
@@ -20,31 +33,35 @@
       "podman"
     ];
 
-    shellAliases = {
-      docker = lib.mkDefault "podman";
-      "docker-compose" = lib.mkDefault "podman-compose";
-    };
-
     initContent = lib.mkAfter ''
-      # Prefer Podman's Docker-compatible socket when it is available.
-      # macOS uses the Podman machine API socket; Linux rootless Podman uses XDG_RUNTIME_DIR.
-      if [[ -z "''${DOCKER_HOST:-}" ]]; then
-        if [[ "$(uname -s)" == "Darwin" ]]; then
-          _podman_machine="''${PODMAN_MACHINE:-podman-machine-default}"
-          _podman_socket="''${HOME}/.tmp/podman/''${_podman_machine}-api.sock"
+      _container_clear_docker_overrides() {
+        unset DOCKER_HOST
+        unset CONTAINER_HOST
+        unset CONTAINER_CONNECTION
+        unset DOCKER_CONTEXT
+        unalias docker docker-compose 2>/dev/null || true
+      }
 
-          if [[ -S "$_podman_socket" ]]; then
-            export PODMAN_MACHINE="$_podman_machine"
-            export DOCKER_HOST="unix://$_podman_socket"
-          fi
+      _container_context() {
+        _container_clear_docker_overrides
+        container-context "$@"
+      }
 
-          unset _podman_machine _podman_socket
-        elif [[ -n "''${XDG_RUNTIME_DIR:-}" && -S "''${XDG_RUNTIME_DIR}/podman/podman.sock" ]]; then
-          export DOCKER_HOST="unix://''${XDG_RUNTIME_DIR}/podman/podman.sock"
-        elif [[ -S "/run/user/$(id -u)/podman/podman.sock" ]]; then
-          export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
-        fi
-      fi
+      ctx-colima() {
+        _container_context colima "$@"
+      }
+
+      ctx-podman() {
+        _container_context podman rootless \
+          "''${PODMAN_ROOTLESS_CONTEXT:-podman-rootless}" \
+          "''${PODMAN_ROOTLESS_MACHINE:-podman-machine-default}"
+      }
+
+      ctx-podman-rootful() {
+        _container_context podman rootful \
+          "''${PODMAN_ROOTFUL_CONTEXT:-podman-rootful}" \
+          "''${PODMAN_ROOTFUL_MACHINE:-podman-machine-rootful}"
+      }
 
       # If `docker` resolves to podman, use podman's completion backend.
       if (( $+commands[podman] && $+commands[docker] )) && command docker --version 2>/dev/null | command grep -qi '^podman version'; then
@@ -54,7 +71,7 @@
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         if (( $+commands[podman] )); then
           autoload -Uz _podman
-          compdef _podman podman docker
+          compdef _podman podman
         fi
       ''}
     '';

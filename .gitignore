@@ -6,3 +6,4 @@ result-*
 .env
 .env.*
 !.env.example
+Containerfile
