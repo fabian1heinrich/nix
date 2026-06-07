@@ -61,6 +61,8 @@
 
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         export PATH="/opt/homebrew/bin:$PATH"
+        export LANG="en_US.UTF-8"
+        export LC_CTYPE="en_US.UTF-8"
 
         # Homebrew completions live outside the Nix profile paths.
         if [[ -d /opt/homebrew/share/zsh/site-functions ]]; then
