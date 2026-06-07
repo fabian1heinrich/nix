@@ -68,16 +68,10 @@ machine_state() {
   podman machine inspect "$1" 2>/dev/null | jq -r '.[0].State // empty'
 }
 
-fix_applehv_ignition() {
+machine_rootful() {
   local machine="$1"
-  local ign="$HOME/.config/containers/podman/machine/applehv/${machine}.ign"
-  local tmp
 
-  [[ -f "$ign" ]] || return 0
-
-  tmp="$(mktemp)"
-  jq 'walk(if type == "object" then del(.verification) else . end) | if (.ignition.config.replace.source? // null) == null then del(.ignition.config.replace) else . end' "$ign" >"$tmp"
-  mv "$tmp" "$ign"
+  podman machine inspect "$machine" 2>/dev/null | jq -r '.[0].Rootful // false'
 }
 
 other_darwin_machines() {
@@ -116,10 +110,23 @@ up_darwin_podman() {
   local mode="$1"
   local machine="$2"
   local init_args=()
-  local state
+  local desired_rootful state rootful
+
+  desired_rootful=false
+  [[ "$mode" == "rootful" ]] && desired_rootful=true
 
   if podman machine inspect "$machine" >/dev/null 2>&1; then
     state="$(machine_state "$machine")"
+    rootful="$(machine_rootful "$machine")"
+
+    if [[ "$rootful" != "$desired_rootful" ]]; then
+      # Rootful/rootless mode controls API forwarding and exposes separate Podman storage.
+      if [[ "$state" == "running" ]]; then
+        podman machine stop "$machine" >/dev/null
+        state="stopped"
+      fi
+      podman machine set "--rootful=$desired_rootful" "$machine" >/dev/null
+    fi
   else
     [[ "$mode" == "rootful" ]] && init_args+=(--rootful)
     podman machine init "${init_args[@]}" "$machine" >/dev/null
@@ -128,7 +135,6 @@ up_darwin_podman() {
 
   if [[ "$state" != "running" ]]; then
     stop_other_darwin_machines "$machine"
-    fix_applehv_ignition "$machine"
     podman machine start "$machine" >/dev/null
   fi
 }
