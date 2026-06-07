@@ -4,13 +4,16 @@
     enable = true;
     onActivation = {
       autoUpdate = false;
-      cleanup = "none";
+      cleanup = "uninstall";
+      extraFlags = [ "--force-cleanup" ];
       upgrade = false;
     };
     extraConfig = "";
     prefix = "/opt/homebrew";
     brews = [
+      "colima"
       "cowsay"
+      "docker"
       "mas"
       "podman"
       "podman-compose"
