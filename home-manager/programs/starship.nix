@@ -87,7 +87,7 @@ in
       docker_context = {
         detect_files = containerFiles;
         symbol = "📦";
-        format = "[$symbol$context]($style) ";
+        format = "[$symbol api:$context]($style) ";
         style = "blue bold";
         only_with_files = true;
       };
