@@ -165,6 +165,32 @@ up_linux_rootful_podman() {
   sudo chmod 0660 "$socket"
 }
 
+up_linux_rootless_podman() {
+  local socket
+  local podman_bin
+
+  socket="$(podman_socket rootless "")"
+
+  if [[ ! -S "$socket" ]]; then
+    if systemctl --user cat podman.socket >/dev/null 2>&1; then
+      systemctl --user start podman.socket
+    else
+      podman_bin="$(readlink -f "$(command -v podman)")"
+      install -d -m 0700 "$(dirname "$socket")"
+      systemctl --user stop podman-rootless-api.service >/dev/null 2>&1 || true
+      rm -f "$socket"
+      systemd-run --user --unit=podman-rootless-api --collect --property=Restart=on-failure "$podman_bin" system service --time=0 "unix://$socket"
+    fi
+
+    for _ in {1..50}; do
+      [[ -S "$socket" ]] && break
+      sleep 0.1
+    done
+  fi
+
+  [[ -S "$socket" ]] || die "rootless Podman socket was not created: $socket"
+}
+
 up_podman() {
   local mode="$1"
   local machine="${2:-}"
@@ -174,7 +200,7 @@ up_podman() {
 
   case "$os:$mode" in
     Darwin:*) up_darwin_podman "$mode" "$machine" ;;
-    Linux:rootless) systemctl --user start podman.socket || true ;;
+    Linux:rootless) up_linux_rootless_podman ;;
     Linux:rootful) up_linux_rootful_podman ;;
     *) die "unsupported Podman mode for $os: $mode" ;;
   esac

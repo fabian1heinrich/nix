@@ -7,10 +7,15 @@
 let
   containerContext = pkgs.writeShellApplication {
     name = "container-context";
-    runtimeInputs = with pkgs; [
-      coreutils
-      jq
-    ];
+    runtimeInputs =
+      with pkgs;
+      [
+        coreutils
+        jq
+      ]
+      ++ lib.optionals stdenv.isLinux [
+        systemd
+      ];
     text = builtins.readFile ../scripts/container-context.sh;
   };
 in
@@ -20,11 +25,36 @@ in
   ]
   ++ (with pkgs; [
     crane # Container registry tool
+    docker-client # Docker CLI for context management and Starship prompt state
     lazydocker # Docker TUI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility
   ]);
+
+  systemd.user = lib.mkIf pkgs.stdenv.isLinux {
+    sockets.podman = {
+      Unit.Description = "Podman API socket";
+      Socket = {
+        ListenStream = "%t/podman/podman.sock";
+        SocketMode = "0600";
+        DirectoryMode = "0700";
+      };
+      Install.WantedBy = [ "sockets.target" ];
+    };
+
+    services.podman = {
+      Unit = {
+        Description = "Podman API service";
+        Requires = [ "podman.socket" ];
+        After = [ "podman.socket" ];
+      };
+      Service = {
+        Type = "exec";
+        ExecStart = "${pkgs.podman}/bin/podman system service --time=0";
+      };
+    };
+  };
 
   programs.zsh = {
     oh-my-zsh.plugins = [
