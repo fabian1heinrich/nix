@@ -11,6 +11,7 @@ let
       with pkgs;
       [
         coreutils
+        docker-client
         jq
       ]
       ++ lib.optionals stdenv.isLinux [
@@ -83,13 +84,13 @@ in
 
       ctx-podman() {
         _container_context podman rootless \
-          "''${PODMAN_ROOTLESS_CONTEXT:-podman-rootless}" \
+          "''${PODMAN_ROOTLESS_CONTEXT:-podman}" \
           "''${PODMAN_ROOTLESS_MACHINE:-podman-machine-default}"
       }
 
       ctx-podman-rootful() {
         _container_context podman rootful \
-          "''${PODMAN_ROOTFUL_CONTEXT:-podman-rootful}" \
+          "''${PODMAN_ROOTFUL_CONTEXT:-podman-root}" \
           "''${PODMAN_ROOTFUL_MACHINE:-podman-machine-rootful}"
       }
 
