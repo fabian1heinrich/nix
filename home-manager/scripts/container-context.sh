@@ -5,8 +5,12 @@ set -euo pipefail
 os="$(uname -s)"
 
 die() {
-  printf 'container-context: %s\n' "$*" >&2
+  log "$@"
   exit 1
+}
+
+log() {
+  printf 'container-context: %s\n' "$*" >&2
 }
 
 usage() {
@@ -94,6 +98,7 @@ stop_other_darwin_machines() {
 
   while IFS= read -r other; do
     [[ -n "$other" ]] || continue
+    log "stopping active Podman machine: $other"
     podman machine stop "$other" >/dev/null
   done < <(other_darwin_machines "$machine")
 
@@ -161,8 +166,15 @@ up_linux_rootful_podman() {
   fi
 
   [[ -S "$socket" ]] || die "rootful Podman socket was not created: $socket"
-  sudo chgrp "$(id -gn)" "$socket"
-  sudo chmod 0660 "$socket"
+
+  # This grants rootful container control to the user's primary group.
+  if [[ "${CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET:-0}" == "1" ]]; then
+    log "granting rootful Podman socket access to group: $(id -gn)"
+    sudo chgrp "$(id -gn)" "$socket"
+    sudo chmod 0660 "$socket"
+  elif [[ ! -w "$socket" ]]; then
+    die "rootful Podman socket is not writable; set CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET=1 to chgrp it to $(id -gn)"
+  fi
 }
 
 up_linux_rootless_podman() {
@@ -209,9 +221,16 @@ up_podman() {
 podman_socket() {
   local mode="$1"
   local machine="$2"
+  local path
 
   case "$os:$mode" in
-    Darwin:*) printf '%s/.tmp/podman/%s-api.sock\n' "$HOME" "$machine" ;;
+    Darwin:*)
+      if ! path="$(podman machine inspect "$machine" 2>/dev/null | jq -r '.[0].ConnectionInfo.PodmanSocket.Path // empty')"; then
+        path=""
+      fi
+      [[ -n "$path" ]] || die "Podman socket path not found for machine: $machine"
+      printf '%s\n' "$path"
+      ;;
     Linux:rootless) printf '%s/podman/podman.sock\n' "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" ;;
     Linux:rootful) printf '/run/podman/podman.sock\n' ;;
     *) die "unsupported Podman mode for $os: $mode" ;;
