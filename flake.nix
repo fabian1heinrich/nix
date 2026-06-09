@@ -83,8 +83,14 @@
         '';
 
       shellScripts = [
-        ./home-manager/scripts/bw-sync-api-keys.sh
-        ./home-manager/scripts/container-context.sh
+        (builtins.path {
+          path = ./home-manager/scripts/bw-sync-api-keys.sh;
+          name = "bw-sync-api-keys.sh";
+        })
+        (builtins.path {
+          path = ./home-manager/scripts/container-context.sh;
+          name = "container-context.sh";
+        })
       ];
 
       mkShellcheck =
@@ -93,7 +99,7 @@
           pkgs = pkgsFor system;
         in
         pkgs.runCommand "shellcheck" { nativeBuildInputs = [ pkgs.shellcheck ]; } ''
-          shellcheck ${lib.escapeShellArgs (map toString shellScripts)}
+          shellcheck ${lib.concatMapStringsSep " " (script: ''"${script}"'') shellScripts}
           touch "$out"
         '';
 
