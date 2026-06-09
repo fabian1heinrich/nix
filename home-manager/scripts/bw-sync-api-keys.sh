@@ -41,9 +41,16 @@ item_id_vars=(
   BW_ITEM_ID_CONTEXT7_API_KEY
 )
 
-hm_session_vars_candidates=(
-  "${HOME}/.nix-profile/etc/profile.d/hm-session-vars.sh"
-  "/etc/profiles/per-user/${USER}/etc/profile.d/hm-session-vars.sh"
+item_ref_vars=(
+  BW_ITEM_REF_OPENAI_API_KEY
+  BW_ITEM_REF_ANTHROPIC_API_KEY
+  BW_ITEM_REF_GITHUB_PERSONAL_ACCESS_TOKEN
+  BW_ITEM_REF_BRAVE_API_KEY
+  BW_ITEM_REF_CONTEXT7_API_KEY
+)
+
+runtime_config_candidates=(
+  "${XDG_CONFIG_HOME:-${HOME}/.config}/bw-api-key-items.env"
 )
 
 log() {
@@ -60,6 +67,32 @@ session_valid() {
   [ -n "$session" ] || return 1
   bw list items --search "__bw_probe__" --session "$session" >/dev/null 2>&1
 }
+
+load_runtime_config() {
+  local config_file
+
+  for config_file in "${runtime_config_candidates[@]}"; do
+    if [ -f "$config_file" ]; then
+      # shellcheck disable=SC1090
+      . "$config_file"
+    fi
+  done
+}
+
+item_ref_for_key() {
+  local key_name="$1"
+  local item_ref_var="BW_ITEM_REF_${key_name}"
+  local item_id_var="BW_ITEM_ID_${key_name}"
+  local item_ref="${!item_ref_var:-}"
+
+  if [ -z "$item_ref" ]; then
+    item_ref="${!item_id_var:-}"
+  fi
+
+  printf '%s' "$item_ref"
+}
+
+load_runtime_config
 
 if ! bw login --check >/dev/null 2>&1; then
   bw config server "https://vault.bitwarden.eu" >/dev/null
@@ -84,29 +117,20 @@ if ! session_valid "${BW_SESSION:-}"; then
   BW_SESSION="$(bw unlock --raw)"
 fi
 
-if [ -z "${BW_ITEM_ID_OPENAI_API_KEY:-}" ]; then
-  for hm_session_vars in "${hm_session_vars_candidates[@]}"; do
-    if [ -f "$hm_session_vars" ]; then
-      # shellcheck disable=SC1090
-      . "$hm_session_vars"
-      if [ -n "${BW_ITEM_ID_OPENAI_API_KEY:-}" ]; then
-        break
-      fi
-    fi
-  done
-fi
-
-missing_item_id_vars=()
-for item_id_var in "${item_id_vars[@]}"; do
-  item_id="${!item_id_var:-}"
-  if [ -z "$item_id" ] || [[ "$item_id" == REPLACE_* ]]; then
-    missing_item_id_vars+=("$item_id_var")
+missing_item_refs=()
+for i in "${!key_names[@]}"; do
+  key_name="${key_names[$i]}"
+  item_ref_var="${item_ref_vars[$i]}"
+  item_id_var="${item_id_vars[$i]}"
+  item_ref="$(item_ref_for_key "$key_name")"
+  if [ -z "$item_ref" ] || [[ "$item_ref" == REPLACE_* ]]; then
+    missing_item_refs+=("$item_ref_var or $item_id_var")
   fi
 done
 
-if [ "${#missing_item_id_vars[@]}" -gt 0 ]; then
-  log "missing item ID env vars: ${missing_item_id_vars[*]}"
-  log "set them in home-manager/programs/bitwarden-secrets.nix"
+if [ "${#missing_item_refs[@]}" -gt 0 ]; then
+  log "missing Bitwarden item refs: ${missing_item_refs[*]}"
+  log "copy ~/.config/bw-api-key-items.env.example to ~/.config/bw-api-key-items.env and fill it in"
   exit 1
 fi
 
@@ -120,10 +144,9 @@ fi
 
 for i in "${!key_names[@]}"; do
   key_name="${key_names[$i]}"
-  item_id_var="${item_id_vars[$i]}"
-  item_id="${!item_id_var}"
+  item_ref="$(item_ref_for_key "$key_name")"
 
-  item_json="$(bw get item "$item_id" --session "$BW_SESSION" 2>/dev/null || true)"
+  item_json="$(bw get item "$item_ref" --session "$BW_SESSION" 2>/dev/null || true)"
   if [ -z "$item_json" ]; then
     missing+=("$key_name")
     continue
@@ -149,7 +172,7 @@ for i in "${!key_names[@]}"; do
 done
 
 if [ "$found" -eq 0 ]; then
-  log "no matching Bitwarden items found for configured item IDs"
+  log "no matching Bitwarden items found for configured item refs"
   exit 1
 fi
 

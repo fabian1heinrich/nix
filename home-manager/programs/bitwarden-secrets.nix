@@ -1,17 +1,10 @@
 {
+  config,
   lib,
   pkgs,
   ...
 }:
 let
-  bwItemIds = {
-    BW_ITEM_ID_OPENAI_API_KEY = "6f8ac208-588d-4385-b6e2-b40600f97190";
-    BW_ITEM_ID_ANTHROPIC_API_KEY = "16adf109-f1b8-4276-9d44-b40600f99483";
-    BW_ITEM_ID_GITHUB_PERSONAL_ACCESS_TOKEN = "134b23e4-ae15-4fe6-947f-b40600f9eb9e";
-    BW_ITEM_ID_BRAVE_API_KEY = "78786557-cdd4-4aa1-ace1-b40600f9b65f";
-    BW_ITEM_ID_CONTEXT7_API_KEY = "6454db93-71be-4266-ab33-b40600f9d16d";
-  };
-
   bwSyncApiKeys = pkgs.writeShellApplication {
     name = "bw-sync-api-keys";
     runtimeInputs = with pkgs; [
@@ -21,28 +14,46 @@ let
     ];
     text = builtins.readFile ../scripts/bw-sync-api-keys.sh;
   };
+
+  itemRefsPath = "${config.xdg.configHome}/bw-api-key-items.env";
+  defaultItemRefs = ''
+    # Created once by Home Manager. Edit this file if your Bitwarden item names
+    # differ, or replace values with item IDs for stable lookup.
+    BW_ITEM_REF_OPENAI_API_KEY=OPENAI_API_KEY
+    BW_ITEM_REF_ANTHROPIC_API_KEY=ANTHROPIC_API_KEY
+    BW_ITEM_REF_GITHUB_PERSONAL_ACCESS_TOKEN=GITHUB_PERSONAL_ACCESS_TOKEN
+    BW_ITEM_REF_BRAVE_API_KEY=BRAVE_API_KEY
+    BW_ITEM_REF_CONTEXT7_API_KEY=CONTEXT7_API_KEY
+  '';
+  defaultItemRefsFile = pkgs.writeText "bw-api-key-items.env.default" defaultItemRefs;
 in
 {
   home.packages = [
     bwSyncApiKeys
     pkgs.bitwarden-cli
   ];
-  home.sessionVariables = bwItemIds;
+
+  xdg.configFile."bw-api-key-items.env.example".text = defaultItemRefs;
+
+  home.activation.ensureBwApiKeyItemRefs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    target=${lib.escapeShellArg itemRefsPath}
+    if [ ! -e "$target" ]; then
+      install -d -m 0700 ${lib.escapeShellArg config.xdg.configHome}
+      install -m 0600 ${lib.escapeShellArg defaultItemRefsFile} "$target"
+    fi
+  '';
 
   programs.zsh.initContent = lib.mkBefore ''
     if command -v bw-sync-api-keys >/dev/null 2>&1; then
       bw-refresh-api-keys() {
-        eval "$(bw-sync-api-keys --export-shell "$@")"
+        local exports
+        exports="$(bw-sync-api-keys --export-shell "$@")" || return
+        eval "$exports"
       }
 
       alias bw-refresh-secrets='bw-refresh-api-keys'
 
-      if [ "''${BW_SYNC_API_KEYS_ON_START:-0}" = "1" ] \
-        || [ -z "''${OPENAI_API_KEY:-}" ] \
-        || [ -z "''${ANTHROPIC_API_KEY:-}" ] \
-        || [ -z "''${GITHUB_PERSONAL_ACCESS_TOKEN:-}" ] \
-        || [ -z "''${BRAVE_API_KEY:-}" ] \
-        || [ -z "''${CONTEXT7_API_KEY:-}" ]; then
+      if [ "''${BW_SYNC_API_KEYS_ON_START:-0}" = "1" ]; then
         bw-refresh-api-keys --no-unlock --quiet
       fi
     fi

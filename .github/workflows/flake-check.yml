@@ -19,3 +19,8 @@ jobs:
 
       - name: Run flake checks
         run: nix flake check --all-systems --no-build
+
+      - name: Build Linux checks
+        run: |
+          nix build .#checks.x86_64-linux.shellcheck
+          nix build .#checks.x86_64-linux.ubuntu-dev-activation-build

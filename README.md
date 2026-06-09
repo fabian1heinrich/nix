@@ -2,6 +2,19 @@
 
 Personal Nix setup for macOS (`legendre`) and Linux (`ubuntu-dev`).
 
+## Bootstrap
+
+Prerequisites:
+
+- Nix with flakes enabled
+- Git
+- On macOS: administrator access and the Xcode command line tools
+- On Ubuntu: a user named `ubuntu-dev`, or adjust `flake.nix`
+
+From a fresh checkout, enter the repo and use the matching first-run command
+below. The repo includes `nix.conf` so the bootstrap commands can enable flakes
+before the managed configuration takes over.
+
 ## Structure
 
 - `profiles/base.nix`: minimal shared baseline
@@ -54,6 +67,26 @@ home-manager switch --flake .#ubuntu-dev
 ```bash
 nix develop
 ```
+
+## Checks
+
+Fast evaluation check:
+
+```bash
+just nix-check
+```
+
+Format and script checks:
+
+```bash
+just nix-fmt
+nix build .#checks.$(nix eval --raw --impure --expr builtins.currentSystem).shellcheck
+```
+
+Native build checks are exposed as flake checks on their matching platform:
+
+- macOS: `checks.aarch64-darwin.legendre-system-build`
+- Ubuntu: `checks.x86_64-linux.ubuntu-dev-activation-build`
 
 ## Secrets
 

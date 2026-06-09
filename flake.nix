@@ -82,6 +82,21 @@
           printf '%s\n' ${lib.escapeShellArg drv.name} > "$out"
         '';
 
+      shellScripts = [
+        ./home-manager/scripts/bw-sync-api-keys.sh
+        ./home-manager/scripts/container-context.sh
+      ];
+
+      mkShellcheck =
+        system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.runCommand "shellcheck" { nativeBuildInputs = [ pkgs.shellcheck ]; } ''
+          shellcheck ${lib.escapeShellArgs (map toString shellScripts)}
+          touch "$out"
+        '';
+
       mkHomeConfiguration =
         {
           system,
@@ -206,11 +221,24 @@
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
       };
 
+      nativeBuildCheckTargets = {
+        aarch64-darwin = {
+          legendre-system-build = darwinConfigurations.legendre.config.system.build.toplevel;
+        };
+        x86_64-linux = {
+          ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
+        };
+      };
+
       checks = lib.genAttrs checkSystems (
         checkSystem:
-        lib.mapAttrs' (
+        (lib.mapAttrs' (
           name: drv: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" drv)
-        ) checkTargets
+        ) checkTargets)
+        // {
+          shellcheck = mkShellcheck checkSystem;
+        }
+        // (nativeBuildCheckTargets.${checkSystem} or { })
       );
     in
     {
