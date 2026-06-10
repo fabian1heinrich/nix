@@ -91,6 +91,10 @@
           path = ./home-manager/scripts/container-context.sh;
           name = "container-context.sh";
         })
+        (builtins.path {
+          path = ./home-manager/scripts/container-prompt-context.sh;
+          name = "container-prompt-context.sh";
+        })
       ];
 
       mkShellcheck =

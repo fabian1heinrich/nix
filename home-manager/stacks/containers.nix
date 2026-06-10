@@ -19,19 +19,33 @@ let
       ];
     text = builtins.readFile ../scripts/container-context.sh;
   };
+  containerPromptContext = pkgs.writeShellApplication {
+    name = "container-prompt-context";
+    runtimeInputs = with pkgs; [
+      coreutils
+      docker-client
+      jq
+    ];
+    text = builtins.readFile ../scripts/container-prompt-context.sh;
+  };
 in
 {
   home.packages = [
     containerContext
+    containerPromptContext
   ]
   ++ (with pkgs; [
     crane # Container registry tool
     docker-client # Docker CLI for context management and Starship prompt state
+    docker-compose # Docker Compose CLI and plugin
     lazydocker # Docker TUI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility
   ]);
+
+  home.file.".docker/cli-plugins/docker-compose".source =
+    "${pkgs.docker-compose}/libexec/docker/cli-plugins/docker-compose";
 
   systemd.user = lib.mkIf pkgs.stdenv.isLinux {
     sockets.podman = {
@@ -65,33 +79,40 @@ in
     ];
 
     initContent = lib.mkAfter ''
-      _container_clear_docker_overrides() {
+      _container_clear_connection_overrides() {
         unset DOCKER_HOST
         unset CONTAINER_HOST
         unset CONTAINER_CONNECTION
-        unset DOCKER_CONTEXT
         unalias docker docker-compose 2>/dev/null || true
       }
 
-      _container_context() {
-        _container_clear_docker_overrides
-        container-context "$@"
+      _container_use_context() {
+        local context
+
+        _container_clear_connection_overrides
+        context="$(container-context "$@")" || return
+        export DOCKER_CONTEXT="$context"
       }
 
       ctx-colima() {
-        _container_context colima "$@"
+        _container_use_context colima "$@"
       }
 
       ctx-podman() {
-        _container_context podman rootless \
+        _container_use_context podman rootless \
           "''${PODMAN_ROOTLESS_CONTEXT:-podman}" \
           "''${PODMAN_ROOTLESS_MACHINE:-podman-machine-default}"
       }
 
       ctx-podman-rootful() {
-        _container_context podman rootful \
+        _container_use_context podman rootful \
           "''${PODMAN_ROOTFUL_CONTEXT:-podman-root}" \
           "''${PODMAN_ROOTFUL_MACHINE:-podman-machine-rootful}"
+      }
+
+      ctx-default() {
+        _container_clear_connection_overrides
+        export DOCKER_CONTEXT=default
       }
 
       # If `docker` resolves to podman, use podman's completion backend.

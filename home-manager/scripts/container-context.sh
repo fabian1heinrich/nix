@@ -51,7 +51,7 @@ wait_docker_api() {
   die "Docker API did not become ready: $socket"
 }
 
-use_docker_socket() {
+register_docker_socket() {
   local context="$1"
   local label="$2"
   local socket="$3"
@@ -65,7 +65,7 @@ use_docker_socket() {
     clean_docker context create "$context" --description "$label" --docker "host=unix://$socket" >/dev/null
   fi
 
-  clean_docker context use "$context"
+  printf '%s\n' "$context"
 }
 
 machine_state() {
@@ -263,7 +263,7 @@ use_colima_context() {
   fi
 
   socket="$HOME/.colima/$profile/docker.sock"
-  use_docker_socket "$context" "$label" "$socket"
+  register_docker_socket "$context" "$label" "$socket"
 }
 
 use_podman_context() {
@@ -283,7 +283,7 @@ use_podman_context() {
     podman system connection default "$connection" >/dev/null
   fi
 
-  use_docker_socket "$context" "$label" "$socket"
+  register_docker_socket "$context" "$label" "$socket"
 }
 
 main() {

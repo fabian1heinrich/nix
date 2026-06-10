@@ -14,10 +14,12 @@
       "colima"
       "cowsay"
       "docker"
+      "lima-additional-guestagents"
       "mas"
-      "podman"
       "podman-compose"
+      "podman"
       "qemu"
+      "socket_vmnet"
     ];
     greedyCasks = false;
     casks = [

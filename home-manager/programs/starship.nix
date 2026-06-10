@@ -16,7 +16,7 @@ in
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname($directory)($kubernetes)($docker_context)($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "$username$hostname($directory)($kubernetes)(\${custom.container_context})($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -84,12 +84,11 @@ in
           "charts"
         ];
       };
-      docker_context = {
+      custom.container_context = {
         detect_files = containerFiles;
-        symbol = "📦";
-        format = "[$symbol$context]($style) ";
+        command = "container-prompt-context";
+        format = "([$output]($style) )";
         style = "blue bold";
-        only_with_files = true;
       };
     };
   };

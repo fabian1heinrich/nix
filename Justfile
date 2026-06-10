@@ -64,6 +64,26 @@ k9s cluster=cluster:
 colima-context profile="":
     @container-context colima "{{ profile }}"
 
+container-vms:
+    @colima list || true
+    @podman machine list || true
+
+container-colima-delete profile="default" context="colima":
+    colima delete --force "{{ profile }}"
+    @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
+
+container-colima-delete-data profile="default" context="colima":
+    colima delete --force --data "{{ profile }}"
+    @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
+
+container-podman-delete machine="podman-machine-default" context="podman":
+    podman machine rm --force "{{ machine }}"
+    @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
+
+container-podman-reset:
+    podman machine reset --force
+    @{{ docker }} context rm --force podman podman-root 2>/dev/null || true
+
 container-status:
     @{{ docker }} info
 
