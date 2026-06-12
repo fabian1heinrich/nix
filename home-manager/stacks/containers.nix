@@ -86,11 +86,16 @@ in
         unalias docker docker-compose 2>/dev/null || true
       }
 
+      _container_docker() {
+        env -u DOCKER_HOST -u CONTAINER_HOST -u CONTAINER_CONNECTION -u DOCKER_CONTEXT docker "$@"
+      }
+
       _container_use_context() {
         local context
 
         _container_clear_connection_overrides
         context="$(container-context "$@")" || return
+        _container_docker context use "$context" >/dev/null || return
         export DOCKER_CONTEXT="$context"
       }
 
@@ -100,18 +105,20 @@ in
 
       ctx-podman() {
         _container_use_context podman rootless \
-          "''${PODMAN_ROOTLESS_CONTEXT:-podman}" \
+          "''${PODMAN_ROOTLESS_CONTEXT:-podman-rootless}" \
           "''${PODMAN_ROOTLESS_MACHINE:-podman-machine-default}"
       }
 
       ctx-podman-rootful() {
-        _container_use_context podman rootful \
-          "''${PODMAN_ROOTFUL_CONTEXT:-podman-root}" \
+        CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET="''${CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET:-1}" \
+          _container_use_context podman rootful \
+          "''${PODMAN_ROOTFUL_CONTEXT:-podman-rootful}" \
           "''${PODMAN_ROOTFUL_MACHINE:-podman-machine-rootful}"
       }
 
       ctx-default() {
         _container_clear_connection_overrides
+        _container_docker context use default >/dev/null || return
         export DOCKER_CONTEXT=default
       }
 

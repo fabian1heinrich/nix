@@ -76,13 +76,13 @@ container-colima-delete-data profile="default" context="colima":
     colima delete --force --data "{{ profile }}"
     @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
 
-container-podman-delete machine="podman-machine-default" context="podman":
+container-podman-delete machine="podman-machine-default" context="podman-rootless":
     podman machine rm --force "{{ machine }}"
     @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
 
 container-podman-reset:
     podman machine reset --force
-    @{{ docker }} context rm --force podman podman-root 2>/dev/null || true
+    @{{ docker }} context rm --force podman podman-root podman-rootless podman-rootful 2>/dev/null || true
 
 container-status:
     @{{ docker }} info
