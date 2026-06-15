@@ -68,6 +68,29 @@ container-vms:
     @colima list || true
     @podman machine list || true
 
+container-vms-delete-all-macos:
+    @case "{{ os }}" in \
+      Darwin) ;; \
+      *) echo "This recipe only deletes macOS Colima/Podman VMs." >&2; exit 1 ;; \
+    esac
+    @if command -v colima >/dev/null 2>&1; then \
+      colima list --json 2>/dev/null | jq -r 'if type == "array" then .[] elif type == "object" then . else empty end | .name // empty' | \
+        while IFS= read -r profile; do \
+          [[ -n "$profile" ]] || continue; \
+          colima delete --force "$profile"; \
+          if [[ "$profile" == "default" ]]; then context="colima"; else context="colima-$profile"; fi; \
+          {{ docker }} context rm --force "$context" >/dev/null 2>&1 || true; \
+        done; \
+    fi
+    @if command -v podman >/dev/null 2>&1; then \
+      podman machine list --format json 2>/dev/null | jq -r '.[] | .Name // empty' | \
+        while IFS= read -r machine; do \
+          [[ -n "$machine" ]] || continue; \
+          podman machine rm --force "$machine"; \
+        done; \
+      {{ docker }} context rm --force podman podman-root podman-rootless podman-rootful >/dev/null 2>&1 || true; \
+    fi
+
 container-colima-delete profile="default" context="colima":
     colima delete --force "{{ profile }}"
     @{{ docker }} context rm --force "{{ context }}" 2>/dev/null || true
