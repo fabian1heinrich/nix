@@ -31,42 +31,8 @@
         "x86_64-linux"
       ];
 
-      owner = {
-        name = "Fabian Heinrich";
-        email = "fabianheinrich@aol.com";
-      };
-
-      mkUser =
-        {
-          username,
-          homeDirectory,
-          system,
-          name ? owner.name,
-          email ? owner.email,
-        }:
-        {
-          inherit
-            name
-            email
-            username
-            homeDirectory
-            system
-            ;
-        };
-
-      # User configurations
-      users = {
-        fabian = mkUser {
-          username = "fabian";
-          homeDirectory = "/Users/fabian";
-          system = "aarch64-darwin";
-        };
-        ubuntu-dev = mkUser {
-          username = "ubuntu-dev";
-          homeDirectory = "/home/ubuntu-dev";
-          system = "x86_64-linux";
-        };
-      };
+      userRegistry = import ./users.nix;
+      inherit (userRegistry) owner users;
 
       # Helper to create pkgs for a system
       pkgsFor =
@@ -95,7 +61,8 @@
           path = ./home-manager/scripts/container-prompt-context.sh;
           name = "container-prompt-context.sh";
         })
-      ];
+      ]
+      ++ eulerHostPackages.shellScripts;
 
       mkShellcheck =
         system:
@@ -119,13 +86,13 @@
           pkgs ? pkgsFor system,
         }:
         let
-          userConfig = mkUser {
+          userConfig = {
             inherit
+              name
+              email
               username
               homeDirectory
               system
-              name
-              email
               ;
           };
         in
@@ -217,6 +184,53 @@
         };
       };
 
+      eulerNixosConfiguration = nixpkgs.lib.nixosSystem {
+        system = users.euler.system;
+        specialArgs = {
+          userConfig = users.euler;
+        };
+        modules = [
+          { nixpkgs.config.allowUnfree = true; }
+          ./hosts/euler/nixos.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "backup";
+              extraSpecialArgs = {
+                userConfig = users.euler;
+              };
+              users.${users.euler.username}.imports = [
+                ./hosts/euler/home.nix
+              ];
+            };
+          }
+        ];
+      };
+
+      eulerSystem = eulerNixosConfiguration.config.system.build.toplevel;
+
+      eulerInstallerConfiguration = nixpkgs.lib.nixosSystem {
+        system = users.euler.system;
+        specialArgs = {
+          inherit eulerSystem;
+        };
+        modules = [
+          ./hosts/euler/installer.nix
+        ];
+      };
+
+      nixosConfigurations = {
+        euler = eulerNixosConfiguration;
+        euler-installer = eulerInstallerConfiguration;
+      };
+
+      eulerHostPackages = import ./hosts/euler/packages.nix {
+        pkgs = pkgsFor users.euler.system;
+        eulerInstallerIso = nixosConfigurations.euler-installer.config.system.build.isoImage;
+      };
+
       homeConfigurations = {
         ubuntu-dev = mkHome {
           user = "ubuntu-dev";
@@ -224,11 +238,18 @@
             ./hosts/ubuntu-dev/home.nix
           ];
         };
+        euler = mkHome {
+          user = "euler";
+          modules = [
+            ./hosts/euler/home.nix
+          ];
+        };
       };
 
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
+        euler = nixosConfigurations.euler.config.system.build.toplevel;
       };
 
       nativeBuildCheckTargets = {
@@ -237,7 +258,16 @@
         };
         x86_64-linux = {
           ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
+          euler-system-build = nixosConfigurations.euler.config.system.build.toplevel;
         };
+      };
+
+      packages = {
+        x86_64-linux = eulerHostPackages.packages;
+      };
+
+      apps = {
+        x86_64-linux = eulerHostPackages.apps;
       };
 
       checks = lib.genAttrs checkSystems (
@@ -257,7 +287,10 @@
       inherit
         formatter
         darwinConfigurations
+        nixosConfigurations
         homeConfigurations
+        packages
+        apps
         checks
         ;
     };

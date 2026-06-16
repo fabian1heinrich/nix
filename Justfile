@@ -25,6 +25,12 @@ switch-legendre:
 switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
 
+build-euler-iso:
+    nix build .#euler-installer-iso
+
+run-euler-iso-vm:
+    nix run .#euler-installer-vm
+
 homebrew-upgrade:
     brew update
     brew upgrade
