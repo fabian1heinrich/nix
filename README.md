@@ -10,7 +10,7 @@ Prerequisites:
 - Git
 - On macOS: administrator access and the Xcode command line tools
 - On Ubuntu: a user named `ubuntu-dev`, or adjust `users.nix`
-- For the `euler` ISO VM: KVM-capable Linux for acceleration; software emulation also works
+- For the Euler installer VM: KVM-capable Linux for acceleration; software emulation also works
 
 From a fresh checkout, enter the repo and use the matching first-run command
 below. The repo includes `nix.conf` so the bootstrap commands can enable flakes
@@ -64,20 +64,21 @@ Ubuntu (`ubuntu-dev`, after setup):
 home-manager switch --flake .#ubuntu-dev
 ```
 
-NixOS (`euler`, installer ISO):
+NixOS test installer (`euler-vm` target):
 
-Build the airgapped installer ISO on a connected `x86_64-linux` machine:
+Build the VM-oriented installer ISO on a connected `x86_64-linux` machine:
 
 ```bash
-just build-euler-iso
+just build-euler-vm-iso
 ```
 
-The ISO is written below `result/iso/`.
+The recipe prints the ISO path in the Nix store and does not create a `result`
+symlink.
 
 Start a local QEMU VM from the same ISO:
 
 ```bash
-just run-euler-iso-vm
+just run-euler-vm
 ```
 
 The VM launcher creates a persistent qcow2 disk and UEFI vars below
@@ -85,21 +86,73 @@ The VM launcher creates a persistent qcow2 disk and UEFI vars below
 available. Useful overrides:
 
 ```bash
-EULER_VM_MEMORY=8192 EULER_VM_CPUS=6 just run-euler-iso-vm
-EULER_VM_DISK_SIZE=128G just run-euler-iso-vm
-EULER_VM_NET=user just run-euler-iso-vm
+EULER_VM_MEMORY=8192 EULER_VM_CPUS=6 just run-euler-vm
+EULER_VM_DISK_SIZE=128G just run-euler-vm
+EULER_VM_NET=user just run-euler-vm
+EULER_VM_ISO=/path/to/euler-installer.iso just run-euler-vm
+EULER_VM_DISPLAY=nographic just run-euler-vm
 ```
 
-Inside the installer VM, create and mount target filesystems below `/mnt`, then
+Inside the installer VM, prepare the disk with the baked `disko` layout, then
 install the baked `euler` system closure from the ISO:
 
 ```bash
-sudo nixos-install --root /mnt --system /etc/euler-system --no-channel-copy
+sudo prepare-euler-disk /dev/vda
+sudo install-euler
 ```
 
-The generic `euler` host config expects the root filesystem to be labeled
-`nixos`. The first local login for the `euler` user uses the temporary password
-`euler`; change it after the first boot with `passwd`.
+After `install-euler` finishes successfully, shut down the installer VM and boot
+from the installed qcow2 disk to see the graphical GNOME login:
+
+```bash
+EULER_VM_BOOT=disk EULER_VM_DISPLAY=gtk just run-euler-vm
+```
+
+`EULER_VM_BOOT=disk` is only for the post-install boot. Before the installation
+has completed, keep the default ISO boot by running `just run-euler-vm`.
+`EULER_VM_DISPLAY=gtk` opens the graphical QEMU window; `nographic` only shows
+the serial console.
+
+The VM target uses LVM on LUKS: GPT partition `euler-luks`, LUKS mapper
+`euler-crypt`, volume group `euler`, root LV `root`, root filesystem label
+`nixos`, and EFI filesystem label `boot`. The layout is declared in
+`hosts/euler/storage.nix`; `prepare-euler-disk` runs `disko` and mounts it
+below `/mnt`. The installed system hostname is `euler`.
+
+NixOS real machine (`euler-baremetal` target):
+
+Build the bare-metal installer ISO on a connected `x86_64-linux` machine:
+
+```bash
+just build-euler-baremetal-iso
+```
+
+Boot that ISO on the target machine, identify the install disk with `lsblk`,
+prepare it with the baked `disko` layout, and install the baked `euler` system
+closure:
+
+```bash
+sudo prepare-euler-disk /dev/nvme0n1
+sudo install-euler
+```
+
+`prepare-euler-disk` creates the same LVM-on-LUKS layout as the VM target and
+mounts it below `/mnt`.
+
+After the first successful boot, generate and commit the real hardware config
+without filesystem entries, because `hosts/euler/storage.nix` remains the
+declarative owner of the disk layout:
+
+```bash
+sudo nixos-generate-config --no-filesystems --root /
+cp /etc/nixos/hardware-configuration.nix /path/to/this/repo/hosts/euler/hardware-configuration.nix
+sudo nixos-rebuild switch --flake /path/to/this/repo#euler-baremetal
+```
+
+`euler-baremetal` imports `hosts/euler/hardware-configuration.nix` when that
+file exists. The repo target is named `euler-baremetal`, but the installed
+system hostname is `euler`. The first local login for the `euler` user uses the
+temporary password `euler`; change it after the first boot with `passwd`.
 
 ## Dev Shells
 
@@ -126,7 +179,8 @@ Native build checks are exposed as flake checks on their matching platform:
 
 - macOS: `checks.aarch64-darwin.legendre-system-build`
 - Ubuntu: `checks.x86_64-linux.ubuntu-dev-activation-build`
-- NixOS: `checks.x86_64-linux.euler-system-build`
+- NixOS VM: `checks.x86_64-linux.euler-vm-system-build`
+- NixOS bare metal: `checks.x86_64-linux.euler-baremetal-system-build`
 
 ## Secrets
 

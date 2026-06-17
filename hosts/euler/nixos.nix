@@ -5,10 +5,6 @@
   ...
 }:
 {
-  imports = lib.optionals (builtins.pathExists ./hardware-configuration.nix) [
-    ./hardware-configuration.nix
-  ];
-
   nix = {
     channel.enable = false;
     gc = {
@@ -37,15 +33,7 @@
     };
   };
 
-  # Real hardware details belong in hosts/euler/hardware-configuration.nix.
-  # These defaults keep the flake evaluable before that generated file exists.
-  fileSystems."/" = {
-    device = lib.mkDefault "/dev/disk/by-label/nixos";
-    fsType = lib.mkDefault "ext4";
-  };
-
   networking = {
-    hostName = "euler";
     networkmanager.enable = true;
   };
 
@@ -79,7 +67,7 @@
 
   users.users.${userConfig.username} = {
     isNormalUser = true;
-    description = userConfig.name;
+    description = userConfig.username;
     home = userConfig.homeDirectory;
     initialPassword = "euler";
     shell = pkgs.zsh;

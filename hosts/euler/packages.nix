@@ -1,5 +1,6 @@
 {
-  eulerInstallerIso,
+  eulerBaremetalInstallerIso,
+  eulerVmInstallerIso,
   pkgs,
 }:
 let
@@ -8,14 +9,14 @@ let
     name = "euler-installer-vm.sh";
   };
 
-  eulerInstallerVm = pkgs.writeShellApplication {
-    name = "euler-installer-vm";
+  eulerVmInstallerVm = pkgs.writeShellApplication {
+    name = "euler-vm-installer-vm";
     runtimeInputs = with pkgs; [
       coreutils
       qemu_kvm
     ];
     text = ''
-      export EULER_VM_ISO="${eulerInstallerIso}/iso/euler-installer.iso"
+      export EULER_VM_ISO="''${EULER_VM_ISO:-${eulerVmInstallerIso}/iso/${eulerVmInstallerIso.name}}"
       export EULER_VM_OVMF_CODE="${pkgs.OVMF.fd}/FV/OVMF_CODE.fd"
       export EULER_VM_OVMF_VARS_SRC="${pkgs.OVMF.fd}/FV/OVMF_VARS.fd"
 
@@ -29,14 +30,20 @@ in
   ];
 
   packages = {
-    euler-installer-iso = eulerInstallerIso;
-    euler-installer-vm = eulerInstallerVm;
+    euler-baremetal-installer-iso = eulerBaremetalInstallerIso;
+    euler-installer-iso = eulerBaremetalInstallerIso;
+    euler-vm-installer-iso = eulerVmInstallerIso;
+    euler-vm-installer-vm = eulerVmInstallerVm;
   };
 
   apps = {
     euler-installer-vm = {
       type = "app";
-      program = "${eulerInstallerVm}/bin/euler-installer-vm";
+      program = "${eulerVmInstallerVm}/bin/euler-vm-installer-vm";
+    };
+    euler-vm-installer-vm = {
+      type = "app";
+      program = "${eulerVmInstallerVm}/bin/euler-vm-installer-vm";
     };
   };
 }

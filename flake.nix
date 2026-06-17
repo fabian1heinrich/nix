@@ -7,6 +7,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    disko.url = "github:nix-community/disko/latest";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -14,6 +16,7 @@
       nixpkgs,
       home-manager,
       darwin,
+      disko,
       ...
     }:
     let
@@ -184,51 +187,99 @@
         };
       };
 
-      eulerNixosConfiguration = nixpkgs.lib.nixosSystem {
-        system = users.euler.system;
-        specialArgs = {
-          userConfig = users.euler;
-        };
-        modules = [
-          { nixpkgs.config.allowUnfree = true; }
-          ./hosts/euler/nixos.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "backup";
-              extraSpecialArgs = {
-                userConfig = users.euler;
+      mkEulerNixosConfiguration =
+        modules:
+        nixpkgs.lib.nixosSystem {
+          system = users.euler.system;
+          specialArgs = {
+            userConfig = users.euler;
+          };
+          modules = [
+            { nixpkgs.config.allowUnfree = true; }
+            disko.nixosModules.disko
+          ]
+          ++ modules
+          ++ [
+            home-manager.nixosModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                extraSpecialArgs = {
+                  userConfig = users.euler;
+                };
+                users.${users.euler.username}.imports = [
+                  ./hosts/euler/home.nix
+                ];
               };
-              users.${users.euler.username}.imports = [
-                ./hosts/euler/home.nix
-              ];
-            };
-          }
-        ];
-      };
-
-      eulerSystem = eulerNixosConfiguration.config.system.build.toplevel;
-
-      eulerInstallerConfiguration = nixpkgs.lib.nixosSystem {
-        system = users.euler.system;
-        specialArgs = {
-          inherit eulerSystem;
+            }
+          ];
         };
-        modules = [
-          ./hosts/euler/installer.nix
-        ];
+
+      eulerVmNixosConfiguration = mkEulerNixosConfiguration [
+        ./hosts/euler/vm.nix
+      ];
+
+      eulerBaremetalNixosConfiguration = mkEulerNixosConfiguration [
+        ./hosts/euler/baremetal.nix
+      ];
+
+      mkEulerInstallerConfiguration =
+        {
+          eulerInstallerName,
+          eulerSystem,
+        }:
+        nixpkgs.lib.nixosSystem {
+          system = users.euler.system;
+          specialArgs = {
+            inherit
+              eulerDiskoConfig
+              eulerDiskoDestroyFormatMountScript
+              eulerInstallDisk
+              eulerInstallerName
+              eulerSystem
+              ;
+          };
+          modules = [
+            ./hosts/euler/installer.nix
+          ];
+        };
+
+      eulerVmInstallerConfiguration = mkEulerInstallerConfiguration {
+        eulerInstallerName = "euler-installer";
+        eulerSystem = eulerVmNixosConfiguration.config.system.build.toplevel;
       };
+
+      eulerBaremetalInstallerConfiguration = mkEulerInstallerConfiguration {
+        eulerInstallerName = "euler-installer";
+        eulerSystem = eulerBaremetalNixosConfiguration.config.system.build.toplevel;
+      };
+
+      eulerDiskoConfigDir = ./hosts/euler;
+      eulerDiskoConfig = "${eulerDiskoConfigDir}/storage-install.nix";
+      eulerInstallDisk = "/dev/disk/by-id/euler-install-disk";
+      eulerDiskoDestroyFormatMountScript = disko.lib._cliDestroyFormatMount (import
+        ./hosts/euler/storage-install.nix
+        {
+          eulerDisk = eulerInstallDisk;
+        }
+      ) (pkgsFor users.euler.system);
 
       nixosConfigurations = {
-        euler = eulerNixosConfiguration;
-        euler-installer = eulerInstallerConfiguration;
+        euler = eulerBaremetalNixosConfiguration;
+        euler-installer = eulerBaremetalInstallerConfiguration;
+        euler-vm = eulerVmNixosConfiguration;
+        euler-vm-installer = eulerVmInstallerConfiguration;
+        euler-baremetal = eulerBaremetalNixosConfiguration;
+        euler-baremetal-installer = eulerBaremetalInstallerConfiguration;
       };
 
       eulerHostPackages = import ./hosts/euler/packages.nix {
         pkgs = pkgsFor users.euler.system;
-        eulerInstallerIso = nixosConfigurations.euler-installer.config.system.build.isoImage;
+        eulerBaremetalInstallerIso =
+          nixosConfigurations.euler-baremetal-installer.config.system.build.isoImage;
+        eulerVmInstallerIso = nixosConfigurations.euler-vm-installer.config.system.build.isoImage;
       };
 
       homeConfigurations = {
@@ -249,7 +300,8 @@
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
-        euler = nixosConfigurations.euler.config.system.build.toplevel;
+        euler-baremetal = nixosConfigurations.euler-baremetal.config.system.build.toplevel;
+        euler-vm = nixosConfigurations.euler-vm.config.system.build.toplevel;
       };
 
       nativeBuildCheckTargets = {
@@ -258,7 +310,8 @@
         };
         x86_64-linux = {
           ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
-          euler-system-build = nixosConfigurations.euler.config.system.build.toplevel;
+          euler-baremetal-system-build = nixosConfigurations.euler-baremetal.config.system.build.toplevel;
+          euler-vm-system-build = nixosConfigurations.euler-vm.config.system.build.toplevel;
         };
       };
 

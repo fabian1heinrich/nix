@@ -11,6 +11,8 @@ disk_size="${EULER_VM_DISK_SIZE:-64G}"
 memory="${EULER_VM_MEMORY:-4096}"
 cpus="${EULER_VM_CPUS:-4}"
 ovmf_vars="$state_dir/OVMF_VARS.fd"
+display="${EULER_VM_DISPLAY:-auto}"
+boot="${EULER_VM_BOOT:-iso}"
 
 mkdir -p "$state_dir"
 
@@ -30,18 +32,45 @@ if [ -e /dev/kvm ] && [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
   cpu=host
 fi
 
-display_args=(-nographic)
-if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
-  display_args=(-display gtk)
-fi
+case "$display" in
+  auto)
+    display_args=(-nographic)
+    if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
+      display_args=(-display gtk)
+    fi
+    ;;
+  gtk)
+    display_args=(-display gtk)
+    ;;
+  nographic)
+    display_args=(-nographic)
+    ;;
+  *)
+    echo "Unsupported EULER_VM_DISPLAY: $display" >&2
+    exit 1
+    ;;
+esac
 
 net_args=(-nic none)
 if [ "${EULER_VM_NET:-none}" = "user" ]; then
   net_args=(-nic "user,model=virtio-net-pci")
 fi
 
+case "$boot" in
+  iso)
+    boot_args=(-cdrom "$EULER_VM_ISO" -boot d)
+    ;;
+  disk)
+    boot_args=(-boot c)
+    ;;
+  *)
+    echo "Unsupported EULER_VM_BOOT: $boot" >&2
+    exit 1
+    ;;
+esac
+
 exec qemu-system-x86_64 \
-  -name euler-installer \
+  -name euler \
   -machine "q35,accel=$accel" \
   -cpu "$cpu" \
   -m "$memory" \
@@ -49,8 +78,7 @@ exec qemu-system-x86_64 \
   -drive "if=pflash,format=raw,readonly=on,file=$EULER_VM_OVMF_CODE" \
   -drive "if=pflash,format=raw,file=$ovmf_vars" \
   -drive "file=$disk,if=virtio,format=qcow2" \
-  -cdrom "$EULER_VM_ISO" \
-  -boot d \
+  "${boot_args[@]}" \
   "${display_args[@]}" \
   "${net_args[@]}" \
   "$@"

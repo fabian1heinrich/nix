@@ -25,11 +25,22 @@ switch-legendre:
 switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
 
+build-euler-vm-iso:
+    @iso_root="$(nix build .#euler-vm-installer-iso --no-link --print-out-paths)"; \
+      find "$iso_root/iso" -maxdepth 1 -type f -name '*.iso' -print -quit
+
+build-euler-baremetal-iso:
+    @iso_root="$(nix build .#euler-baremetal-installer-iso --no-link --print-out-paths)"; \
+      find "$iso_root/iso" -maxdepth 1 -type f -name '*.iso' -print -quit
+
 build-euler-iso:
-    nix build .#euler-installer-iso
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" build-euler-baremetal-iso
+
+run-euler-vm:
+    nix run .#euler-vm-installer-vm
 
 run-euler-iso-vm:
-    nix run .#euler-installer-vm
+    nix run .#euler-vm-installer-vm
 
 homebrew-upgrade:
     brew update
