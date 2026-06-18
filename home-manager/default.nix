@@ -15,6 +15,7 @@
     tree # Directory tree viewer
     glow # Markdown renderer
     mawk # Fast awk implementation
+    worktrunk # Git Worktree Management
 
     # Disk & system utilities
     btop # System monitor

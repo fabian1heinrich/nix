@@ -1,0 +1,18 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Project-scoped Codex defaults for this repository. Keep personal settings
+# such as model providers, profiles, notification commands, and telemetry in
+# ~/.codex/config.toml instead.
+
+sandbox_mode = "danger-full-access"
+approval_policy = "never"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+[sandbox_workspace_write]
+# Keep the sandbox tight by default. Add absolute paths here only when this
+# project genuinely needs Codex to edit outside the repository.
+writable_roots = []
+network_access = true
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false

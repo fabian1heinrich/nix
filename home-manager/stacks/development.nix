@@ -8,6 +8,7 @@
     ../programs/git.nix
     ../programs/lazyworktree.nix
     ../programs/nh.nix
+    ../programs/worktrunk.nix
   ];
 
   home.packages = with pkgs; [

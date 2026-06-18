@@ -1,0 +1,25 @@
+[forge]
+platform = "github"
+
+[[pre-commit]]
+format = "nix fmt -- --ci"
+
+[[pre-commit]]
+whitespace = "git diff --check"
+
+[[pre-merge]]
+flake-eval = "just nix-check"
+shellcheck = "just nix-shellcheck"
+
+[commit.generation]
+template-append = """
+- Follow the repo's existing conventional commit style when it fits: feat:, fix:, chore:, docs:, refactor:.
+- Mention the affected host, Home Manager module, or script when that makes the change clearer.
+- Keep local machine details, secrets, and generated lockfile churn out of the message unless they are the actual change.
+"""
+
+[aliases]
+fmt = "just nix-fmt"
+check = "just nix-check"
+shellcheck = "just nix-shellcheck"
+verify = "just nix-fmt && just nix-check && just nix-shellcheck"
