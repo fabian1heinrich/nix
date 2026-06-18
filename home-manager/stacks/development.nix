@@ -4,6 +4,7 @@
   imports = [
     ../programs/claude-code.nix
     ../programs/codex.nix
+    ../programs/direnv.nix
     ../programs/gh.nix
     ../programs/git.nix
     ../programs/lazyworktree.nix
