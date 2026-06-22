@@ -5,37 +5,37 @@
         "nixd",
         "!nil"
       ],
-      "formatter": "language_server",
-    },
+      "formatter": "language_server"
+    }
   },
   "lsp": {
     "nixd": {
       "settings": {
         "eval": {
           "target": {
-            "installable": ".#darwinConfigurations.legendre.config.system.build.toplevel",
-          },
+            "installable": ".#darwinConfigurations.legendre.config.system.build.toplevel"
+          }
         },
         "nixpkgs": {
-          "expr": "import (builtins.getFlake (\"git+file:\" + builtins.toString ./.)).inputs.nixpkgs { system = builtins.currentSystem; config.allowUnfree = true; }",
+          "expr": "import (builtins.getFlake (\"git+file:\" + builtins.toString ./.)).inputs.nixpkgs { system = builtins.currentSystem; config.allowUnfree = true; }"
         },
         "formatting": {
           "command": [
             "nixfmt"
-          ],
+          ]
         },
         "options": {
           "home-manager-ubuntu-dev": {
-            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).homeConfigurations.ubuntu-dev.options",
+            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).homeConfigurations.ubuntu-dev.options"
           },
           "home-manager-legendre": {
-            "expr": "((builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options.home-manager.users.type.getSubOptions [])",
+            "expr": "((builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options.home-manager.users.type.getSubOptions [])"
           },
           "nix-darwin": {
-            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options",
-          },
-        },
-      },
-    },
-  },
+            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options"
+          }
+        }
+      }
+    }
+  }
 }
