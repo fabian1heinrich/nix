@@ -8,6 +8,7 @@ format = "nix fmt -- --ci"
 whitespace = "git diff --check"
 
 [[pre-merge]]
+format = "nix fmt -- --ci"
 flake-eval = "just nix-check"
 shellcheck = "just nix-shellcheck"
 

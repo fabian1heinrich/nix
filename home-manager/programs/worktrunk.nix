@@ -1,7 +1,7 @@
 { ... }:
 {
   xdg.configFile."worktrunk/config.toml".text = ''
-    worktree-path = "~/worktrees/{{ owner }}/{{ repo }}/{{ branch | sanitize_hash }}"
+    worktree-path = "~/worktrees/{{ owner }}/{{ repo }}/{{ branch | sanitize }}"
 
     [list]
     full = true
