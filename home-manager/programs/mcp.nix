@@ -44,6 +44,11 @@ let
     };
 in
 {
+  home.packages = with pkgs; [
+    nodejs
+    uv
+  ];
+
   programs.mcp = {
     enable = true;
     servers = {
