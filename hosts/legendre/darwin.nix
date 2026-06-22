@@ -5,6 +5,7 @@ in
 {
   imports = [
     ./homebrew.nix
+    ./xcode.nix
   ];
 
   nix = {

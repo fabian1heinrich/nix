@@ -11,6 +11,12 @@ Prerequisites:
 - On macOS: administrator access and the Xcode command line tools
 - On Ubuntu: a user named `ubuntu-dev`, or adjust `flake.nix`
 
+The `legendre` Darwin configuration checks that the Xcode Command Line Tools
+are installed and keeps `xcode-select` pointed at
+`/Library/Developer/CommandLineTools`. Full Xcode is intentionally not managed
+by this flake; remove `Xcode.app` manually if it is installed and you do not
+need the IDE, simulators, or platform SDK GUI tooling.
+
 From a fresh checkout, enter the repo and use the matching first-run command
 below. The repo includes `nix.conf` so the bootstrap commands can enable flakes
 before the managed configuration takes over.
