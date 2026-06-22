@@ -186,6 +186,7 @@
               nixfmt
               nixfmt-tree
               shellcheck
+              worktrunk
             ];
           };
         };
