@@ -11,6 +11,11 @@ configuration. Keep changes small, explicit, and easy to review.
 - Treat each Codex thread as owning only the worktree it was started in.
 - Prefer `wt switch --create <branch>` for new work and `wt merge` or a PR flow
   when the change is ready.
+- If `wt` is unavailable in the agent shell, use
+  `nix shell nixpkgs#worktrunk -c wt ...`.
+- Do not rely on `wt` changing directories across agent tool calls; after
+  creating or switching worktrees, continue with the command working directory
+  set explicitly to the target worktree path.
 - Do not create commits unless the user explicitly asks; leave completed agent
   changes uncommitted by default.
 - Before cleanup, make sure useful work is committed, merged, or otherwise
