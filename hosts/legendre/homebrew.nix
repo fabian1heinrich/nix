@@ -16,6 +16,7 @@
       "docker"
       "lima-additional-guestagents"
       "mas"
+      "mole"
       "podman-compose"
       "podman"
       "qemu"
@@ -44,6 +45,7 @@
       "utm"
       "visual-studio-code"
       "yubico-authenticator"
+      "zed"
       "zen"
       "zoom"
     ];

@@ -1,5 +1,41 @@
-// Folder-specific settings
-//
-// For a full list of overridable settings, and general information on folder-specific settings,
-// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
-{}
+{
+  "languages": {
+    "Nix": {
+      "language_servers": [
+        "nixd",
+        "!nil"
+      ],
+      "formatter": "language_server",
+    },
+  },
+  "lsp": {
+    "nixd": {
+      "settings": {
+        "eval": {
+          "target": {
+            "installable": ".#darwinConfigurations.legendre.config.system.build.toplevel",
+          },
+        },
+        "nixpkgs": {
+          "expr": "import (builtins.getFlake (\"git+file:\" + builtins.toString ./.)).inputs.nixpkgs { system = builtins.currentSystem; config.allowUnfree = true; }",
+        },
+        "formatting": {
+          "command": [
+            "nixfmt"
+          ],
+        },
+        "options": {
+          "home-manager-ubuntu-dev": {
+            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).homeConfigurations.ubuntu-dev.options",
+          },
+          "home-manager-legendre": {
+            "expr": "((builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options.home-manager.users.type.getSubOptions [])",
+          },
+          "nix-darwin": {
+            "expr": "(builtins.getFlake (\"git+file:\" + builtins.toString ./.)).darwinConfigurations.legendre.options",
+          },
+        },
+      },
+    },
+  },
+}

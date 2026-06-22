@@ -114,10 +114,10 @@ in
           "/Applications/Ghostty.app"
           "/Applications/Zen.app"
           "/Applications/Visual Studio Code.app"
+          "/Applications/Zed.app"
           "/System/Applications/Calendar.app"
           "/Applications/Signal.app"
           "/Applications/Slack.app"
-          "/Applications/Discord.app"
           "/System/Applications/System Settings.app"
         ];
       };
