@@ -112,7 +112,7 @@ in
       terminal = {
         copy_on_select = true;
         env = {
-          CW_NEW_SESSION = "\"1\"";
+          CW_NEW_SESSION = "1";
         };
         font_fallbacks = [ "monospace" ];
         font_family = "MesloLGS Nerd Font Mono";
