@@ -5,7 +5,6 @@
     ../../home-manager/stacks/development.nix
     ../../home-manager/stacks/kubernetes.nix
     ../../home-manager/programs/bitwarden-secrets.nix
-    ../../home-manager/programs/mcp.nix
   ];
 
   home = {
