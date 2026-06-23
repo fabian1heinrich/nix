@@ -16,7 +16,6 @@ let
       qemu_kvm
     ];
     text = ''
-      export EULER_VM_ISO="''${EULER_VM_ISO:-${eulerVmInstallerIso}/iso/${eulerVmInstallerIso.name}}"
       export EULER_VM_OVMF_CODE="${pkgs.OVMF.fd}/FV/OVMF_CODE.fd"
       export EULER_VM_OVMF_VARS_SRC="${pkgs.OVMF.fd}/FV/OVMF_VARS.fd"
 

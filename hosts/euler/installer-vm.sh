@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${EULER_VM_ISO:?missing euler installer ISO path}"
 : "${EULER_VM_OVMF_CODE:?missing OVMF_CODE.fd path}"
 : "${EULER_VM_OVMF_VARS_SRC:?missing OVMF_VARS.fd path}"
 
@@ -58,6 +57,7 @@ fi
 
 case "$boot" in
   iso)
+    : "${EULER_VM_ISO:?missing euler installer ISO path}"
     boot_args=(-cdrom "$EULER_VM_ISO" -boot d)
     ;;
   disk)

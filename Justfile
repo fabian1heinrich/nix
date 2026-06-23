@@ -37,10 +37,22 @@ build-euler-iso:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" build-euler-baremetal-iso
 
 run-euler-vm:
-    nix run .#euler-vm-installer-vm
+    @case "${EULER_VM_BOOT:-iso}" in \
+      iso) \
+        if [ -z "${EULER_VM_ISO:-}" ]; then \
+          iso_root="$(nix build .#euler-vm-installer-iso --no-link --print-out-paths)"; \
+          export EULER_VM_ISO="$(find "$iso_root/iso" -maxdepth 1 -type f -name '*.iso' -print -quit)"; \
+        fi; \
+        nix run .#euler-vm-installer-vm ;; \
+      disk) \
+        nix run .#euler-vm-installer-vm ;; \
+      *) \
+        echo "Unsupported EULER_VM_BOOT: ${EULER_VM_BOOT:-iso}" >&2; \
+        exit 1 ;; \
+    esac
 
 run-euler-iso-vm:
-    nix run .#euler-vm-installer-vm
+    @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" run-euler-vm
 
 homebrew-upgrade:
     brew update

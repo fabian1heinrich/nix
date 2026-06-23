@@ -89,7 +89,7 @@ available. Useful overrides:
 EULER_VM_MEMORY=8192 EULER_VM_CPUS=6 just run-euler-vm
 EULER_VM_DISK_SIZE=128G just run-euler-vm
 EULER_VM_NET=user just run-euler-vm
-EULER_VM_ISO=/path/to/euler-installer.iso just run-euler-vm
+EULER_VM_ISO=/path/to/euler-vm-installer.iso just run-euler-vm
 EULER_VM_DISPLAY=nographic just run-euler-vm
 ```
 
@@ -110,6 +110,7 @@ EULER_VM_BOOT=disk EULER_VM_DISPLAY=gtk just run-euler-vm
 
 `EULER_VM_BOOT=disk` is only for the post-install boot. Before the installation
 has completed, keep the default ISO boot by running `just run-euler-vm`.
+Disk boots reuse the existing qcow2 disk and do not require an installer ISO.
 `EULER_VM_DISPLAY=gtk` opens the graphical QEMU window; `nographic` only shows
 the serial console.
 

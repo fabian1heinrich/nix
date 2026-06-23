@@ -234,11 +234,11 @@
           system = users.euler.system;
           specialArgs = {
             inherit
+              diskoPackage
               eulerDiskoConfig
-              eulerDiskoDestroyFormatMountScript
-              eulerInstallDisk
               eulerInstallerName
               eulerSystem
+              nixpkgsPath
               ;
           };
           modules = [
@@ -247,24 +247,19 @@
         };
 
       eulerVmInstallerConfiguration = mkEulerInstallerConfiguration {
-        eulerInstallerName = "euler-installer";
+        eulerInstallerName = "euler-vm-installer";
         eulerSystem = eulerVmNixosConfiguration.config.system.build.toplevel;
       };
 
       eulerBaremetalInstallerConfiguration = mkEulerInstallerConfiguration {
-        eulerInstallerName = "euler-installer";
+        eulerInstallerName = "euler-baremetal-installer";
         eulerSystem = eulerBaremetalNixosConfiguration.config.system.build.toplevel;
       };
 
+      diskoPackage = disko.packages.${users.euler.system}.default;
       eulerDiskoConfigDir = ./hosts/euler;
       eulerDiskoConfig = "${eulerDiskoConfigDir}/storage-install.nix";
-      eulerInstallDisk = "/dev/disk/by-id/euler-install-disk";
-      eulerDiskoDestroyFormatMountScript = disko.lib._cliDestroyFormatMount (import
-        ./hosts/euler/storage-install.nix
-        {
-          eulerDisk = eulerInstallDisk;
-        }
-      ) (pkgsFor users.euler.system);
+      nixpkgsPath = nixpkgs;
 
       nixosConfigurations = {
         euler = eulerBaremetalNixosConfiguration;

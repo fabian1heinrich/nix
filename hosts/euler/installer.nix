@@ -1,12 +1,12 @@
 {
   config,
+  diskoPackage,
   eulerDiskoConfig,
-  eulerDiskoDestroyFormatMountScript,
-  eulerInstallDisk,
   eulerInstallerName,
   eulerSystem,
   lib,
   modulesPath,
+  nixpkgsPath,
   pkgs,
   ...
 }:
@@ -15,6 +15,13 @@ let
     name = "prepare-euler-disk";
     runtimeInputs = with pkgs; [
       coreutils
+      cryptsetup
+      dosfstools
+      e2fsprogs
+      gptfdisk
+      lvm2
+      parted
+      systemd
       util-linux
     ];
     text = ''
@@ -34,7 +41,6 @@ let
       fi
 
       disk="$1"
-      install_disk="${eulerInstallDisk}"
 
       if [ "$(id -u)" -ne 0 ]; then
         echo "prepare-euler-disk must run as root." >&2
@@ -62,21 +68,15 @@ let
       fi
 
       canonical_disk="$(readlink -f "$disk")"
-      if [ "$canonical_disk" != "$install_disk" ]; then
-        mkdir -p "$(dirname "$install_disk")"
-        if [ -e "$install_disk" ] || [ -L "$install_disk" ]; then
-          current_target="$(readlink -f "$install_disk" 2>/dev/null || true)"
-          if [ "$current_target" != "$canonical_disk" ]; then
-            rm -f "$install_disk"
-            ln -s "$canonical_disk" "$install_disk"
-          fi
-        else
-          ln -s "$canonical_disk" "$install_disk"
-        fi
-      fi
 
-      ${eulerDiskoDestroyFormatMountScript}/bin/disko-destroy-format-mount \
-        --yes-wipe-all-disks
+      ${diskoPackage}/bin/disko \
+        --mode destroy,format,mount \
+        --root-mountpoint /mnt \
+        --no-deps \
+        --yes-wipe-all-disks \
+        --arg pkgs 'import ${nixpkgsPath} { system = "${pkgs.system}"; }' \
+        --argstr eulerDisk "$canonical_disk" \
+        "${eulerDiskoConfig}"
 
       echo "Euler disk layout is ready. Run: install-euler"
     '';
