@@ -142,12 +142,12 @@ as `/dev/sdX1`. The recipe prints the selected device, asks for `YES`, unmounts
 mounted partitions, writes the hybrid ISO image, flushes it, and leaves the USB
 drive ready to boot on the target machine.
 
-Boot that ISO on the target machine, identify the install disk with `lsblk`,
-prepare it with the baked `disko` layout, and install the baked `euler` system
-closure:
+Boot that ISO on the target machine, confirm the install disk is `/dev/sda`
+with `lsblk`, prepare it with the baked `disko` layout, and install the baked
+`euler` system closure:
 
 ```bash
-sudo prepare-euler-disk /dev/nvme0n1
+sudo prepare-euler-disk /dev/sda
 sudo install-euler
 ```
 

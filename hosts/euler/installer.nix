@@ -1,15 +1,15 @@
 {
   config,
-  diskoPackage,
   eulerConfigSource,
   eulerDiskoConfig,
+  eulerDiskoScript,
   eulerFlakeInputSources,
+  eulerInstallDisk,
   eulerInstallerName,
   eulerSystem,
   eulerUserConfig,
   lib,
   modulesPath,
-  nixpkgsPath,
   pkgs,
   ...
 }:
@@ -29,7 +29,7 @@ let
     ];
     text = ''
       usage() {
-        echo "Usage: prepare-euler-disk [--yes] DISK"
+        echo "Usage: prepare-euler-disk [--yes] ${eulerInstallDisk}"
       }
 
       assume_yes=0
@@ -71,15 +71,15 @@ let
       fi
 
       canonical_disk="$(readlink -f "$disk")"
+      expected_disk="$(readlink -f "${eulerInstallDisk}")"
 
-      ${diskoPackage}/bin/disko \
-        --mode destroy,format,mount \
-        --root-mountpoint /mnt \
-        --no-deps \
-        --yes-wipe-all-disks \
-        --arg pkgs 'import ${nixpkgsPath} { system = "${pkgs.system}"; }' \
-        --argstr eulerDisk "$canonical_disk" \
-        "${eulerDiskoConfig}"
+      if [ "$canonical_disk" != "$expected_disk" ]; then
+        echo "This installer was built to prepare ${eulerInstallDisk}, not $disk." >&2
+        echo "Refusing to run the baked disko script against an unexpected disk." >&2
+        exit 1
+      fi
+
+      ${pkgs.bash}/bin/bash ${eulerDiskoScript}/bin/disko-destroy-format-mount --yes-wipe-all-disks
 
       echo "Euler disk layout is ready. Run: install-euler"
     '';
@@ -119,7 +119,7 @@ let
               echo "Found $luks_part, but it does not contain a LUKS header." >&2
               echo "The disk appears to have been partitioned but not fully prepared." >&2
               echo "Re-run prepare-euler-disk for the install disk, for example:" >&2
-              echo "  sudo prepare-euler-disk /dev/vda" >&2
+              echo "  sudo prepare-euler-disk ${eulerInstallDisk}" >&2
               return 1
             fi
             cryptsetup open "$luks_part" euler-crypt

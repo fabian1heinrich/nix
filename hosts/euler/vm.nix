@@ -12,4 +12,5 @@
   ];
 
   networking.hostName = "euler";
+  euler.installDisk = "/dev/vda";
 }
