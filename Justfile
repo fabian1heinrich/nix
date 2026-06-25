@@ -36,6 +36,78 @@ build-euler-baremetal-iso:
 build-euler-iso:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" build-euler-baremetal-iso
 
+list-usb-drives:
+    @case "{{ os }}" in \
+      Linux) ;; \
+      *) echo "USB drive discovery is only supported on Linux for now. Current OS: {{ os }}" >&2; exit 1 ;; \
+    esac
+    @found=0; \
+      printf '%-12s %-16s %-8s %-6s %s\n' NAME PATH SIZE TRAN MODEL; \
+      while IFS= read -r device; do \
+        path="$(lsblk --nodeps --noheadings --output PATH "$device" | tr -d '[:space:]')"; \
+        size="$(lsblk --nodeps --noheadings --output SIZE "$device" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"; \
+        tran="$(lsblk --nodeps --noheadings --output TRAN "$device" | tr -d '[:space:]')"; \
+        model="$(lsblk --nodeps --noheadings --output MODEL "$device" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"; \
+        printf '%-12s %-16s %-8s %-6s %s\n' "$(basename "$device")" "$path" "$size" "$tran" "$model"; \
+        found=1; \
+      done < <(lsblk --nodeps --paths --noheadings --output PATH,TYPE,RM,TRAN | awk '$2 == "disk" && ($3 == "1" || $4 == "usb") { print $1 }'); \
+      if [ "$found" -eq 0 ]; then \
+        echo "No portable USB/removable drives detected."; \
+      fi
+    @echo
+    @echo "Use the PATH for the whole disk, for example /dev/sdb."
+    @echo "Do not use a partition path such as /dev/sdb1."
+
+write-euler-iso-usb $device:
+    @case "{{ os }}" in \
+      Linux) ;; \
+      *) echo "USB writing is only supported on x86_64-linux for now. Current OS: {{ os }}" >&2; exit 1 ;; \
+    esac
+    @system="$(nix eval --raw --impure --expr builtins.currentSystem)"; \
+      if [ "$system" != "x86_64-linux" ]; then \
+        echo "USB writing is only supported on x86_64-linux for now. Current Nix system: $system" >&2; \
+        exit 1; \
+      fi
+    @target="$device"; \
+      case "$target" in \
+        /dev/*) ;; \
+        *) echo "USB target must be a /dev block device, got: $target" >&2; exit 2 ;; \
+      esac; \
+      if [ ! -b "$target" ]; then \
+        echo "Not a block device: $target" >&2; \
+        exit 1; \
+      fi; \
+      device_type="$(lsblk --nodeps --noheadings --output TYPE "$target" | tr -d '[:space:]')"; \
+      if [ "$device_type" != "disk" ]; then \
+        echo "Refusing to write to a partition or non-disk device. Use the whole USB disk, for example /dev/sdX or /dev/nvmeXnY." >&2; \
+        exit 1; \
+      fi; \
+      echo "Target USB device:"; \
+      lsblk -o NAME,MODEL,SIZE,TRAN,TYPE,MOUNTPOINTS "$target"; \
+      echo; \
+      echo "This will destroy all data on $target and replace it with the Euler bootable installer ISO."; \
+      printf 'Type YES to continue: '; \
+      read -r confirmation; \
+      if [ "$confirmation" != "YES" ]; then \
+        echo "Aborted." >&2; \
+        exit 1; \
+      fi; \
+      iso="$(just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" build-euler-iso)"; \
+      if [ ! -f "$iso" ]; then \
+        echo "ISO build did not produce a file: $iso" >&2; \
+        exit 1; \
+      fi; \
+      echo "Writing bootable ISO to $target:"; \
+      echo "  $iso"; \
+      while IFS= read -r mountpoint; do \
+        [ -n "$mountpoint" ] || continue; \
+        sudo umount "$mountpoint"; \
+      done < <(lsblk --noheadings --raw --output MOUNTPOINT "$target" | sed '/^$/d'); \
+      sudo dd if="$iso" of="$target" bs=4M status=progress oflag=direct conv=fsync; \
+      echo "Flushing USB write cache. This can take several minutes on slow sticks..."; \
+      sudo blockdev --flushbufs "$target"; \
+      echo "Euler installer USB is ready. Boot the target machine from $target."
+
 run-euler-vm:
     @case "${EULER_VM_BOOT:-iso}" in \
       iso) \

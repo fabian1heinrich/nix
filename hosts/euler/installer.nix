@@ -1,9 +1,12 @@
 {
   config,
   diskoPackage,
+  eulerConfigSource,
   eulerDiskoConfig,
+  eulerFlakeInputSources,
   eulerInstallerName,
   eulerSystem,
+  eulerUserConfig,
   lib,
   modulesPath,
   nixpkgsPath,
@@ -88,6 +91,7 @@ let
       coreutils
       cryptsetup
       lvm2
+      nix
       util-linux
     ];
     text = ''
@@ -154,12 +158,37 @@ let
         fi
       fi
 
-      exec ${config.system.build.nixos-install}/bin/nixos-install \
+      ${config.system.build.nixos-install}/bin/nixos-install \
         --root "$root" \
         --system "${eulerSystem}" \
         --no-channel-copy \
         --no-root-password \
         --option substituters ""
+
+      config_target="${eulerUserConfig.homeDirectory}/nix-config"
+      target_config="$root$config_target"
+      if [ -e "$target_config" ]; then
+        echo "Leaving existing config repo in place: $config_target"
+      else
+        mkdir -p "$(dirname "$target_config")"
+        cp -a "${eulerConfigSource}" "$target_config"
+        chmod -R u+w "$target_config"
+
+        if [ -d "$root${eulerUserConfig.homeDirectory}" ]; then
+          chown --reference="$root${eulerUserConfig.homeDirectory}" "$target_config" || true
+          chown -R --reference="$root${eulerUserConfig.homeDirectory}" "$target_config" || true
+        else
+          chown -R 1000:100 "$target_config" || true
+        fi
+
+        echo "Copied editable config repo to $config_target"
+      fi
+
+      nix --extra-experimental-features 'nix-command flakes' flake archive \
+        --to "$root" \
+        --offline \
+        --no-write-lock-file \
+        "$target_config"
     '';
   };
 in
@@ -171,7 +200,7 @@ in
   image.baseName = lib.mkForce eulerInstallerName;
 
   isoImage = {
-    storeContents = [
+    storeContents = eulerFlakeInputSources ++ [
       eulerSystem
     ];
   };

@@ -13,6 +13,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       home-manager,
       darwin,
@@ -235,7 +236,10 @@
           specialArgs = {
             inherit
               diskoPackage
+              eulerConfigSource
               eulerDiskoConfig
+              eulerFlakeInputSources
+              eulerUserConfig
               eulerInstallerName
               eulerSystem
               nixpkgsPath
@@ -257,8 +261,17 @@
       };
 
       diskoPackage = disko.packages.${users.euler.system}.default;
+      eulerConfigSource = self.outPath;
       eulerDiskoConfigDir = ./hosts/euler;
       eulerDiskoConfig = "${eulerDiskoConfigDir}/storage-install.nix";
+      eulerFlakeInputSources = [
+        self.outPath
+        nixpkgs.outPath
+        home-manager.outPath
+        darwin.outPath
+        disko.outPath
+      ];
+      eulerUserConfig = users.euler;
       nixpkgsPath = nixpkgs;
 
       nixosConfigurations = {

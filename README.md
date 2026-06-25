@@ -128,6 +128,20 @@ Build the bare-metal installer ISO on a connected `x86_64-linux` machine:
 just build-euler-baremetal-iso
 ```
 
+On `x86_64-linux`, build the same bootable installer ISO and write it directly
+to a USB drive by identifying the whole USB disk first, then passing that
+whole-disk device to the USB writer recipe:
+
+```bash
+just list-usb-drives
+just write-euler-iso-usb /dev/sdX
+```
+
+Use the whole disk, such as `/dev/sdX` or `/dev/nvmeXnY`, not a partition such
+as `/dev/sdX1`. The recipe prints the selected device, asks for `YES`, unmounts
+mounted partitions, writes the hybrid ISO image, flushes it, and leaves the USB
+drive ready to boot on the target machine.
+
 Boot that ISO on the target machine, identify the install disk with `lsblk`,
 prepare it with the baked `disko` layout, and install the baked `euler` system
 closure:
@@ -140,14 +154,23 @@ sudo install-euler
 `prepare-euler-disk` creates the same LVM-on-LUKS layout as the VM target and
 mounts it below `/mnt`.
 
+`install-euler` also copies an editable snapshot of this flake to the installed
+system at `/home/euler/nix-config`. After booting the installed machine, make
+small local configuration tweaks there and apply them with:
+
+```bash
+cd /home/euler/nix-config
+sudo nixos-rebuild switch --flake .#euler-baremetal
+```
+
 After the first successful boot, generate and commit the real hardware config
 without filesystem entries, because `hosts/euler/storage.nix` remains the
 declarative owner of the disk layout:
 
 ```bash
 sudo nixos-generate-config --no-filesystems --root /
-cp /etc/nixos/hardware-configuration.nix /path/to/this/repo/hosts/euler/hardware-configuration.nix
-sudo nixos-rebuild switch --flake /path/to/this/repo#euler-baremetal
+cp /etc/nixos/hardware-configuration.nix /home/euler/nix-config/hosts/euler/hardware-configuration.nix
+sudo nixos-rebuild switch --flake /home/euler/nix-config#euler-baremetal
 ```
 
 `euler-baremetal` imports `hosts/euler/hardware-configuration.nix` when that
