@@ -6,7 +6,7 @@
 {
   options.euler.installDisk = lib.mkOption {
     type = lib.types.str;
-    default = "/dev/disk/by-id/euler-install-disk";
+    default = "/dev/euler-install-disk";
     description = "Disk device used by disko when preparing the Euler install target.";
   };
 

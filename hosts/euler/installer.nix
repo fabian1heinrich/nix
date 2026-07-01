@@ -2,7 +2,8 @@
   config,
   eulerConfigSource,
   eulerDiskoConfig,
-  eulerDiskoPackage,
+  eulerDiskoInstallDisk,
+  eulerDiskoScript,
   eulerFlakeInputSources,
   eulerInstallDisk,
   eulerInstallerName,
@@ -22,12 +23,16 @@ let
       dosfstools
       e2fsprogs
       gnugrep
+      gnused
       gptfdisk
+      jq
+      kmod
       lvm2
+      mdadm
       parted
       systemd
       util-linux
-      eulerDiskoPackage
+      zfs
     ];
     text = ''
       usage() {
@@ -95,12 +100,19 @@ let
         exit 1
       fi
 
-      disko \
-        --mode destroy,format,mount \
-        --no-deps \
-        --yes-wipe-all-disks \
-        --argstr eulerDisk "$canonical_disk" \
-        "${eulerDiskoConfig}"
+      disk_alias="${eulerDiskoInstallDisk}"
+      disk_alias_parent="$(dirname "$disk_alias")"
+      mkdir -p "$disk_alias_parent"
+
+      if [ -e "$disk_alias" ] && [ ! -L "$disk_alias" ]; then
+        echo "Refusing to replace non-symlink installer disk alias: $disk_alias" >&2
+        exit 1
+      fi
+
+      rm -f "$disk_alias"
+      ln -s "$canonical_disk" "$disk_alias"
+
+      ${pkgs.bash}/bin/bash ${eulerDiskoScript}/bin/disko-destroy-format-mount --yes-wipe-all-disks
 
       echo "Euler disk layout is ready. Run: install-euler"
     '';

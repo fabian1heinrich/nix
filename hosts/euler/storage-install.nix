@@ -1,5 +1,5 @@
 {
-  eulerDisk ? "/dev/disk/by-id/euler-install-disk",
+  eulerDisk ? "/dev/euler-install-disk",
   ...
 }:
 {

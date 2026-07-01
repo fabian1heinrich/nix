@@ -70,7 +70,8 @@ write-euler-iso-usb $device:
         echo "USB writing is only supported on x86_64-linux for now. Current Nix system: $system" >&2; \
         exit 1; \
       fi
-    @target="$device"; \
+    @set -e; \
+      target="$device"; \
       case "$target" in \
         /dev/*) ;; \
         *) echo "USB target must be a /dev block device, got: $target" >&2; exit 2 ;; \
@@ -89,7 +90,7 @@ write-euler-iso-usb $device:
       echo; \
       echo "This will destroy all data on $target and replace it with the Euler bootable installer ISO."; \
       printf 'Type YES to continue: '; \
-      read -r confirmation; \
+      read -r confirmation < /dev/tty; \
       if [ "$confirmation" != "YES" ]; then \
         echo "Aborted." >&2; \
         exit 1; \
@@ -101,12 +102,15 @@ write-euler-iso-usb $device:
       fi; \
       echo "Writing bootable ISO to $target:"; \
       echo "  $iso"; \
-      sudo -v; \
+      sudo -v < /dev/tty; \
+      while true; do sudo -n -v; sleep 60; done & \
+      sudo_keepalive_pid="$!"; \
+      trap 'kill "$sudo_keepalive_pid" 2>/dev/null || true' EXIT; \
       while IFS= read -r mountpoint; do \
         [ -n "$mountpoint" ] || continue; \
         sudo -n umount "$mountpoint"; \
       done < <(lsblk --noheadings --raw --output MOUNTPOINT "$target" | sed '/^$/d'); \
-      sudo -n dd if="$iso" of="$target" bs=16M status=progress oflag=direct conv=fsync; \
+      sudo -n dd if="$iso" of="$target" bs=4M status=progress oflag=direct conv=fsync; \
       echo "Flushing USB write cache. This can take several minutes on slow sticks..."; \
       sudo -n blockdev --flushbufs "$target"; \
       echo "Euler installer USB is ready. Boot the target machine from $target."

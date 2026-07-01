@@ -230,6 +230,7 @@
         {
           eulerInstallDisk,
           eulerInstallerName,
+          eulerDiskoScript,
           eulerSystem,
         }:
         nixpkgs.lib.nixosSystem {
@@ -238,7 +239,8 @@
             inherit
               eulerConfigSource
               eulerDiskoConfig
-              eulerDiskoPackage
+              eulerDiskoInstallDisk
+              eulerDiskoScript
               eulerFlakeInputSources
               eulerInstallDisk
               eulerUserConfig
@@ -254,19 +256,29 @@
       eulerVmInstallerConfiguration = mkEulerInstallerConfiguration {
         eulerInstallDisk = eulerVmNixosConfiguration.config.euler.installDisk;
         eulerInstallerName = "euler-vm-installer";
+        eulerDiskoScript =
+          (mkEulerNixosConfiguration [
+            ./hosts/euler/vm.nix
+            { euler.installDisk = lib.mkForce eulerDiskoInstallDisk; }
+          ]).config.system.build.destroyFormatMountNoDeps;
         eulerSystem = eulerVmNixosConfiguration.config.system.build.toplevel;
       };
 
       eulerBaremetalInstallerConfiguration = mkEulerInstallerConfiguration {
         eulerInstallDisk = eulerBaremetalNixosConfiguration.config.euler.installDisk;
         eulerInstallerName = "euler-baremetal-installer";
+        eulerDiskoScript =
+          (mkEulerNixosConfiguration [
+            ./hosts/euler/baremetal.nix
+            { euler.installDisk = lib.mkForce eulerDiskoInstallDisk; }
+          ]).config.system.build.destroyFormatMountNoDeps;
         eulerSystem = eulerBaremetalNixosConfiguration.config.system.build.toplevel;
       };
 
       eulerConfigSource = self.outPath;
-      eulerDiskoPackage = disko.packages.${users.euler.system}.disko;
       eulerDiskoConfigDir = ./hosts/euler;
       eulerDiskoConfig = "${eulerDiskoConfigDir}/storage-install.nix";
+      eulerDiskoInstallDisk = "/dev/euler-install-disk";
       eulerFlakeInputSources = [
         self.outPath
         nixpkgs.outPath
