@@ -15,7 +15,7 @@
             format = "vfat";
             extraArgs = [
               "-n"
-              "boot"
+              "euler-boot"
             ];
             mountpoint = "/boot";
             mountOptions = [ "umask=0077" ];

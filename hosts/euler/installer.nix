@@ -2,7 +2,7 @@
   config,
   eulerConfigSource,
   eulerDiskoConfig,
-  eulerDiskoScript,
+  eulerDiskoPackage,
   eulerFlakeInputSources,
   eulerInstallDisk,
   eulerInstallerName,
@@ -21,15 +21,18 @@ let
       cryptsetup
       dosfstools
       e2fsprogs
+      gnugrep
       gptfdisk
       lvm2
       parted
       systemd
       util-linux
+      eulerDiskoPackage
     ];
     text = ''
       usage() {
-        echo "Usage: prepare-euler-disk [--yes] ${eulerInstallDisk}"
+        echo "Usage: prepare-euler-disk [--yes] DISK"
+        echo "Example: prepare-euler-disk ${eulerInstallDisk}"
       }
 
       assume_yes=0
@@ -71,15 +74,33 @@ let
       fi
 
       canonical_disk="$(readlink -f "$disk")"
-      expected_disk="$(readlink -f "${eulerInstallDisk}")"
+      disk_type="$(lsblk --nodeps --noheadings --output TYPE "$canonical_disk" 2>/dev/null | tr -d '[:space:]')"
 
-      if [ "$canonical_disk" != "$expected_disk" ]; then
-        echo "This installer was built to prepare ${eulerInstallDisk}, not $disk." >&2
-        echo "Refusing to run the baked disko script against an unexpected disk." >&2
+      if [ "$disk_type" != "disk" ]; then
+        echo "Refusing to write to a partition or non-disk device: $disk" >&2
+        echo "Use the whole disk, for example /dev/sdX or /dev/nvmeXnY." >&2
         exit 1
       fi
 
-      ${pkgs.bash}/bin/bash ${eulerDiskoScript}/bin/disko-destroy-format-mount --yes-wipe-all-disks
+      has_mounted_children=0
+      while IFS= read -r mountpoint; do
+        if [ -n "$mountpoint" ]; then
+          has_mounted_children=1
+        fi
+      done < <(lsblk --noheadings --output MOUNTPOINTS "$canonical_disk")
+
+      if [ "$has_mounted_children" -ne 0 ]; then
+        echo "Refusing to prepare a disk with mounted filesystems: $disk" >&2
+        echo "Unmount its filesystems first, or choose a different install disk." >&2
+        exit 1
+      fi
+
+      disko \
+        --mode destroy,format,mount \
+        --no-deps \
+        --yes-wipe-all-disks \
+        --argstr eulerDisk "$canonical_disk" \
+        "${eulerDiskoConfig}"
 
       echo "Euler disk layout is ready. Run: install-euler"
     '';
@@ -150,8 +171,8 @@ let
 
       mkdir -p "$root/boot"
       if ! mountpoint -q "$root/boot"; then
-        if [ -b /dev/disk/by-label/boot ]; then
-          mount /dev/disk/by-label/boot "$root/boot"
+        if [ -b /dev/disk/by-label/euler-boot ]; then
+          mount /dev/disk/by-label/euler-boot "$root/boot"
         else
           echo "Target boot filesystem is not mounted: $root/boot" >&2
           exit 1

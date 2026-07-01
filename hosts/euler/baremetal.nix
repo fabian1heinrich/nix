@@ -20,12 +20,12 @@ in
     "usb_storage"
     "xhci_pci"
   ];
-  boot.loader.timeout = lib.mkDefault 5;
 
   hardware = {
     enableRedistributableFirmware = true;
     nvidia = {
       modesetting.enable = true;
+      powerManagement.enable = true;
       nvidiaSettings = true;
       open = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
@@ -37,22 +37,30 @@ in
   };
 
   networking.hostName = "euler";
+
+  # Enable and fill this in for a static wired address.
+  # networking.networkmanager.ensureProfiles.profiles.euler-wired = {
+  #   connection = {
+  #     id = "euler-wired";
+  #     type = "ethernet";
+  #     interface-name = "enp5s0";
+  #     autoconnect = true;
+  #   };
+  #
+  #   ipv4 = {
+  #     method = "manual";
+  #     addresses = "192.168.1.50/24";
+  #     gateway = "192.168.1.1";
+  #     dns = "1.1.1.1;8.8.8.8;";
+  #     dns-search = "home.arpa;";
+  #     ignore-auto-dns = "true";
+  #   };
+  #
+  #   ipv6 = {
+  #     method = "auto";
+  #     addr-gen-mode = "stable-privacy";
+  #   };
+  # };
+
   euler.installDisk = "/dev/sda";
-
-  specialisation = {
-    nvidia-closed.configuration = {
-      system.nixos.tags = [ "nvidia-closed" ];
-      hardware.nvidia.open = lib.mkForce false;
-    };
-
-    console-rescue.configuration = {
-      system.nixos.tags = [ "console-rescue" ];
-      systemd.defaultUnit = lib.mkForce "multi-user.target";
-      services = {
-        displayManager.gdm.enable = lib.mkForce false;
-        desktopManager.gnome.enable = lib.mkForce false;
-        xserver.enable = lib.mkForce false;
-      };
-    };
-  };
 }

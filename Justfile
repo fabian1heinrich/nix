@@ -26,11 +26,13 @@ switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
 
 build-euler-vm-iso:
-    @iso_root="$(nix build .#euler-vm-installer-iso --no-link --print-out-paths)"; \
+    @set -e; \
+      iso_root="$(nix build .#euler-vm-installer-iso --no-link --print-out-paths)"; \
       find "$iso_root/iso" -maxdepth 1 -type f -name '*.iso' -print -quit
 
 build-euler-baremetal-iso:
-    @iso_root="$(nix build .#euler-baremetal-installer-iso --no-link --print-out-paths)"; \
+    @set -e; \
+      iso_root="$(nix build .#euler-baremetal-installer-iso --no-link --print-out-paths)"; \
       find "$iso_root/iso" -maxdepth 1 -type f -name '*.iso' -print -quit
 
 build-euler-iso:
@@ -99,13 +101,14 @@ write-euler-iso-usb $device:
       fi; \
       echo "Writing bootable ISO to $target:"; \
       echo "  $iso"; \
+      sudo -v; \
       while IFS= read -r mountpoint; do \
         [ -n "$mountpoint" ] || continue; \
-        sudo umount "$mountpoint"; \
+        sudo -n umount "$mountpoint"; \
       done < <(lsblk --noheadings --raw --output MOUNTPOINT "$target" | sed '/^$/d'); \
-      sudo dd if="$iso" of="$target" bs=4M status=progress oflag=direct conv=fsync; \
+      sudo -n dd if="$iso" of="$target" bs=16M status=progress oflag=direct conv=fsync; \
       echo "Flushing USB write cache. This can take several minutes on slow sticks..."; \
-      sudo blockdev --flushbufs "$target"; \
+      sudo -n blockdev --flushbufs "$target"; \
       echo "Euler installer USB is ready. Boot the target machine from $target."
 
 run-euler-vm:
@@ -125,6 +128,120 @@ run-euler-vm:
 
 run-euler-iso-vm:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" run-euler-vm
+
+build-euler-offline-update out="euler-offline-update":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    case "{{ os }}" in
+      Linux) ;;
+      *) echo "Euler offline updates can only be built on Linux for now. Current OS: {{ os }}" >&2; exit 1 ;;
+    esac
+
+    system="$(nix eval --raw --impure --expr builtins.currentSystem)"
+    if [ "$system" != "x86_64-linux" ]; then
+      echo "Euler offline updates can only be built on x86_64-linux for now. Current Nix system: $system" >&2
+      exit 1
+    fi
+
+    if ! command -v jq >/dev/null 2>&1; then
+      echo "Missing required command: jq" >&2
+      exit 1
+    fi
+
+    out="{{ out }}"
+    tmp="$out.tmp"
+
+    rm -rf "$tmp"
+    mkdir -p "$tmp"
+
+    echo "Building Euler bare-metal system..."
+    euler_system="$(nix build .#nixosConfigurations.euler-baremetal.config.system.build.toplevel --no-link --print-out-paths)"
+
+    echo "Archiving flake inputs..."
+    archive_json="$(nix flake archive --json --no-write-lock-file .)"
+
+    {
+      nix-store -qR "$euler_system"
+      printf '%s\n' "$archive_json" | jq -r '.path, (.inputs[]?.path)'
+    } | sort -u > "$tmp/store-paths.txt"
+
+    echo "$euler_system" > "$tmp/system-path.txt"
+
+    echo "Copying config snapshot..."
+    config_source="$(printf '%s\n' "$archive_json" | jq -r '.path')"
+    mkdir -p "$tmp/nix-config"
+    cp -a "$config_source/." "$tmp/nix-config/"
+    chmod -R u+w "$tmp/nix-config"
+
+    install -m 0755 /dev/stdin "$tmp/apply.sh" <<'EOF'
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    bundle_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    target_config="${1:-/home/euler/nix-config}"
+
+    if [ "$(id -u)" -ne 0 ]; then
+      echo "Run as root: sudo $0 [target-config]" >&2
+      exit 1
+    fi
+
+    if [ ! -f "$bundle_dir/euler-offline.closure" ]; then
+      echo "Missing closure bundle: $bundle_dir/euler-offline.closure" >&2
+      exit 1
+    fi
+
+    if [ ! -d "$bundle_dir/nix-config" ]; then
+      echo "Missing config snapshot: $bundle_dir/nix-config" >&2
+      exit 1
+    fi
+
+    target_parent="$(dirname "$target_config")"
+    mkdir -p "$target_parent"
+
+    owner_spec=""
+    if [ -e "$target_config" ]; then
+      owner_spec="$(stat -c '%u:%g' "$target_config")"
+    elif [ -d "$target_parent" ]; then
+      owner_spec="$(stat -c '%u:%g' "$target_parent")"
+    fi
+
+    echo "Importing Nix store closure..."
+    nix-store --import < "$bundle_dir/euler-offline.closure"
+
+    if [ -e "$target_config" ]; then
+      backup="${target_config}.pre-offline-update.$(date +%Y%m%d%H%M%S)"
+      echo "Backing up existing config to $backup"
+      mv "$target_config" "$backup"
+    fi
+
+    echo "Installing config snapshot to $target_config"
+    cp -a "$bundle_dir/nix-config" "$target_config"
+    chmod -R u+w "$target_config"
+    if [ -n "$owner_spec" ]; then
+      chown -R "$owner_spec" "$target_config"
+    fi
+
+    echo "Registering flake inputs offline..."
+    nix flake archive --offline --no-write-lock-file "$target_config" >/dev/null
+
+    echo "Switching Euler offline..."
+    nixos-rebuild switch --flake "$target_config#euler-baremetal" --offline --option substituters ""
+    EOF
+
+    echo "Exporting Nix store closure..."
+    nix-store --export $(cat "$tmp/store-paths.txt") > "$tmp/euler-offline.closure"
+
+    rm -rf "$out"
+    mv "$tmp" "$out"
+
+    echo
+    echo "Euler offline update bundle is ready: $out"
+    echo "Copy that directory to Euler, then run:"
+    echo "  sudo $out/apply.sh"
+
+apply-euler-offline-update bundle="euler-offline-update" target="/home/euler/nix-config":
+    sudo "{{ bundle }}/apply.sh" "{{ target }}"
 
 homebrew-upgrade:
     brew update

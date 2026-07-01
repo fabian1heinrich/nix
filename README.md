@@ -93,8 +93,8 @@ EULER_VM_ISO=/path/to/euler-vm-installer.iso just run-euler-vm
 EULER_VM_DISPLAY=nographic just run-euler-vm
 ```
 
-Inside the installer VM, prepare the disk with the baked `disko` layout, then
-install the baked `euler` system closure from the ISO:
+Inside the installer VM, prepare the target disk with the baked `disko` layout,
+then install the baked `euler` system closure from the ISO:
 
 ```bash
 sudo prepare-euler-disk /dev/vda
@@ -142,17 +142,18 @@ as `/dev/sdX1`. The recipe prints the selected device, asks for `YES`, unmounts
 mounted partitions, writes the hybrid ISO image, flushes it, and leaves the USB
 drive ready to boot on the target machine.
 
-Boot that ISO on the target machine, confirm the install disk is `/dev/sda`
-with `lsblk`, prepare it with the baked `disko` layout, and install the baked
-`euler` system closure:
+Boot that ISO on the target machine, choose the install disk with `lsblk`,
+prepare it with the baked `disko` layout, and install the baked `euler` system
+closure:
 
 ```bash
-sudo prepare-euler-disk /dev/sda
+sudo prepare-euler-disk /dev/nvme0n1
 sudo install-euler
 ```
 
 `prepare-euler-disk` creates the same LVM-on-LUKS layout as the VM target and
-mounts it below `/mnt`.
+mounts it below `/mnt`. Pass the whole target disk, such as `/dev/sda`,
+`/dev/nvme0n1`, or a stable `/dev/disk/by-id/...` path, not a partition.
 
 `install-euler` also copies an editable snapshot of this flake to the installed
 system at `/home/euler/nix-config`. After booting the installed machine, make

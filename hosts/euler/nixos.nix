@@ -27,9 +27,13 @@
 
   boot = {
     loader = {
+      timeout = lib.mkDefault 3;
       systemd-boot.enable = lib.mkDefault true;
+      systemd-boot.configurationLimit = lib.mkDefault 1;
       efi.canTouchEfiVariables = lib.mkDefault true;
       grub.enable = lib.mkDefault false;
+      grub.configurationLimit = lib.mkDefault 1;
+      grub.useOSProber = lib.mkDefault false;
     };
   };
 
@@ -54,7 +58,13 @@
       enable = true;
       xkb.layout = "us";
     };
-    displayManager.gdm.enable = true;
+    displayManager = {
+      defaultSession = "gnome";
+      gdm = {
+        enable = true;
+        wayland = true;
+      };
+    };
     desktopManager.gnome.enable = true;
     openssh = {
       enable = true;
