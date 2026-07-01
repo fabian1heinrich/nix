@@ -36,10 +36,5 @@ in
       homeDirectory = "/home/ubuntu-dev";
       system = "x86_64-linux";
     };
-    euler = mkUser {
-      username = "euler";
-      homeDirectory = "/home/euler";
-      system = "x86_64-linux";
-    };
   };
 }

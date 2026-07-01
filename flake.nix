@@ -7,8 +7,6 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
-    disko.url = "github:nix-community/disko/latest";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -17,7 +15,6 @@
       nixpkgs,
       home-manager,
       darwin,
-      disko,
       ...
     }:
     let
@@ -65,8 +62,7 @@
           path = ./home-manager/scripts/container-prompt-context.sh;
           name = "container-prompt-context.sh";
         })
-      ]
-      ++ eulerHostPackages.shellScripts;
+      ];
 
       mkShellcheck =
         system:
@@ -188,122 +184,6 @@
         };
       };
 
-      mkEulerNixosConfiguration =
-        modules:
-        nixpkgs.lib.nixosSystem {
-          system = users.euler.system;
-          specialArgs = {
-            userConfig = users.euler;
-          };
-          modules = [
-            { nixpkgs.config.allowUnfree = true; }
-            disko.nixosModules.disko
-          ]
-          ++ modules
-          ++ [
-            home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = {
-                  userConfig = users.euler;
-                };
-                users.${users.euler.username}.imports = [
-                  ./hosts/euler/home.nix
-                ];
-              };
-            }
-          ];
-        };
-
-      eulerVmNixosConfiguration = mkEulerNixosConfiguration [
-        ./hosts/euler/vm.nix
-      ];
-
-      eulerBaremetalNixosConfiguration = mkEulerNixosConfiguration [
-        ./hosts/euler/baremetal.nix
-      ];
-
-      mkEulerInstallerConfiguration =
-        {
-          eulerInstallDisk,
-          eulerInstallerName,
-          eulerDiskoScript,
-          eulerSystem,
-        }:
-        nixpkgs.lib.nixosSystem {
-          system = users.euler.system;
-          specialArgs = {
-            inherit
-              eulerConfigSource
-              eulerDiskoConfig
-              eulerDiskoInstallDisk
-              eulerDiskoScript
-              eulerFlakeInputSources
-              eulerInstallDisk
-              eulerUserConfig
-              eulerInstallerName
-              eulerSystem
-              ;
-          };
-          modules = [
-            ./hosts/euler/installer.nix
-          ];
-        };
-
-      eulerVmInstallerConfiguration = mkEulerInstallerConfiguration {
-        eulerInstallDisk = eulerVmNixosConfiguration.config.euler.installDisk;
-        eulerInstallerName = "euler-vm-installer";
-        eulerDiskoScript =
-          (mkEulerNixosConfiguration [
-            ./hosts/euler/vm.nix
-            { euler.installDisk = lib.mkForce eulerDiskoInstallDisk; }
-          ]).config.system.build.destroyFormatMountNoDeps;
-        eulerSystem = eulerVmNixosConfiguration.config.system.build.toplevel;
-      };
-
-      eulerBaremetalInstallerConfiguration = mkEulerInstallerConfiguration {
-        eulerInstallDisk = eulerBaremetalNixosConfiguration.config.euler.installDisk;
-        eulerInstallerName = "euler-baremetal-installer";
-        eulerDiskoScript =
-          (mkEulerNixosConfiguration [
-            ./hosts/euler/baremetal.nix
-            { euler.installDisk = lib.mkForce eulerDiskoInstallDisk; }
-          ]).config.system.build.destroyFormatMountNoDeps;
-        eulerSystem = eulerBaremetalNixosConfiguration.config.system.build.toplevel;
-      };
-
-      eulerConfigSource = self.outPath;
-      eulerDiskoConfigDir = ./hosts/euler;
-      eulerDiskoConfig = "${eulerDiskoConfigDir}/storage-install.nix";
-      eulerDiskoInstallDisk = "/dev/euler-install-disk";
-      eulerFlakeInputSources = [
-        self.outPath
-        nixpkgs.outPath
-        home-manager.outPath
-        darwin.outPath
-        disko.outPath
-      ];
-      eulerUserConfig = users.euler;
-
-      nixosConfigurations = {
-        euler = eulerBaremetalNixosConfiguration;
-        euler-installer = eulerBaremetalInstallerConfiguration;
-        euler-vm = eulerVmNixosConfiguration;
-        euler-vm-installer = eulerVmInstallerConfiguration;
-        euler-baremetal = eulerBaremetalNixosConfiguration;
-        euler-baremetal-installer = eulerBaremetalInstallerConfiguration;
-      };
-
-      eulerHostPackages = import ./hosts/euler/packages.nix {
-        pkgs = pkgsFor users.euler.system;
-        eulerBaremetalInstallerIso =
-          nixosConfigurations.euler-baremetal-installer.config.system.build.isoImage;
-        eulerVmInstallerIso = nixosConfigurations.euler-vm-installer.config.system.build.isoImage;
-      };
-
       homeConfigurations = {
         ubuntu-dev = mkHome {
           user = "ubuntu-dev";
@@ -311,19 +191,11 @@
             ./hosts/ubuntu-dev/home.nix
           ];
         };
-        euler = mkHome {
-          user = "euler";
-          modules = [
-            ./hosts/euler/home.nix
-          ];
-        };
       };
 
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
-        euler-baremetal = nixosConfigurations.euler-baremetal.config.system.build.toplevel;
-        euler-vm = nixosConfigurations.euler-vm.config.system.build.toplevel;
       };
 
       nativeBuildCheckTargets = {
@@ -332,17 +204,7 @@
         };
         x86_64-linux = {
           ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
-          euler-baremetal-system-build = nixosConfigurations.euler-baremetal.config.system.build.toplevel;
-          euler-vm-system-build = nixosConfigurations.euler-vm.config.system.build.toplevel;
         };
-      };
-
-      packages = {
-        x86_64-linux = eulerHostPackages.packages;
-      };
-
-      apps = {
-        x86_64-linux = eulerHostPackages.apps;
       };
 
       checks = lib.genAttrs checkSystems (
@@ -362,10 +224,7 @@
       inherit
         formatter
         darwinConfigurations
-        nixosConfigurations
         homeConfigurations
-        packages
-        apps
         checks
         ;
     };
