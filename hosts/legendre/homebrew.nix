@@ -16,6 +16,7 @@
       "docker"
       "lima-additional-guestagents"
       "mas"
+      "mise"
       "mole"
       "podman-compose"
       "podman"

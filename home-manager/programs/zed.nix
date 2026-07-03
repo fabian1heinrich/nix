@@ -86,8 +86,8 @@ in
         folds = true;
       };
       icon_theme = {
-        dark = "VSCode Icons for Zed (Dark Angular)";
-        light = "VSCode Icons for Zed (Light Angular)";
+        dark = "VSCode Icons for Zed (Dark)";
+        light = "VSCode Icons for Zed (Light)";
         mode = "dark";
       };
       minimap = {
@@ -129,7 +129,7 @@ in
         light = "GitHub Light";
         mode = "dark";
       };
-      ui_font_size = 16;
+      ui_font_size = 14;
       use_on_type_format = true;
       vim_mode = false;
     };

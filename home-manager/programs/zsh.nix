@@ -105,6 +105,10 @@
       bindkey "^[[1;3C" forward-word
       bindkey "^[[1;3D" backward-word
       bindkey "^U" backward-kill-line
+      autoload -Uz edit-command-line
+      zstyle ':zle:edit-command-line' editor hx
+      zle -N edit-command-line
+      bindkey "^E" edit-command-line
 
       _select_backward_char() {
         (( REGION_ACTIVE )) || zle set-mark-command

@@ -17,9 +17,11 @@
   nix = {
     package = lib.mkDefault pkgs.nix;
     enable = true;
-    settings.experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
+    settings = {
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+    };
   };
 }
