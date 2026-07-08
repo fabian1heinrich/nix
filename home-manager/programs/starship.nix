@@ -1,5 +1,8 @@
 { ... }:
 let
+  containerFolders = [
+    ".devcontainer"
+  ];
   containerFiles = [
     "Containerfile"
     "Dockerfile"
@@ -85,6 +88,7 @@ in
         ];
       };
       custom.container_context = {
+        detect_folders = containerFolders;
         detect_files = containerFiles;
         command = "container-prompt-context";
         format = "([$output]($style) )";
