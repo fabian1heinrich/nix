@@ -22,7 +22,6 @@
       systems = [
         "aarch64-darwin"
         "x86_64-linux"
-        "aarch64-linux"
       ];
 
       # Only check systems that currently have configured hosts.
