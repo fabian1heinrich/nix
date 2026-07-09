@@ -8,11 +8,6 @@ let
       arch = "amd64";
       hash = "sha256-yLZepX8QoD8CEE677L8SScQfSZvIV3FIiCS3D2zPx2w=";
     };
-    x86_64-darwin = {
-      platform = "darwin";
-      arch = "amd64";
-      hash = "sha256-arNHY85vRNJc0gxuiH4d4PtPvlWw0HxfQy1yrB9QDv4=";
-    };
     aarch64-darwin = {
       platform = "darwin";
       arch = "arm64";
