@@ -21,13 +21,14 @@
 
       # Container & virtualization
       ctop
+      gvproxy
       kind
-      qemu
-      virt-manager
+      libvirt
       podman
       podman-compose
+      qemu
+      virt-manager
       virtiofsd
-      gvproxy
 
       # Infrastructure as Code (IaC)
       opentofu
