@@ -19,7 +19,7 @@ in
     enable = true;
     settings = {
       add_newline = false;
-      format = "$username$hostname($directory)($kubernetes)(\${custom.container_context})($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "($nix_shell)$username$hostname($directory)($kubernetes)(\${custom.container_context})($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -70,6 +70,11 @@ in
         style = "yellow bold";
         format = "[$symbol $version( $virtualenv)]($style) ";
         version_format = "v$major.$minor";
+      };
+      nix_shell = {
+        format = "[$symbol$name]($style) ";
+        symbol = "❄️ ";
+        style = "bold blue";
       };
       kubernetes = {
         symbol = "🪐";
