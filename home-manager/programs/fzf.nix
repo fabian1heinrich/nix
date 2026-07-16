@@ -26,18 +26,18 @@ in
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
-    changeDirWidgetOptions = [
+    changeDirWidget.options = [
       "--walker-skip .git,node_modules,target"
       "--preview 'tree -C {}'"
     ];
-    fileWidgetOptions = [
+    fileWidget.options = [
       "--walker-skip .git,node_modules,target"
       "--preview 'bat -n --color=always {}'"
       "--bind 'ctrl-/:change-preview-window(down|hidden|)'"
       "--bind 'shift-up:preview-page-up,shift-down:preview-page-down'"
       "--height=100%"
     ];
-    historyWidgetOptions = [
+    historyWidget.options = [
       "--preview 'echo {}'"
       "--preview-window up:3:hidden:wrap"
       "--bind 'ctrl-/:toggle-preview'"

@@ -38,6 +38,7 @@ in
   };
 
   home.pointerCursor = {
+    enable = true;
     name = "Yaru";
     package = pkgs.yaru-theme;
     x11.enable = true;
