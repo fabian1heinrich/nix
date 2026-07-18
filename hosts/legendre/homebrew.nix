@@ -21,6 +21,7 @@
       "podman-compose"
       "podman"
       "qemu"
+      "snapzy"
       "socket_vmnet"
     ];
     greedyCasks = false;
