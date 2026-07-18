@@ -21,7 +21,6 @@
       "podman-compose"
       "podman"
       "qemu"
-      "snapzy"
       "socket_vmnet"
     ];
     greedyCasks = false;
@@ -42,6 +41,7 @@
       "selfcontrol"
       "signal"
       "slack"
+      "snapzy"
       "stats"
       "thaw"
       "utm"
