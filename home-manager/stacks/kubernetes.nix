@@ -20,6 +20,7 @@
     kustomize # K8s configuration
     kyverno # K8s policy engine
     stern # Multi-pod log tailing
+    talhelper # Talos OS helper
     talosctl # Talos OS management
     zarf # Air-gap K8s deployments
   ];

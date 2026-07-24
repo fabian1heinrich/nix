@@ -27,6 +27,8 @@
     tldr # Simplified man pages
     television # TUI file browser
     yubikey-manager # YubiKey management CLI
+    sops # Secrets management tool
+    age # Simple, modern and secure file encryption
 
     # Nix tooling
     nixd # Nix language server

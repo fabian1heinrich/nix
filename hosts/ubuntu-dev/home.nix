@@ -27,6 +27,7 @@
       podman
       podman-compose
       qemu
+      vcluster
       virt-manager
       virtiofsd
 
