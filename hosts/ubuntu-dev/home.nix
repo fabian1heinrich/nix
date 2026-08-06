@@ -25,7 +25,6 @@
       kind
       libvirt
       podman
-      podman-compose
       qemu
       vcluster
       virt-manager
@@ -45,7 +44,7 @@
   xdg.configFile."containers/containers.conf".text = ''
     [engine]
     compose_providers = [
-      "${pkgs.podman-compose}/bin/podman-compose",
+      "${pkgs.docker-compose}/bin/docker-compose",
     ]
     helper_binaries_dir = [
       "${pkgs.podman}/libexec/podman",

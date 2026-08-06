@@ -6,8 +6,6 @@
 
 sandbox_mode = "danger-full-access"
 approval_policy = "never"
-model = "gpt-5.5"
-model_reasoning_effort = "high"
 
 [sandbox_workspace_write]
 # Keep the sandbox tight by default. Add absolute paths here only when this

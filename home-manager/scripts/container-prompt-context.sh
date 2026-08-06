@@ -2,65 +2,32 @@
 
 set -euo pipefail
 
-symbol="📦"
+docker_cmd=(env -u DOCKER_HOST -u CONTAINER_HOST -u CONTAINER_CONNECTION docker)
+context="$("${docker_cmd[@]}" context show 2>/dev/null)"
 
-clean_docker() {
-  env -u DOCKER_HOST -u CONTAINER_HOST -u CONTAINER_CONNECTION docker "$@"
-}
+[[ -n "$context" && "$context" != "default" ]] || exit 1
 
-current_context() {
-  clean_docker context show 2>/dev/null
-}
+timeout 1s "${docker_cmd[@]}" --context "$context" version \
+  --format '{{.Server.Version}}' >/dev/null 2>&1 || exit 1
 
-context_host() {
-  local context="$1"
+if [[ "$context" != "podman" ]]; then
+  printf '📦%s\n' "$context"
+  exit
+fi
 
-  clean_docker context inspect "$context" 2>/dev/null |
-    jq -r '.[0].Endpoints.docker.Host // empty'
-}
+case "$(uname -s)" in
+  Darwin)
+    rootful="$(podman machine inspect --format '{{.Rootful}}' \
+      "${PODMAN_MACHINE:-podman-machine-default}" 2>/dev/null)" || exit 1
+    ;;
+  Linux)
+    rootless="$(podman info --format '{{.Host.Security.Rootless}}' 2>/dev/null)" || exit 1
+    rootful=true
+    [[ "$rootless" == true ]] && rootful=false
+    ;;
+  *) exit 1 ;;
+esac
 
-socket_from_host() {
-  local host="$1"
-
-  case "$host" in
-    unix://*) printf '%s\n' "${host#unix://}" ;;
-    *) printf '\n' ;;
-  esac
-}
-
-context_is_visible() {
-  local context="$1"
-
-  [[ -n "$context" && "$context" != "default" ]]
-}
-
-context_is_down() {
-  local context="$1"
-  local host socket
-
-  host="$(context_host "$context")"
-  socket="$(socket_from_host "$host")"
-
-  [[ -n "$socket" && ! -S "$socket" ]]
-}
-
-print_context() {
-  local context="$1"
-
-  if context_is_down "$context"; then
-    printf '%s%s:down\n' "$symbol" "$context"
-  else
-    printf '%s%s\n' "$symbol" "$context"
-  fi
-}
-
-main() {
-  local context
-
-  context="$(current_context)"
-  context_is_visible "$context" || exit 1
-
-  print_context "$context"
-}
-
-main "$@"
+mode=rootless
+[[ "$rootful" == true ]] && mode=rootful
+printf '📦%s:%s\n' "$context" "$mode"

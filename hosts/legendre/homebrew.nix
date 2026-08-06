@@ -3,7 +3,7 @@
   homebrew = {
     enable = true;
     onActivation = {
-      autoUpdate = false;
+      autoUpdate = true;
       cleanup = "uninstall";
       extraFlags = [ "--force-cleanup" ];
       upgrade = false;
@@ -11,14 +11,11 @@
     extraConfig = "";
     prefix = "/opt/homebrew";
     brews = [
-      "colima"
       "cowsay"
-      "docker"
       "lima-additional-guestagents"
       "mas"
       "mise"
       "mole"
-      "podman-compose"
       "podman"
       "qemu"
       "socket_vmnet"
@@ -30,7 +27,6 @@
       "bettershot"
       "bitwarden"
       "chatgpt"
-      "codex"
       "ghostty"
       "gifox"
       "languagetool-desktop"

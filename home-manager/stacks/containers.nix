@@ -12,7 +12,6 @@ let
       [
         coreutils
         docker-client
-        jq
       ]
       ++ lib.optionals stdenv.isLinux [
         systemd
@@ -21,11 +20,13 @@ let
   };
   containerPromptContext = pkgs.writeShellApplication {
     name = "container-prompt-context";
-    runtimeInputs = with pkgs; [
-      coreutils
-      docker-client
-      jq
-    ];
+    runtimeInputs =
+      with pkgs;
+      [
+        coreutils
+        docker-client
+      ]
+      ++ lib.optionals stdenv.isLinux [ podman ];
     text = builtins.readFile ../scripts/container-prompt-context.sh;
   };
 in
@@ -99,22 +100,16 @@ in
         export DOCKER_CONTEXT="$context"
       }
 
-      ctx-colima() {
-        _container_use_context colima "$@"
+      podman-rootless() {
+        _container_use_context rootless "''${PODMAN_MACHINE:-podman-machine-default}" "$@"
       }
 
-      ctx-podman() {
-        _container_use_context podman rootless \
-          "''${PODMAN_ROOTLESS_CONTEXT:-podman-rootless}" \
-          "''${PODMAN_ROOTLESS_MACHINE:-podman-machine-default}"
+      podman-rootful() {
+        _container_use_context rootful "''${PODMAN_MACHINE:-podman-machine-default}" "$@"
       }
 
-      ctx-podman-rootful() {
-        CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET="''${CONTAINER_CONTEXT_CHGRP_ROOTFUL_SOCKET:-1}" \
-          _container_use_context podman rootful \
-          "''${PODMAN_ROOTFUL_CONTEXT:-podman-rootful}" \
-          "''${PODMAN_ROOTFUL_MACHINE:-podman-machine-rootful}"
-      }
+      ctx-podman() { podman-rootless "$@"; }
+      ctx-podman-rootful() { podman-rootful "$@"; }
 
       ctx-default() {
         _container_clear_connection_overrides

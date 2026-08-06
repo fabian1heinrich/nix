@@ -15,6 +15,7 @@
     packages = with pkgs; [
       # CLI tools
       opencode
+      codex
 
       # Container & virtualization
       kind
