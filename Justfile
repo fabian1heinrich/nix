@@ -11,7 +11,7 @@ nix-check:
     nix flake check --all-systems --no-build
 
 nix-shellcheck:
-    nix build .#checks.$(nix eval --raw --impure --expr builtins.currentSystem).shellcheck
+    nix build --no-link .#checks.$(nix eval --raw --impure --expr builtins.currentSystem).shellcheck
 
 nix-fmt:
     nix fmt
