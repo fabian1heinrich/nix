@@ -178,6 +178,7 @@
         in
         {
           default = pkgs.mkShell {
+            name = "nix-config";
             packages = with pkgs; [
               git
               just

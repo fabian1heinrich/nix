@@ -82,13 +82,10 @@ in
     initContent = lib.mkAfter ''
       _container_clear_connection_overrides() {
         unset DOCKER_HOST
+        unset DOCKER_CONTEXT
         unset CONTAINER_HOST
         unset CONTAINER_CONNECTION
         unalias docker docker-compose 2>/dev/null || true
-      }
-
-      _container_docker() {
-        env -u DOCKER_HOST -u CONTAINER_HOST -u CONTAINER_CONNECTION -u DOCKER_CONTEXT docker "$@"
       }
 
       _container_use_context() {
@@ -96,7 +93,6 @@ in
 
         _container_clear_connection_overrides
         context="$(container-context "$@")" || return
-        _container_docker context use "$context" >/dev/null || return
         export DOCKER_CONTEXT="$context"
       }
 
@@ -113,7 +109,6 @@ in
 
       ctx-default() {
         _container_clear_connection_overrides
-        _container_docker context use default >/dev/null || return
         export DOCKER_CONTEXT=default
       }
 
