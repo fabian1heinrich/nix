@@ -5,6 +5,19 @@
   ...
 }:
 let
+  containerFolders = [
+    ".devcontainer"
+  ];
+  containerFiles = [
+    "Containerfile"
+    "Dockerfile"
+    "compose.yml"
+    "compose.yaml"
+    "podman-compose.yml"
+    "podman-compose.yaml"
+    "docker-compose.yml"
+    "docker-compose.yaml"
+  ];
   containerContext = pkgs.writeShellApplication {
     name = "container-context";
     runtimeInputs =
@@ -70,6 +83,14 @@ in
         ExecStart = "${pkgs.podman}/bin/podman system service --time=0";
       };
     };
+  };
+
+  programs.starship.settings.custom.container_context = {
+    detect_folders = containerFolders;
+    detect_files = containerFiles;
+    command = "${containerPromptContext}/bin/container-prompt-context";
+    format = "([$output]($style) )";
+    style = "blue bold";
   };
 
   programs.zsh = {

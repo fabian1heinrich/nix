@@ -1,25 +1,10 @@
 { ... }:
-let
-  containerFolders = [
-    ".devcontainer"
-  ];
-  containerFiles = [
-    "Containerfile"
-    "Dockerfile"
-    "compose.yml"
-    "compose.yaml"
-    "podman-compose.yml"
-    "podman-compose.yaml"
-    "docker-compose.yml"
-    "docker-compose.yaml"
-  ];
-in
 {
   programs.starship = {
     enable = true;
     settings = {
       add_newline = false;
-      format = "($nix_shell)$username$hostname($directory)($kubernetes)(\${custom.container_context})($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "($nix_shell)$username$hostname($directory)($kubernetes)$custom($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -91,13 +76,6 @@ in
           "manifests"
           "charts"
         ];
-      };
-      custom.container_context = {
-        detect_folders = containerFolders;
-        detect_files = containerFiles;
-        command = "container-prompt-context";
-        format = "([$output]($style) )";
-        style = "blue bold";
       };
     };
   };
