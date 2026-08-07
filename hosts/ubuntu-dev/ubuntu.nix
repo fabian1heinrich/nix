@@ -18,32 +18,19 @@ in
     xclip
   ];
 
-  # GTK theming
   gtk = {
     enable = true;
     theme = {
       name = "Yaru";
-      package = pkgs.yaru-theme;
     };
     gtk4.theme = config.gtk.theme;
     cursorTheme = {
       name = "Yaru";
-      package = pkgs.yaru-theme;
       size = 24;
     };
     iconTheme = {
       name = "Yaru";
-      package = pkgs.yaru-theme;
     };
-  };
-
-  home.pointerCursor = {
-    enable = true;
-    name = "Yaru";
-    package = pkgs.yaru-theme;
-    x11.enable = true;
-    gtk.enable = true;
-    size = 24;
   };
 
   xdg.mimeApps = {
