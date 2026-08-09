@@ -1,7 +1,5 @@
 set shell := ["bash", "-uc"]
 
-docker := "env -u DOCKER_HOST -u CONTAINER_HOST -u CONTAINER_CONNECTION -u DOCKER_CONTEXT docker"
-
 default:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" --list
 
@@ -37,12 +35,11 @@ homebrew-cleanup:
     brew cleanup -s
     rm -rf "$(brew --cache)"
 
-# Show the current macOS machine or Ubuntu rootless Podman status.
+# Show Podman status and the active Docker API.
 container-status:
     @case "$(uname -s)" in \
         Darwin) \
             podman machine list; \
-            context=podman; \
             ;; \
         Linux) \
             podman info --format=json | \
@@ -53,15 +50,14 @@ container-status:
             else \
                 echo 'Podman rootful: run sudo podman info to inspect'; \
             fi; \
-            context=podman-rootless; \
             ;; \
         *) \
             echo 'Unsupported operating system' >&2; \
             exit 1; \
             ;; \
     esac; \
-    info="$({{ docker }} --context "$context" info 2>&1)" && printf '%s\n' "$info" || \
-        echo 'Docker API unavailable; run ctx-podman to start it.'
+    info="$(docker info 2>&1)" && printf '%s\n' "$info" || \
+        echo 'Docker API unavailable for the active endpoint.'
 
 # Reset the macOS Podman machine or Ubuntu rootless Podman storage.
 container-reset:

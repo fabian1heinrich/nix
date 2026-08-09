@@ -4,7 +4,7 @@
     enable = true;
     settings = {
       add_newline = false;
-      format = "($nix_shell)$username$hostname($directory)($kubernetes)$custom($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "($nix_shell)$username$hostname($directory)($kubernetes)($docker_context)$custom($python)($git_branch)($git_status)($cmd_duration)$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -75,6 +75,25 @@
           "kubernetes"
           "manifests"
           "charts"
+        ];
+      };
+      docker_context = {
+        symbol = "📦";
+        format = "[$symbol$context]($style) ";
+        style = "blue bold";
+        only_with_files = true;
+        detect_files = [
+          "Containerfile"
+          "Dockerfile"
+          "compose.yml"
+          "compose.yaml"
+          "podman-compose.yml"
+          "podman-compose.yaml"
+          "docker-compose.yml"
+          "docker-compose.yaml"
+        ];
+        detect_folders = [
+          ".devcontainer"
         ];
       };
     };

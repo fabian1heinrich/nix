@@ -74,6 +74,43 @@ home-manager switch --flake .#ubuntu-dev
 nix develop
 ```
 
+## Project-local Podman
+
+Create or update a local `podman` Docker context once on each host:
+
+```bash
+case "$(uname -s)" in
+  Darwin)
+    machine="${PODMAN_MACHINE:-podman-machine-default}"
+    docker_host="unix://$(podman machine inspect \
+      --format '{{.ConnectionInfo.PodmanSocket.Path}}' "$machine")"
+    ;;
+  Linux)
+    docker_host="unix://${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
+    ;;
+esac
+
+if docker context inspect podman >/dev/null 2>&1; then
+  docker context update podman --docker "host=$docker_host"
+else
+  docker context create podman --description Podman --docker "host=$docker_host"
+fi
+```
+
+Projects select that context without changing Docker's persisted global
+selection. Add this to each project's `.envrc`:
+
+```bash
+unset DOCKER_HOST
+export DOCKER_CONTEXT=podman
+```
+
+Then run `direnv allow`. The Linux rootless API socket targeted by the context
+is managed by Home Manager. On macOS, start the selected machine with
+`podman machine start "${PODMAN_MACHINE:-podman-machine-default}"`; its rootful
+or rootless mode is a property of that machine. Use `sudo podman` or
+`sudo podman compose` for rootful containers on Linux.
+
 ## Checks
 
 Fast evaluation check:
