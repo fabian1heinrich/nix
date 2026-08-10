@@ -21,6 +21,11 @@ switch-legendre:
 switch-ubuntu-dev:
     home-manager switch --flake .#ubuntu-dev
 
+switch-ubuntu-system:
+    nix run .#system-manager -- switch --flake .#ubuntu-dev --sudo
+
+switch-ubuntu: switch-ubuntu-system switch-ubuntu-dev
+
 homebrew-upgrade:
     brew update
     brew upgrade
@@ -44,11 +49,12 @@ container-status:
         Linux) \
             podman info --format=json | \
                 jq -r '"Podman rootless: version=\(.version.Version) graphRoot=\(.store.graphRoot)"'; \
-            if rootful_info="$(sudo -n podman info --format=json 2>/dev/null)"; then \
+            podman_path="$(command -v podman)"; \
+            if rootful_info="$(/usr/bin/sudo -n "$podman_path" info --format=json 2>/dev/null)"; then \
                 jq -nr --argjson info "$rootful_info" \
                     '"Podman rootful: version=\($info.version.Version) graphRoot=\($info.store.graphRoot)"'; \
             else \
-                echo 'Podman rootful: run sudo podman info to inspect'; \
+                echo 'Podman rootful: run podman-rootful info to inspect'; \
             fi; \
             ;; \
         *) \

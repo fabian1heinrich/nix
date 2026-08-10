@@ -7,6 +7,8 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    system-manager.url = "github:numtide/system-manager";
+    system-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -14,6 +16,7 @@
       nixpkgs,
       home-manager,
       darwin,
+      system-manager,
       ...
     }:
     let
@@ -171,15 +174,19 @@
         {
           default = pkgs.mkShell {
             name = "nix-config";
-            packages = with pkgs; [
-              git
-              just
-              nixd
-              nixfmt
-              nixfmt-tree
-              shellcheck
-              worktrunk
-            ];
+            packages =
+              (with pkgs; [
+                git
+                just
+                nixd
+                nixfmt
+                nixfmt-tree
+                shellcheck
+                worktrunk
+              ])
+              ++ lib.optionals pkgs.stdenv.isLinux [
+                system-manager.packages.${system}.default
+              ];
           };
         };
 
@@ -219,9 +226,19 @@
         };
       };
 
+      systemConfigs = {
+        ubuntu-dev = system-manager.lib.makeSystemConfig {
+          modules = [
+            { nixpkgs.config.allowUnfree = true; }
+            ./hosts/ubuntu-dev/system.nix
+          ];
+        };
+      };
+
       checkTargets = {
         legendre = darwinConfigurations.legendre.config.system.build.toplevel;
         ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
+        ubuntu-dev-system = systemConfigs.ubuntu-dev;
       };
 
       nativeBuildCheckTargets = {
@@ -230,6 +247,7 @@
         };
         x86_64-linux = {
           ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
+          ubuntu-dev-system-build = systemConfigs.ubuntu-dev;
         };
       };
 
@@ -247,10 +265,16 @@
     {
       devShells = lib.genAttrs systems mkDevShells;
 
+      apps.x86_64-linux.system-manager = {
+        type = "app";
+        program = "${system-manager.packages.x86_64-linux.default}/bin/system-manager";
+      };
+
       inherit
         formatter
         darwinConfigurations
         homeConfigurations
+        systemConfigs
         checks
         ;
     };

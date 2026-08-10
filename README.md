@@ -9,7 +9,7 @@ Prerequisites:
 - Nix with flakes enabled
 - Git
 - On macOS: administrator access and the Xcode command line tools
-- On Ubuntu: a user named `ubuntu-dev`, or adjust `flake.nix`
+- On Ubuntu: a user named `ubuntu-dev` with `sudo` access, or adjust `flake.nix`
 
 The `legendre` Darwin configuration checks that the Xcode Command Line Tools
 are installed and keeps `xcode-select` pointed at
@@ -27,6 +27,7 @@ before the managed configuration takes over.
 - `profiles/desktop.nix`: shared desktop baseline
 - `home-manager/stacks/*.nix`: workflow bundles
 - `hosts/<name>/home.nix`: host-specific additions
+- `hosts/<name>/system.nix`: non-NixOS system configuration
 
 Hosts compose local profiles and role stacks.
 
@@ -59,13 +60,14 @@ Ubuntu (`ubuntu-dev`, first run):
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
+nix run .#system-manager -- switch --flake .#ubuntu-dev --sudo
 nix run github:nix-community/home-manager -- switch --flake .#ubuntu-dev
 ```
 
 Ubuntu (`ubuntu-dev`, after setup):
 
 ```bash
-home-manager switch --flake .#ubuntu-dev
+just switch-ubuntu
 ```
 
 ## Dev Shells
@@ -82,6 +84,11 @@ Create or update a local `podman` Docker context once on each host:
 case "$(uname -s)" in
   Darwin)
     machine="${PODMAN_MACHINE:-podman-machine-default}"
+    if ! state="$(podman machine inspect --format '{{.State}}' "$machine" 2>/dev/null)"; then
+      podman machine init --now "$machine"
+    elif [[ "$state" != "running" ]]; then
+      podman machine start "$machine"
+    fi
     docker_host="unix://$(podman machine inspect \
       --format '{{.ConnectionInfo.PodmanSocket.Path}}' "$machine")"
     ;;
@@ -106,10 +113,36 @@ export DOCKER_CONTEXT=podman
 ```
 
 Then run `direnv allow`. The Linux rootless API socket targeted by the context
-is managed by Home Manager. On macOS, start the selected machine with
-`podman machine start "${PODMAN_MACHINE:-podman-machine-default}"`; its rootful
-or rootless mode is a property of that machine. Use `sudo podman` or
-`sudo podman compose` for rootful containers on Linux.
+is managed by Home Manager. On macOS, the setup initializes and starts the
+selected machine; its rootful or rootless mode is a property of that machine.
+If it is stopped later, restart it with
+`podman machine start "${PODMAN_MACHINE:-podman-machine-default}"`.
+
+On Linux, System Manager installs the system-wide Podman and Compose packages
+declaratively. Use `podman-rootful` or `podman-rootful compose` for rootful
+containers. The wrapper invokes the flake-pinned Podman binary through `sudo`,
+with root-specific configuration and connection overrides cleared. Podman is
+daemonless, so rootful CLI and Compose commands do not require a root service
+or socket.
+
+Long-running rootful containers can be declared with Podman Quadlet files in
+`hosts/ubuntu-dev/system.nix`:
+
+```nix
+environment.etc."containers/systemd/example.container".text = ''
+  [Container]
+  Image=docker.io/library/nginx:alpine
+  PublishPort=8080:80
+
+  [Install]
+  WantedBy=multi-user.target
+'';
+```
+
+The system configuration installs Podman's systemd generator, so these files
+become ordinary system services after `just switch-ubuntu-system`. The official
+Docker CLI remains managed by Home Manager for project-local contexts; a
+system-wide `docker` to `podman` alias is intentionally unnecessary.
 
 ## Checks
 
@@ -130,6 +163,7 @@ Native build checks are exposed as flake checks on their matching platform:
 
 - macOS: `checks.aarch64-darwin.legendre-system-build`
 - Ubuntu: `checks.x86_64-linux.ubuntu-dev-activation-build`
+- Ubuntu system: `checks.x86_64-linux.ubuntu-dev-system-build`
 
 ## Secrets
 

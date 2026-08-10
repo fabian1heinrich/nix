@@ -25,8 +25,6 @@
     zarf # Air-gap K8s deployments
   ];
 
-  home.sessionVariables.KIND_EXPERIMENTAL_PROVIDER = "podman";
-
   programs.zsh = {
     oh-my-zsh.plugins = [
       "kubectl"
