@@ -121,9 +121,9 @@ If it is stopped later, restart it with
 On Linux, System Manager installs the system-wide Podman and Compose packages
 declaratively. Use `podman-rootful` or `podman-rootful compose` for rootful
 containers. The wrapper invokes the flake-pinned Podman binary through `sudo`,
-with root-specific configuration and connection overrides cleared. Podman is
-daemonless, so rootful CLI and Compose commands do not require a root service
-or socket.
+with root-specific configuration and connection overrides cleared. Rootful
+Podman CLI commands remain daemonless; Compose uses a socket-activated API
+service at `/run/podman/podman.sock` for its external Compose provider.
 
 Long-running rootful containers can be declared with Podman Quadlet files in
 `hosts/ubuntu-dev/system.nix`:

@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   programs.starship = {
     enable = true;
@@ -81,6 +81,7 @@
         symbol = "📦";
         format = "[$symbol$context]($style) ";
         style = "blue bold";
+        disabled = pkgs.stdenv.isLinux;
         only_with_files = true;
         detect_files = [
           "Containerfile"

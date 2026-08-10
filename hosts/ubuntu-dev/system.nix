@@ -32,10 +32,36 @@ in
       compose_providers = [
         "${pkgs.docker-compose}/bin/docker-compose",
       ]
+      compose_warning_logs = false
       helper_binaries_dir = [
         "${pkgs.podman}/libexec/podman",
       ]
     '';
+  };
+
+  systemd = {
+    sockets.podman = {
+      description = "Podman API socket";
+      documentation = [ "man:podman-system-service(1)" ];
+      wantedBy = [ "system-manager.target" ];
+      socketConfig = {
+        ListenStream = "/run/podman/podman.sock";
+        SocketMode = "0660";
+      };
+    };
+
+    services.podman = {
+      description = "Podman API service";
+      documentation = [ "man:podman-system-service(1)" ];
+      requires = [ "podman.socket" ];
+      after = [ "podman.socket" ];
+      serviceConfig = {
+        Delegate = true;
+        Type = "exec";
+        KillMode = "process";
+        ExecStart = "${pkgs.podman}/bin/podman system service --time=0";
+      };
+    };
   };
 
   # Make rootful Quadlet files in /etc/containers/systemd discoverable by the
