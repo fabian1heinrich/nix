@@ -4,7 +4,7 @@
     enable = true;
     settings = {
       add_newline = false;
-      format = "($nix_shell)$username$hostname($directory)($kubernetes)($docker_context)$custom($python)($git_branch)($git_status)($cmd_duration)$character";
+      format = "([╭─](dimmed white) $direnv$nix_shell$custom$python$docker_context$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -60,6 +60,12 @@
         format = "[$symbol$name]($style) ";
         symbol = "❄️ ";
         style = "bold blue";
+      };
+      direnv = {
+        disabled = false;
+        format = "[$symbol]($style) ";
+        style = "bold yellow";
+        symbol = "🌿";
       };
       kubernetes = {
         symbol = "🪐";
