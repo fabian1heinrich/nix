@@ -37,9 +37,21 @@ in
         "${pkgs.podman}/libexec/podman",
       ]
     '';
+
+    etc."containers/storage.conf".text = ''
+      [storage]
+      driver = "overlay"
+      graphroot = "/media/data/podman/rootful"
+    '';
   };
 
   systemd = {
+    tmpfiles.rules = [
+      "d /media/data/podman 0755 root root -"
+      "d /media/data/podman/rootless 0700 ubuntu-dev ubuntu-dev -"
+      "d /media/data/podman/rootful 0700 root root -"
+    ];
+
     sockets.podman = {
       description = "Podman API socket";
       documentation = [ "man:podman-system-service(1)" ];
