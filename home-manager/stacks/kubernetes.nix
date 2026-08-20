@@ -12,6 +12,7 @@
 
   home.packages = with pkgs; [
     fluxcd # GitOps toolkit
+    fluxcd-operator
     kubectl # Kubernetes CLI
     kubectl-view-secret # View K8s secrets
     kubectx # Switch contexts/namespaces
@@ -24,8 +25,6 @@
     talosctl # Talos OS management
     zarf # Air-gap K8s deployments
   ];
-
-  home.sessionVariables.KIND_EXPERIMENTAL_PROVIDER = "podman";
 
   programs.zsh = {
     oh-my-zsh.plugins = [

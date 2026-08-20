@@ -4,59 +4,16 @@
   pkgs,
   ...
 }:
-let
-  containerFolders = [
-    ".devcontainer"
-  ];
-  containerFiles = [
-    "Containerfile"
-    "Dockerfile"
-    "compose.yml"
-    "compose.yaml"
-    "podman-compose.yml"
-    "podman-compose.yaml"
-    "docker-compose.yml"
-    "docker-compose.yaml"
-  ];
-  containerContext = pkgs.writeShellApplication {
-    name = "container-context";
-    runtimeInputs =
-      with pkgs;
-      [
-        coreutils
-        docker-client
-      ]
-      ++ lib.optionals stdenv.isLinux [
-        systemd
-      ];
-    text = builtins.readFile ../scripts/container-context.sh;
-  };
-  containerPromptContext = pkgs.writeShellApplication {
-    name = "container-prompt-context";
-    runtimeInputs =
-      with pkgs;
-      [
-        coreutils
-        docker-client
-      ]
-      ++ lib.optionals stdenv.isLinux [ podman ];
-    text = builtins.readFile ../scripts/container-prompt-context.sh;
-  };
-in
 {
-  home.packages = [
-    containerContext
-    containerPromptContext
-  ]
-  ++ (with pkgs; [
+  home.packages = with pkgs; [
     crane # Container registry tool
-    docker-client # Docker CLI for context management and Starship prompt state
+    docker-client # Docker-compatible CLI for project-local container endpoints
     docker-compose # Docker Compose CLI and plugin
     lazydocker # Docker TUI
     oras # OCI registry client
     regctl # Registry client
     skopeo # Container image utility
-  ]);
+  ];
 
   home.file.".docker/cli-plugins/docker-compose".source =
     "${pkgs.docker-compose}/libexec/docker/cli-plugins/docker-compose";
@@ -85,14 +42,6 @@ in
     };
   };
 
-  programs.starship.settings.custom.container_context = {
-    detect_folders = containerFolders;
-    detect_files = containerFiles;
-    command = "${containerPromptContext}/bin/container-prompt-context";
-    format = "([$output]($style) )";
-    style = "blue bold";
-  };
-
   programs.zsh = {
     oh-my-zsh.plugins = [
       "docker-compose"
@@ -101,43 +50,6 @@ in
     ];
 
     initContent = lib.mkAfter ''
-      _container_clear_connection_overrides() {
-        unset DOCKER_HOST
-        unset DOCKER_CONTEXT
-        unset CONTAINER_HOST
-        unset CONTAINER_CONNECTION
-        unalias docker docker-compose 2>/dev/null || true
-      }
-
-      _container_use_context() {
-        local context
-
-        _container_clear_connection_overrides
-        context="$(container-context "$@")" || return
-        export DOCKER_CONTEXT="$context"
-      }
-
-      podman-rootless() {
-        _container_use_context rootless "''${PODMAN_MACHINE:-podman-machine-default}" "$@"
-      }
-
-      podman-rootful() {
-        _container_use_context rootful "''${PODMAN_MACHINE:-podman-machine-default}" "$@"
-      }
-
-      ctx-podman() { podman-rootless "$@"; }
-      ctx-podman-rootful() { podman-rootful "$@"; }
-
-      ctx-default() {
-        _container_clear_connection_overrides
-        export DOCKER_CONTEXT=default
-      }
-
-      # If `docker` resolves to podman, use podman's completion backend.
-      if (( $+commands[podman] && $+commands[docker] )) && command docker --version 2>/dev/null | command grep -qi '^podman version'; then
-        compdef _podman docker
-      fi
-
       ${lib.optionalString pkgs.stdenv.isDarwin ''
         if (( $+commands[podman] )); then
           autoload -Uz _podman

@@ -51,4 +51,10 @@
       "${pkgs.gvproxy}/bin",
     ]
   '';
+
+  xdg.configFile."containers/storage.conf".text = ''
+    [storage]
+    driver = "overlay"
+    graphroot = "/media/data/podman/rootless"
+  '';
 }
