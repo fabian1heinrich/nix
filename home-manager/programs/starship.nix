@@ -1,10 +1,39 @@
 { pkgs, ... }:
+let
+  containerProjectFiles = [
+    "Containerfile"
+    "Dockerfile"
+    "compose.yml"
+    "compose.yaml"
+    "podman-compose.yml"
+    "podman-compose.yaml"
+    "docker-compose.yml"
+    "docker-compose.yaml"
+  ];
+  resolvePodmanSocket = ''
+    [ -n "''${DOCKER_CONTEXT:-}" ] || exit 1
+    socket="''${PODMAN_SOCKET:-}"
+    if [ -z "$socket" ] && [ -n "''${PODMAN_MACHINE:-}" ]; then
+      socket="$(env -u CONTAINER_CONNECTION -u CONTAINER_HOST \
+        podman machine inspect "$PODMAN_MACHINE" \
+        --format '{{.ConnectionInfo.PodmanSocket.Path}}' 2>/dev/null || true)"
+    fi
+  '';
+  pingPodmanSocket = ''curl --silent --fail --max-time 0.1 --unix-socket "$socket" http://localhost/_ping >/dev/null 2>&1'';
+  dockerContextModule = {
+    symbol = "📦";
+    format = "([$symbol$output]($style) )";
+    disabled = pkgs.stdenv.isLinux;
+    detect_files = containerProjectFiles;
+    detect_folders = [ ".devcontainer" ];
+  };
+in
 {
   programs.starship = {
     enable = true;
     settings = {
       add_newline = false;
-      format = "([╭─](dimmed white) $direnv$nix_shell$custom$python$docker_context$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
+      format = "([╭─](dimmed white) $direnv$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -83,25 +112,24 @@
           "charts"
         ];
       };
-      docker_context = {
-        symbol = "📦";
-        format = "[$symbol$context]($style) ";
+      docker_context.disabled = true;
+      custom.docker_context_available = dockerContextModule // {
+        command = resolvePodmanSocket + ''
+          [ -n "$socket" ] || exit 1
+          ${pingPodmanSocket} || exit 1
+          printf '%s' "$DOCKER_CONTEXT"
+        '';
         style = "blue bold";
-        disabled = pkgs.stdenv.isLinux;
-        only_with_files = true;
-        detect_files = [
-          "Containerfile"
-          "Dockerfile"
-          "compose.yml"
-          "compose.yaml"
-          "podman-compose.yml"
-          "podman-compose.yaml"
-          "docker-compose.yml"
-          "docker-compose.yaml"
-        ];
-        detect_folders = [
-          ".devcontainer"
-        ];
+      };
+      custom.docker_context_unavailable = dockerContextModule // {
+        command = resolvePodmanSocket + ''
+          if [ -n "$socket" ] && ${pingPodmanSocket}; then
+            exit 1
+          fi
+          printf '%s' "$DOCKER_CONTEXT"
+        '';
+        symbol = "📦💤";
+        style = "red bold";
       };
     };
   };

@@ -58,10 +58,10 @@ Run `direnv allow` after checking out or changing `.envrc`.
 The project keeps separate rootless and rootful Podman VMs and matching Docker
 contexts:
 
-| Mode | VM / Docker context | Podman connection |
-| --- | --- | --- |
-| Rootless | `podman` | `podman` |
-| Rootful | `podman-rootful` | `podman-rootful-root` |
+| Mode     | VM / Docker context | Podman connection     |
+| -------- | ------------------- | --------------------- |
+| Rootless | `podman`            | `podman`              |
+| Rootful  | `podman-rootful`    | `podman-rootful-root` |
 
 Rootless is the checked-in default. Create if necessary and start the selected
 VM with:

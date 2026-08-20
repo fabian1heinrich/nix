@@ -66,8 +66,12 @@ podman-stop: _podman-machine-host
 podman-delete: _podman-machine-host
     #!/usr/bin/env bash
     set -eu
-    {{ podman }} machine inspect "{{ podman_machine }}" >/dev/null 2>&1 && {{ podman }} machine rm "{{ podman_machine }}"
-    {{ docker }} context inspect "{{ podman_machine }}" >/dev/null 2>&1 && {{ docker }} context rm --force "{{ podman_machine }}" >/dev/null
+    if {{ podman }} machine inspect "{{ podman_machine }}" >/dev/null 2>&1; then
+      {{ podman }} machine rm --force "{{ podman_machine }}"
+    fi
+    if {{ docker }} context inspect "{{ podman_machine }}" >/dev/null 2>&1; then
+      {{ docker }} context rm --force "{{ podman_machine }}" >/dev/null
+    fi
 
 switch-legendre:
     sudo darwin-rebuild switch --flake .#legendre
