@@ -12,7 +12,7 @@
 
   home.packages = with pkgs; [
     fluxcd # GitOps toolkit
-    fluxcd-operator
+    fluxcd-operator # GitOps toolkit
     kubectl # Kubernetes CLI
     kubectl-view-secret # View K8s secrets
     kubectx # Switch contexts/namespaces
