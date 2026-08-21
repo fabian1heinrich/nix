@@ -23,7 +23,7 @@ let
   dockerContextModule = {
     symbol = "📦";
     format = "([$symbol$output]($style) )";
-    disabled = pkgs.stdenv.isLinux;
+    disabled = pkgs.stdenv.hostPlatform.isLinux;
     detect_files = containerProjectFiles;
     detect_folders = [ ".devcontainer" ];
   };
