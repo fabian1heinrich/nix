@@ -59,7 +59,7 @@
     };
     initContent = ''
 
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
+      ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
         export LANG="en_US.UTF-8"
         export LC_CTYPE="en_US.UTF-8"
 

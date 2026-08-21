@@ -15,7 +15,10 @@
         # - macOS: osxkeychain (stores in Keychain)
         # - Linux: libsecret (stores in GNOME Keyring or similar)
         helper =
-          if pkgs.stdenv.isDarwin then "osxkeychain" else "${pkgs.gitFull}/bin/git-credential-libsecret";
+          if pkgs.stdenv.hostPlatform.isDarwin then
+            "osxkeychain"
+          else
+            "${pkgs.gitFull}/bin/git-credential-libsecret";
       };
       # Useful defaults
       pull.rebase = true;

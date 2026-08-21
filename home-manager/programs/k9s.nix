@@ -8,7 +8,10 @@ let
   };
 
   skinsPath =
-    if pkgs.stdenv.isDarwin then "Library/Application Support/k9s/skins" else ".config/k9s/skins";
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      "Library/Application Support/k9s/skins"
+    else
+      ".config/k9s/skins";
 in
 {
   programs.k9s = {

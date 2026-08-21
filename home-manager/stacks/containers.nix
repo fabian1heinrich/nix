@@ -18,7 +18,7 @@
   home.file.".docker/cli-plugins/docker-compose".source =
     "${pkgs.docker-compose}/libexec/docker/cli-plugins/docker-compose";
 
-  systemd.user = lib.mkIf pkgs.stdenv.isLinux {
+  systemd.user = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     sockets.podman = {
       Unit.Description = "Podman API socket";
       Socket = {
@@ -50,7 +50,7 @@
     ];
 
     initContent = lib.mkAfter ''
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
+      ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
         if (( $+commands[podman] )); then
           autoload -Uz _podman
           compdef _podman podman

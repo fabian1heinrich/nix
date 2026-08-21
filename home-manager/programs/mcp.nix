@@ -16,8 +16,8 @@ let
   ];
 
   mcpJsonTargets =
-    (lib.optionals pkgs.stdenv.isLinux linuxMcpJsonTargets)
-    ++ (lib.optionals pkgs.stdenv.isDarwin darwinMcpJsonTargets);
+    (lib.optionals pkgs.stdenv.hostPlatform.isLinux linuxMcpJsonTargets)
+    ++ (lib.optionals pkgs.stdenv.hostPlatform.isDarwin darwinMcpJsonTargets);
 
   # Claude Desktop may launch MCP servers with a restricted PATH.
   # Use the active Home Manager profile binaries explicitly.

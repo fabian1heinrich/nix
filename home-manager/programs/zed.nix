@@ -23,7 +23,7 @@ in
     enable = true;
 
     # Zed is installed as a Homebrew cask on macOS; Home Manager owns config.
-    package = if pkgs.stdenv.isDarwin then null else pkgs.zed-editor;
+    package = if pkgs.stdenv.hostPlatform.isDarwin then null else pkgs.zed-editor;
 
     mutableUserSettings = false;
     mutableUserKeymaps = false;

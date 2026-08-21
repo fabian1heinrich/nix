@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 let
   clipboardCopyScript =
-    if pkgs.stdenv.isLinux then
+    if pkgs.stdenv.hostPlatform.isLinux then
       pkgs.writeShellScript "fzf-copy-to-clipboard" ''
         if [ -n "$WAYLAND_DISPLAY" ]; then
           exec ${pkgs.wl-clipboard}/bin/wl-copy
@@ -15,9 +15,9 @@ let
       null;
 
   clipboardCopyCommand =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "pbcopy"
-    else if pkgs.stdenv.isLinux then
+    else if pkgs.stdenv.hostPlatform.isLinux then
       "${clipboardCopyScript}"
     else
       null;
