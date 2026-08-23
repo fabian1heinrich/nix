@@ -71,9 +71,9 @@ just podman-start
 ```
 
 Set `podman_mode=rootful` in `.envrc` and rerun `direnv allow` to select the
-rootful VM. `podman-create`, `podman-stop`, and `podman-delete` operate on the
-same selection. Deleting a VM also removes its Docker context and destroys its
-containers, images, and volumes. These recipes are macOS-only.
+rootful VM. `podman-create` and `podman-stop` operate on the same selection.
+`podman-delete` removes every Podman VM and its matching Docker context,
+destroying their containers, images, and volumes. These recipes are macOS-only.
 
 Direnv selects the native Podman connection and Docker context. Keep Docker's
 persisted global context at `default` so it is restored outside the project:
