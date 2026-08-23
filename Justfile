@@ -25,6 +25,10 @@ nix-shellcheck:
 nix-fmt:
     nix fmt
 
+# Remove application caches (pass --dry-run to preview)
+cache-clean *args:
+    cache-clean {{ args }}
+
 nix-update:
     nix flake update
 

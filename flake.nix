@@ -86,6 +86,10 @@
 
       shellScripts = [
         (builtins.path {
+          path = ./home-manager/scripts/cache-clean.sh;
+          name = "cache-clean.sh";
+        })
+        (builtins.path {
           path = ./home-manager/scripts/bw-sync-api-keys.sh;
           name = "bw-sync-api-keys.sh";
         })
