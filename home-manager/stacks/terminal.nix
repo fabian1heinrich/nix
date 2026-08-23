@@ -2,6 +2,7 @@
 { ... }:
 {
   imports = [
+    ../programs/atuin.nix
     ../programs/broot.nix
     ../programs/ghostty.nix
     ../programs/helix.nix

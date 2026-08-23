@@ -29,6 +29,7 @@
       "chatgpt"
       "ghostty"
       "gifox"
+      "gpg-suite"
       "languagetool-desktop"
       "logi-options+"
       "maccy"
