@@ -6,6 +6,7 @@ docker := "env -u DOCKER_CONTEXT -u DOCKER_HOST docker"
 machine_format := "{{.Rootful}} {{.ConnectionInfo.PodmanSocket.Path}}"
 running_format := "{{if .Running}}{{.Name}}{{end}}"
 state_format := "{{.State}}"
+machine_name_format := "{{.Name}}"
 
 _podman-machine-host:
     @if [[ "$(uname -s)" != Darwin ]]; then \
@@ -62,16 +63,23 @@ podman-stop: _podman-machine-host
       {{ podman }} machine stop "{{ podman_machine }}"
     fi
 
-# Delete a macOS Podman VM and Docker context
+# Delete all macOS Podman VMs and their matching Docker contexts
 podman-delete: _podman-machine-host
     #!/usr/bin/env bash
     set -eu
-    if {{ podman }} machine inspect "{{ podman_machine }}" >/dev/null 2>&1; then
-      {{ podman }} machine rm --force "{{ podman_machine }}"
+    machines="$({{ podman }} machine list --format '{{ machine_name_format }}')"
+    if [[ -z "$machines" ]]; then
+      echo "No Podman machines exist."
+      exit 0
     fi
-    if {{ docker }} context inspect "{{ podman_machine }}" >/dev/null 2>&1; then
-      {{ docker }} context rm --force "{{ podman_machine }}" >/dev/null
-    fi
+    while IFS= read -r machine; do
+      {{ podman }} machine rm --force "$machine"
+      echo "Removed Podman machine $machine"
+      if {{ docker }} context inspect "$machine" >/dev/null 2>&1; then
+        {{ docker }} context rm --force "$machine" >/dev/null
+        echo "Removed Docker context $machine"
+      fi
+    done <<< "$machines"
 
 switch-legendre:
     sudo darwin-rebuild switch --flake .#legendre
