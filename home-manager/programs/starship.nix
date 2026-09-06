@@ -10,14 +10,10 @@ let
     "docker-compose.yml"
     "docker-compose.yaml"
   ];
+  # .envrc resolves this once; invoking Podman for every prompt can exceed Starship's timeout.
   resolvePodmanSocket = ''
     [ -n "''${DOCKER_CONTEXT:-}" ] || exit 1
     socket="''${PODMAN_SOCKET:-}"
-    if [ -z "$socket" ] && [ -n "''${PODMAN_MACHINE:-}" ]; then
-      socket="$(env -u CONTAINER_CONNECTION -u CONTAINER_HOST \
-        podman machine inspect "$PODMAN_MACHINE" \
-        --format '{{.ConnectionInfo.PodmanSocket.Path}}' 2>/dev/null || true)"
-    fi
   '';
   pingPodmanSocket = ''curl --silent --fail --max-time 0.1 --unix-socket "$socket" http://localhost/_ping >/dev/null 2>&1'';
   dockerContextModule = {
