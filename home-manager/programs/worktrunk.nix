@@ -5,7 +5,7 @@
 
     [list]
     full = true
-    branches = true
+    branches = false
 
     [switch]
     cd = true

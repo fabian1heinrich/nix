@@ -9,6 +9,8 @@
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     system-manager.url = "github:numtide/system-manager";
     system-manager.inputs.nixpkgs.follows = "nixpkgs";
+    sofka.url = "github:nklmilojevic/sofka";
+    sofka.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -17,6 +19,7 @@
       home-manager,
       darwin,
       system-manager,
+      sofka,
       ...
     }:
     let
@@ -126,7 +129,7 @@
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = {
-            inherit userConfig;
+            inherit sofka userConfig;
           }
           // extraSpecialArgs;
           modules = [
@@ -206,6 +209,7 @@
                 useUserPackages = true;
                 backupFileExtension = "backup";
                 extraSpecialArgs = {
+                  inherit sofka;
                   userConfig = users.fabian;
                 };
                 users.fabian.imports = [

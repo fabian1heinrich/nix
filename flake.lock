@@ -152,7 +152,28 @@
         "darwin": "darwin",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
+        "sofka": "sofka",
         "system-manager": "system-manager"
+      }
+    },
+    "sofka": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788720082,
+        "narHash": "sha256-wdCFqZruoZCZWAPkEsoS5BxTZMv/HC8mwPDjpxuMlKg=",
+        "owner": "nklmilojevic",
+        "repo": "sofka",
+        "rev": "a5f3155e9d51d3031160e457d666be731f74f770",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nklmilojevic",
+        "repo": "sofka",
+        "type": "github"
       }
     },
     "system-manager": {
