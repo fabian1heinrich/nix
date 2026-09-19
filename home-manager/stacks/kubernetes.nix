@@ -6,7 +6,6 @@
 }:
 {
   imports = [
-    ./containers.nix
     ../programs/hauler.nix
     ../programs/just.nix
     ../programs/k9s.nix

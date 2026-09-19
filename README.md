@@ -5,13 +5,23 @@ and Linux (`ubuntu-dev`).
 
 ## Layout
 
-- `flake.nix`: systems, hosts, checks, and development shells
-- `profiles/`: shared base and desktop profiles
-- `home-manager/`: reusable programs, stacks, and scripts
+- `flake.nix`: host inventory, generated outputs, checks, and development shells
+- `home-manager/profiles/`: complete user environment profiles
+- `home-manager/stacks/`: reusable capability bundles
+- `home-manager/programs/`: individual program configuration
+- `home-manager/scripts/`: user-facing scripts and tests
 - `hosts/<name>/home.nix`: host-specific user configuration
 - `hosts/<name>/system.nix`: host-specific system configuration
 
-Hosts compose shared profiles with role-specific stacks.
+Hosts select a profile and add only host-specific modules. Profiles compose
+stacks, and stacks may build on other stacks.
+
+## Adding a host
+
+Add one entry to `hostSpecs` in `flake.nix` and point its `homeModules`, plus
+optional `darwinModules` or `systemModules`, at files under `hosts/<name>/`.
+User metadata, platform lists, configurations, apps, and native checks are
+derived from that inventory.
 
 ## Bootstrap
 
@@ -25,7 +35,7 @@ From a fresh checkout:
 
 ```bash
 export NIX_CONF_DIR=$(pwd)
-sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#legendre
+sudo nix run .#darwin-rebuild -- switch --flake .#legendre
 ```
 
 Apply later changes with `just switch-legendre`. The configuration manages the
@@ -39,7 +49,7 @@ From a fresh checkout:
 ```bash
 export NIX_CONF_DIR=$(pwd)
 nix run .#system-manager -- switch --flake .#ubuntu-dev --sudo
-nix run github:nix-community/home-manager -- switch --flake .#ubuntu-dev
+nix run .#home-manager -- switch --flake .#ubuntu-dev
 ```
 
 Apply both system and user changes later with `just switch-ubuntu`.
@@ -55,8 +65,9 @@ Run `direnv allow` after checking out or changing `.envrc`.
 
 ### macOS
 
-The project keeps separate rootless and rootful Podman VMs and matching Docker
-contexts:
+Homebrew installs Podman, and the containers stack provides its shell
+integration on macOS. The project keeps separate rootless and rootful Podman
+VMs and matching Docker contexts:
 
 | Mode     | VM / Docker context | Podman connection     |
 | -------- | ------------------- | --------------------- |
@@ -70,8 +81,9 @@ VM with:
 just podman-start
 ```
 
-Set `podman_mode=rootful` in `.envrc` and rerun `direnv allow` to select the
-rootful VM. `podman-create` and `podman-stop` operate on the same selection.
+Set `podman_mode=rootful` in the ignored `.env` file and rerun `direnv allow`
+to select the rootful VM without dirtying the checkout. `podman-create` and
+`podman-stop` operate on the same selection.
 `podman-delete` removes every Podman VM and its matching Docker context,
 destroying their containers, images, and volumes. These recipes are macOS-only.
 
@@ -84,9 +96,16 @@ env -u DOCKER_CONTEXT docker context use default
 
 ### Ubuntu
 
-Linux uses native Podman rather than a VM. Home Manager manages the rootless
-user socket, and `.envrc` exposes it to Docker-compatible tools through
+Linux uses native Podman rather than a VM. The host-specific Podman module
+installs the runtime, manages the rootless user socket, and configures its
+storage. `.envrc` exposes the socket to Docker-compatible tools through
 `DOCKER_HOST`; native Podman commands remain daemonless.
+
+Both rootless and rootful storage require `/media/data` to be a real mounted
+filesystem. System Manager refuses to prepare Podman storage when it is not
+mounted, and Home Manager refuses activation when the rootless storage
+directory is unavailable. Apply the System Manager configuration first after
+mounting or replacing the data volume.
 
 System Manager installs rootful Podman, Compose, a socket-activated API service,
 and the Quadlet generator. Use `podman-rootful` or `podman-rootful compose` for
@@ -98,14 +117,12 @@ then apply them with `just switch-ubuntu-system`.
 
 ```bash
 just nix-fmt
+just nix-eval
 just nix-check
 just nix-shellcheck
 ```
 
-Native flake checks cover the macOS system build and both Ubuntu Home Manager
-and System Manager builds.
-
-## Secrets
-
-Bitwarden-backed environment synchronization is documented in
-`secrets/README.md`.
+`nix-eval` evaluates every host on every configured platform without building.
+`nix-check` builds all checks native to the current platform. CI builds the
+macOS system and both Ubuntu Home Manager and System Manager configurations,
+along with formatting, ShellCheck, and behavioral shell-script tests.

@@ -1,6 +1,6 @@
 set shell := ["bash", "-uc"]
 
-podman_machine := env_var_or_default("PODMAN_MACHINE", "podman")
+podman_machine := env("PODMAN_MACHINE", "podman")
 podman := "env -u CONTAINER_CONNECTION -u CONTAINER_HOST podman"
 docker := "env -u DOCKER_CONTEXT -u DOCKER_HOST docker"
 machine_format := "{{.Rootful}} {{.ConnectionInfo.PodmanSocket.Path}}"
@@ -17,8 +17,11 @@ _podman-machine-host:
 default:
     @just --justfile "{{ justfile() }}" --working-directory "{{ justfile_directory() }}" --list
 
-nix-check:
+nix-eval:
     nix flake check --all-systems --no-build
+
+nix-check:
+    nix flake check
 
 nix-shellcheck:
     nix build --no-link .#checks.$(nix eval --raw --impure --expr builtins.currentSystem).shellcheck
@@ -82,10 +85,10 @@ podman-delete: _podman-machine-host
     done <<< "$machines"
 
 switch-legendre:
-    sudo darwin-rebuild switch --flake .#legendre
+    sudo nix run .#darwin-rebuild -- switch --flake .#legendre
 
 switch-ubuntu-dev:
-    home-manager switch --flake .#ubuntu-dev
+    nix run .#home-manager -- switch --flake .#ubuntu-dev
 
 switch-ubuntu-system:
     nix run .#system-manager -- switch --flake .#ubuntu-dev --sudo
@@ -103,5 +106,4 @@ homebrew-upgrade-greedy:
     mas upgrade
 
 homebrew-cleanup:
-    brew cleanup -s
-    rm -rf "$(brew --cache)"
+    brew cleanup --prune=all -s

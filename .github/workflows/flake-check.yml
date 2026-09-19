@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  flake-check:
+  linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +20,26 @@ jobs:
       - name: Run flake checks
         run: nix flake check --all-systems --no-build
 
+      - name: Check formatting
+        run: nix fmt -- --ci
+
       - name: Build Linux checks
         run: |
           nix build .#checks.x86_64-linux.shellcheck
-          nix build .#checks.x86_64-linux.ubuntu-dev-activation-build
+          nix build .#checks.x86_64-linux.ubuntu-dev-home-build
+          nix build .#checks.x86_64-linux.ubuntu-dev-system-build
+
+  macos:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Build macOS checks
+        run: |
+          nix build .#checks.aarch64-darwin.shellcheck
+          nix build .#checks.aarch64-darwin.legendre-system-build

@@ -3,7 +3,7 @@
   homebrew = {
     enable = true;
     onActivation = {
-      autoUpdate = true;
+      autoUpdate = false;
       cleanup = "uninstall";
       extraFlags = [ "--force-cleanup" ];
       upgrade = false;
@@ -25,7 +25,6 @@
       "aldente"
       "betterdisplay"
       "bettershot"
-      "bitwarden"
       "chatgpt"
       "ghostty"
       "gifox"

@@ -1,30 +1,20 @@
 {
   pkgs,
-  userConfig,
   ...
 }:
 {
   imports = [
-    ../../profiles/desktop.nix
-    ../../home-manager/stacks/development.nix
-    ../../home-manager/stacks/kubernetes.nix
+    ../../home-manager/profiles/workstation.nix
+    ./podman.nix
     ./ubuntu.nix
   ];
 
   home = {
-    username = userConfig.username;
-    homeDirectory = userConfig.homeDirectory;
-
     packages = with pkgs; [
-      # AI tools
-      codex
-
       # Container & virtualization
       ctop
-      gvproxy
       kind
       libvirt
-      podman
       qemu
       vcluster
       virt-manager
@@ -40,21 +30,4 @@
       LC_MEASUREMENT = "en_GB.UTF-8";
     };
   };
-
-  xdg.configFile."containers/containers.conf".text = ''
-    [engine]
-    compose_providers = [
-      "${pkgs.docker-compose}/bin/docker-compose",
-    ]
-    helper_binaries_dir = [
-      "${pkgs.podman}/libexec/podman",
-      "${pkgs.gvproxy}/bin",
-    ]
-  '';
-
-  xdg.configFile."containers/storage.conf".text = ''
-    [storage]
-    driver = "overlay"
-    graphroot = "/media/data/podman/rootless"
-  '';
 }

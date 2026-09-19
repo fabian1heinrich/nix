@@ -25,72 +25,79 @@
     let
       lib = nixpkgs.lib;
 
-      systems = [
-        "aarch64-darwin"
-        "x86_64-linux"
-      ];
-
-      # Only check systems that currently have configured hosts.
-      checkSystems = [
-        "aarch64-darwin"
-        "x86_64-linux"
-      ];
-
       owner = {
         name = "Fabian Heinrich";
         email = "fabianheinrich@aol.com";
       };
 
-      mkUser =
-        {
-          username,
-          homeDirectory,
-          system,
-          name ? owner.name,
-          email ? owner.email,
-        }:
-        {
-          inherit
-            name
-            email
-            username
-            homeDirectory
-            system
-            ;
-        };
-
-      # User configurations
-      users = {
-        fabian = mkUser {
+      # Adding a host should only require one entry here plus its host modules.
+      hostSpecs = {
+        legendre = {
           username = "fabian";
+          primaryGroup = "staff";
           homeDirectory = "/Users/fabian";
+          homeStateVersion = "25.11";
           system = "aarch64-darwin";
+          homeModules = [ ./hosts/legendre/home.nix ];
+          darwinModules = [ ./hosts/legendre/darwin.nix ];
         };
-        ubuntu-dev = mkUser {
+        ubuntu-dev = {
           username = "ubuntu-dev";
+          primaryGroup = "ubuntu-dev";
           homeDirectory = "/home/ubuntu-dev";
+          homeStateVersion = "25.11";
           system = "x86_64-linux";
+          homeModules = [ ./hosts/ubuntu-dev/home.nix ];
+          systemModules = [ ./hosts/ubuntu-dev/system.nix ];
         };
       };
+
+      systems = lib.unique (lib.mapAttrsToList (_: host: host.system) hostSpecs);
+
+      mkUser =
+        host:
+        {
+          inherit (host)
+            username
+            primaryGroup
+            homeDirectory
+            homeStateVersion
+            system
+            ;
+          inherit (owner) name email;
+        }
+        // lib.optionalAttrs (host ? name) { inherit (host) name; }
+        // lib.optionalAttrs (host ? email) { inherit (host) email; };
+
+      users = lib.mapAttrs (_: mkUser) hostSpecs;
+
+      darwinHostSpecs = lib.filterAttrs (_: host: host ? darwinModules) hostSpecs;
+      standaloneHomeHostSpecs = lib.filterAttrs (_: host: !(host ? darwinModules)) hostSpecs;
+      systemHostSpecs = lib.filterAttrs (_: host: host ? systemModules) hostSpecs;
+      systemManagerSystems = lib.unique (lib.mapAttrsToList (_: host: host.system) systemHostSpecs);
 
       # Helper to create pkgs for a system
       pkgsFor =
         system:
         import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
         };
 
       mkEvalCheck =
         checkSystem: name: drv:
+        let
+          # Force the complete derivation to evaluate without adding a foreign-
+          # platform build dependency to this lightweight check.
+          drvPath = builtins.unsafeDiscardStringContext drv.drvPath;
+        in
         (pkgsFor checkSystem).runCommand name { } ''
-          printf '%s\n' ${lib.escapeShellArg drv.name} > "$out"
+          printf '%s\n' ${lib.escapeShellArg drvPath} > "$out"
         '';
 
       shellScripts = [
         (builtins.path {
-          path = ./home-manager/scripts/bw-sync-api-keys.sh;
-          name = "bw-sync-api-keys.sh";
+          path = ./.envrc;
+          name = "envrc.sh";
         })
       ];
 
@@ -104,67 +111,63 @@
           touch "$out"
         '';
 
+      mkActionlint =
+        system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.runCommand "actionlint" { nativeBuildInputs = [ pkgs.actionlint ]; } ''
+          actionlint ${./.github/workflows/flake-check.yml}
+          touch "$out"
+        '';
+
       mkHomeConfiguration =
         {
-          system,
-          username,
-          homeDirectory,
-          modules,
-          name ? owner.name,
-          email ? owner.email,
+          hostName,
           extraSpecialArgs ? { },
-          pkgs ? pkgsFor system,
         }:
         let
-          userConfig = mkUser {
-            inherit
-              username
-              homeDirectory
-              system
-              name
-              email
-              ;
-          };
+          host = hostSpecs.${hostName};
+          userConfig = users.${hostName};
         in
         home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
+          pkgs = pkgsFor host.system;
           extraSpecialArgs = {
             inherit sofka userConfig;
           }
           // extraSpecialArgs;
-          modules = [
-            {
-              home = {
-                username = lib.mkDefault userConfig.username;
-                homeDirectory = lib.mkDefault userConfig.homeDirectory;
-                stateVersion = lib.mkDefault "25.11";
-              };
-            }
-          ]
-          ++ modules;
+          modules = host.homeModules;
         };
 
-      mkHome =
-        {
-          user,
-          modules,
-          extraSpecialArgs ? { },
-        }:
+      mkDarwinConfiguration =
+        hostName: host:
         let
-          userConfig = users.${user};
+          userConfig = users.${hostName};
         in
-        mkHomeConfiguration {
-          inherit
-            modules
-            extraSpecialArgs
-            ;
-          inherit (userConfig)
-            system
-            username
-            homeDirectory
-            name
-            email
-            ;
+        darwin.lib.darwinSystem {
+          inherit (host) system;
+          specialArgs = { inherit userConfig; };
+          modules = host.darwinModules ++ [
+            home-manager.darwinModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "backup";
+                extraSpecialArgs = {
+                  inherit sofka userConfig;
+                };
+                users.${host.username}.imports = host.homeModules;
+              };
+            }
+          ];
+        };
+
+      mkSystemConfiguration =
+        hostName: host:
+        system-manager.lib.makeSystemConfig {
+          specialArgs.userConfig = users.${hostName};
+          modules = host.systemModules;
         };
 
       formatter = lib.genAttrs systems (system: (pkgsFor system).nixfmt-tree);
@@ -184,6 +187,7 @@
                 nixd
                 nixfmt
                 nixfmt-tree
+                actionlint
                 shellcheck
                 worktrunk
               ])
@@ -193,88 +197,85 @@
           };
         };
 
-      darwinConfigurations = {
-        legendre = darwin.lib.darwinSystem {
-          system = "aarch64-darwin";
-          specialArgs = {
-            userConfig = users.fabian;
-          };
-          modules = [
-            { nixpkgs.config.allowUnfree = true; }
-            ./hosts/legendre/darwin.nix
-            home-manager.darwinModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                backupFileExtension = "backup";
-                extraSpecialArgs = {
-                  inherit sofka;
-                  userConfig = users.fabian;
-                };
-                users.fabian.imports = [
-                  ./hosts/legendre/home.nix
-                ];
-              };
-            }
-          ];
-        };
-      };
+      darwinConfigurations = lib.mapAttrs mkDarwinConfiguration darwinHostSpecs;
 
-      homeConfigurations = {
-        ubuntu-dev = mkHome {
-          user = "ubuntu-dev";
-          modules = [
-            ./hosts/ubuntu-dev/home.nix
-          ];
-        };
-      };
+      homeConfigurations = lib.mapAttrs (
+        hostName: _: mkHomeConfiguration { inherit hostName; }
+      ) standaloneHomeHostSpecs;
 
-      systemConfigs = {
-        ubuntu-dev = system-manager.lib.makeSystemConfig {
-          modules = [
-            { nixpkgs.config.allowUnfree = true; }
-            ./hosts/ubuntu-dev/system.nix
-          ];
-        };
-      };
+      systemConfigs = lib.mapAttrs mkSystemConfiguration systemHostSpecs;
 
-      checkTargets = {
-        legendre = darwinConfigurations.legendre.config.system.build.toplevel;
-        ubuntu-dev = homeConfigurations.ubuntu-dev.activationPackage;
-        ubuntu-dev-system = systemConfigs.ubuntu-dev;
-      };
+      darwinCheckTargets = lib.mapAttrs' (
+        hostName: configuration:
+        lib.nameValuePair "${hostName}-system" {
+          system = hostSpecs.${hostName}.system;
+          drv = configuration.config.system.build.toplevel;
+        }
+      ) darwinConfigurations;
 
-      nativeBuildCheckTargets = {
-        aarch64-darwin = {
-          legendre-system-build = darwinConfigurations.legendre.config.system.build.toplevel;
-        };
-        x86_64-linux = {
-          ubuntu-dev-activation-build = homeConfigurations.ubuntu-dev.activationPackage;
-          ubuntu-dev-system-build = systemConfigs.ubuntu-dev;
-        };
-      };
+      homeCheckTargets = lib.mapAttrs' (
+        hostName: configuration:
+        lib.nameValuePair "${hostName}-home" {
+          system = hostSpecs.${hostName}.system;
+          drv = configuration.activationPackage;
+        }
+      ) homeConfigurations;
 
-      checks = lib.genAttrs checkSystems (
+      systemCheckTargets = lib.mapAttrs' (
+        hostName: configuration:
+        lib.nameValuePair "${hostName}-system" {
+          system = hostSpecs.${hostName}.system;
+          drv = configuration;
+        }
+      ) systemConfigs;
+
+      checkTargets = darwinCheckTargets // homeCheckTargets // systemCheckTargets;
+
+      checks = lib.genAttrs systems (
         checkSystem:
+        let
+          nativeTargets = lib.filterAttrs (_: target: target.system == checkSystem) checkTargets;
+        in
         (lib.mapAttrs' (
-          name: drv: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" drv)
+          name: target: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" target.drv)
         ) checkTargets)
+        // (lib.mapAttrs' (name: target: lib.nameValuePair "${name}-build" target.drv) nativeTargets)
         // {
+          actionlint = mkActionlint checkSystem;
           shellcheck = mkShellcheck checkSystem;
         }
-        // (nativeBuildCheckTargets.${checkSystem} or { })
+      );
+
+      apps = lib.genAttrs systems (
+        system:
+        {
+          home-manager = {
+            type = "app";
+            program = "${home-manager.packages.${system}.home-manager}/bin/home-manager";
+            meta.description = "Apply a Home Manager configuration from the locked flake input";
+          };
+        }
+        // lib.optionalAttrs (lib.hasSuffix "-darwin" system) {
+          darwin-rebuild = {
+            type = "app";
+            program = "${darwin.packages.${system}.darwin-rebuild}/bin/darwin-rebuild";
+            meta.description = "Apply a nix-darwin configuration from the locked flake input";
+          };
+        }
+        // lib.optionalAttrs (lib.elem system systemManagerSystems) {
+          system-manager = {
+            type = "app";
+            program = "${system-manager.packages.${system}.default}/bin/system-manager";
+            meta.description = "Apply a System Manager configuration from the locked flake input";
+          };
+        }
       );
     in
     {
       devShells = lib.genAttrs systems mkDevShells;
 
-      apps.x86_64-linux.system-manager = {
-        type = "app";
-        program = "${system-manager.packages.x86_64-linux.default}/bin/system-manager";
-      };
-
       inherit
+        apps
         formatter
         darwinConfigurations
         homeConfigurations

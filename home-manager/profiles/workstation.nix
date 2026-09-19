@@ -1,0 +1,11 @@
+# Complete interactive workstation environment.
+{ ... }:
+{
+  imports = [
+    ./base.nix
+    ../stacks/containers.nix
+    ../stacks/development.nix
+    ../stacks/kubernetes.nix
+    ../stacks/terminal.nix
+  ];
+}

@@ -1,31 +1,20 @@
-{ pkgs, userConfig, ... }:
+{ pkgs, ... }:
 {
   imports = [
-    ../../profiles/desktop.nix
-    ../../home-manager/stacks/development.nix
-    ../../home-manager/stacks/kubernetes.nix
-    ../../home-manager/programs/bitwarden-secrets.nix
+    ../../home-manager/profiles/workstation.nix
     ../../home-manager/programs/snapzy.nix
   ];
 
-  home = {
-    username = userConfig.username;
-    homeDirectory = userConfig.homeDirectory;
+  home.packages = with pkgs; [
+    # CLI tools
+    opencode
 
-    packages = with pkgs; [
-      # CLI tools
-      opencode
-      codex
+    # Container & virtualization
+    kind
+    cloud-provider-kind
 
-      # Container & virtualization
-      kind
-      cloud-provider-kind
+    # System tools
+    openvpn
+  ];
 
-      # System tools
-      openvpn
-      yubikey-manager
-    ];
-  };
-
-  programs.codex.package = null;
 }
