@@ -17,7 +17,7 @@
           }
         },
         "nixpkgs": {
-          "expr": "import (builtins.getFlake (\"git+file:\" + builtins.toString ./.)).inputs.nixpkgs { system = builtins.currentSystem; config.allowUnfree = true; }"
+          "expr": "import (builtins.getFlake (\"git+file:\" + builtins.toString ./.)).inputs.nixpkgs { system = builtins.currentSystem; }"
         },
         "formatting": {
           "command": [

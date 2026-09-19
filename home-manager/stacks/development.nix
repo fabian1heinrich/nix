@@ -2,7 +2,6 @@
 { pkgs, ... }:
 {
   imports = [
-    ../programs/claude-code.nix
     ../programs/codex.nix
     ../programs/direnv.nix
     ../programs/gh.nix

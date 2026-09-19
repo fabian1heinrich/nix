@@ -25,8 +25,8 @@ configuration. Keep changes small, explicit, and easy to review.
 
 - `flake.nix` defines systems, hosts, checks, and development shells.
 - `hosts/` contains host-specific macOS and Linux configuration.
-- `home-manager/` contains shared user configuration, programs, stacks, and
-  scripts.
+- `home-manager/` contains user profiles, reusable capability stacks, program
+  configuration, and scripts.
 - `Justfile` is the primary task runner entry point.
 
 ## Commands
@@ -45,7 +45,8 @@ when shell scripts change.
 ## Conventions
 
 - Follow existing Nix style and module structure.
-- Prefer shared Home Manager modules for reusable user configuration.
+- Prefer profiles for complete user environments and stacks for reusable
+  capabilities. Hosts should select a profile and add host-specific modules.
 - Keep host-specific behavior under the relevant `hosts/<name>/` directory.
 - Do not update `flake.lock` unless the task is specifically about dependency
   updates or the change requires it.

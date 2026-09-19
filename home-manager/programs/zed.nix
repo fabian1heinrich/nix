@@ -54,10 +54,6 @@ in
       };
       agent_servers = {
         codex-acp = {
-          default_config_options = {
-            mode = "full-access";
-            reasoning_effort = "high";
-          };
           type = "registry";
         };
       };
@@ -103,9 +99,6 @@ in
         dock = "left";
         git_status_indicator = true;
         sort_order = "unicode";
-      };
-      session = {
-        trust_all_worktrees = true;
       };
       show_edit_predictions = true;
       soft_wrap = "editor_width";

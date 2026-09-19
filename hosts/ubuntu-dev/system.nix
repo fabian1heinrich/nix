@@ -1,5 +1,27 @@
-{ pkgs, ... }:
+{ pkgs, userConfig, ... }:
 let
+  dataMount = "/media/data";
+  rootlessStorage = "${dataMount}/podman/rootless";
+  rootfulStorage = "${dataMount}/podman/rootful";
+
+  preparePodmanStorage = pkgs.writeShellApplication {
+    name = "prepare-podman-storage";
+    runtimeInputs = with pkgs; [
+      coreutils
+      util-linux
+    ];
+    text = ''
+      if ! mountpoint -q ${dataMount}; then
+        echo "Podman storage requires ${dataMount} to be mounted; refusing to use the root filesystem." >&2
+        exit 1
+      fi
+
+      install -d -m 0755 ${dataMount}/podman
+      install -d -m 0700 -o ${userConfig.username} -g ${userConfig.primaryGroup} ${rootlessStorage}
+      install -d -m 0700 -o root -g root ${rootfulStorage}
+    '';
+  };
+
   podmanRootful = pkgs.writeShellApplication {
     name = "podman-rootful";
     text = ''
@@ -41,20 +63,16 @@ in
     etc."containers/storage.conf".text = ''
       [storage]
       driver = "overlay"
-      graphroot = "/media/data/podman/rootful"
+      graphroot = "${rootfulStorage}"
     '';
   };
 
   systemd = {
-    tmpfiles.rules = [
-      "d /media/data/podman 0755 root root -"
-      "d /media/data/podman/rootless 0700 ubuntu-dev ubuntu-dev -"
-      "d /media/data/podman/rootful 0700 root root -"
-    ];
-
     sockets.podman = {
       description = "Podman API socket";
       documentation = [ "man:podman-system-service(1)" ];
+      requires = [ "podman-storage.service" ];
+      after = [ "podman-storage.service" ];
       wantedBy = [ "system-manager.target" ];
       socketConfig = {
         ListenStream = "/run/podman/podman.sock";
@@ -65,13 +83,29 @@ in
     services.podman = {
       description = "Podman API service";
       documentation = [ "man:podman-system-service(1)" ];
-      requires = [ "podman.socket" ];
-      after = [ "podman.socket" ];
+      requires = [
+        "podman-storage.service"
+        "podman.socket"
+      ];
+      after = [
+        "podman-storage.service"
+        "podman.socket"
+      ];
       serviceConfig = {
         Delegate = true;
         Type = "exec";
         KillMode = "process";
         ExecStart = "${pkgs.podman}/bin/podman system service --time=0";
+      };
+    };
+
+    services.podman-storage = {
+      description = "Prepare Podman storage on the data mount";
+      wantedBy = [ "system-manager.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = "${preparePodmanStorage}/bin/prepare-podman-storage";
       };
     };
   };

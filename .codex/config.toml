@@ -4,13 +4,13 @@
 # such as model providers, profiles, notification commands, and telemetry in
 # ~/.codex/config.toml instead.
 
-sandbox_mode = "danger-full-access"
-approval_policy = "never"
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
 
 [sandbox_workspace_write]
 # Keep the sandbox tight by default. Add absolute paths here only when this
 # project genuinely needs Codex to edit outside the repository.
 writable_roots = []
-network_access = true
+network_access = false
 exclude_tmpdir_env_var = false
 exclude_slash_tmp = false

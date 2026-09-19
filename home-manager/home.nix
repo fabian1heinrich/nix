@@ -1,20 +1,23 @@
 {
   lib,
   pkgs,
+  userConfig,
   ...
 }:
 {
   programs.home-manager.enable = true;
   home.shell.enableZshIntegration = true;
-  home.sessionVariables = {
-    TMPDIR = "$HOME/.tmp";
+  home = {
+    username = lib.mkDefault userConfig.username;
+    homeDirectory = lib.mkDefault userConfig.homeDirectory;
+    stateVersion = userConfig.homeStateVersion;
+    sessionVariables.TMPDIR = "$HOME/.tmp";
   };
   home.activation.ensureTmpdir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p "$HOME/.tmp"
+    install -d -m 0700 "$HOME/.tmp"
   '';
-  home.stateVersion = lib.mkDefault "25.11";
 
-  nix = {
+  nix = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     package = lib.mkDefault pkgs.nix;
     enable = true;
     settings = {
