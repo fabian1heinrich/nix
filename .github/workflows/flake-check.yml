@@ -23,4 +23,5 @@ jobs:
       - name: Build Linux checks
         run: |
           nix build .#checks.x86_64-linux.shellcheck
+          nix build .#checks.x86_64-linux.script-tests
           nix build .#checks.x86_64-linux.ubuntu-dev-activation-build

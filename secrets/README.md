@@ -25,7 +25,13 @@ Use after changing secrets in the vault:
 bw-refresh-secrets
 ```
 
-Non-blocking (skip unlock prompt):
+The helper exports only the configured API keys. The shell wrapper clears
+`BW_SESSION` after each attempt so subsequently launched processes cannot
+inherit a vault-wide credential. Refreshes are atomic: if any configured key
+is missing, the command fails and the wrapper clears all managed API-key
+variables rather than leaving stale values active.
+
+Non-blocking (skip the unlock prompt and clear managed keys if locked):
 
 ```bash
 bw-refresh-secrets --no-unlock

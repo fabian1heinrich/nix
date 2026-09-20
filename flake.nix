@@ -92,7 +92,14 @@
           path = ./home-manager/scripts/bw-sync-api-keys.sh;
           name = "bw-sync-api-keys.sh";
         })
+        (builtins.path {
+          path = ./home-manager/scripts/tests/bw-sync-api-keys-test.sh;
+          name = "bw-sync-api-keys-test.sh";
+        })
       ];
+
+      bwSyncApiKeysScript = builtins.elemAt shellScripts 0;
+      bwSyncApiKeysTest = builtins.elemAt shellScripts 1;
 
       mkShellcheck =
         system:
@@ -103,6 +110,24 @@
           shellcheck ${lib.concatMapStringsSep " " (script: ''"${script}"'') shellScripts}
           touch "$out"
         '';
+
+      mkScriptTests =
+        system:
+        let
+          pkgs = pkgsFor system;
+        in
+        pkgs.runCommand "script-tests"
+          {
+            nativeBuildInputs = [
+              pkgs.bash
+              pkgs.coreutils
+              pkgs.jq
+            ];
+          }
+          ''
+            bash ${bwSyncApiKeysTest} ${bwSyncApiKeysScript}
+            touch "$out"
+          '';
 
       mkHomeConfiguration =
         {
@@ -262,6 +287,7 @@
         ) checkTargets)
         // {
           shellcheck = mkShellcheck checkSystem;
+          script-tests = mkScriptTests checkSystem;
         }
         // (nativeBuildCheckTargets.${checkSystem} or { })
       );

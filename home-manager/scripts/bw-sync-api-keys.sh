@@ -98,18 +98,18 @@ if ! bw login --check >/dev/null 2>&1; then
   bw config server "https://vault.bitwarden.eu" >/dev/null
 
   info "not logged in; run 'bw login' once on this host"
-  exit 0
+  exit 1
 fi
 
 if ! session_valid "${BW_SESSION:-}"; then
   if [ "$allow_unlock" -ne 1 ]; then
     info "vault is locked; skipping unlock (--no-unlock)"
-    exit 0
+    exit 1
   fi
 
   if ! [ -t 0 ]; then
     info "vault is locked and no TTY is available for unlock"
-    exit 0
+    exit 1
   fi
 
   info "vault is locked; waiting for unlock (Ctrl+C to cancel)"
@@ -134,13 +134,8 @@ if [ "${#missing_item_refs[@]}" -gt 0 ]; then
   exit 1
 fi
 
-found=0
 missing=()
-
-if [ "$emit_shell_exports" -eq 1 ] && [ -n "${BW_SESSION:-}" ]; then
-  escaped_session="${BW_SESSION//\'/\'\\\'\'}"
-  printf "export BW_SESSION='%s'\n" "$escaped_session"
-fi
+values=()
 
 for i in "${!key_names[@]}"; do
   key_name="${key_names[$i]}"
@@ -161,21 +156,20 @@ for i in "${!key_names[@]}"; do
   )"
 
   if [ -n "$value" ]; then
-    found=$((found + 1))
-    if [ "$emit_shell_exports" -eq 1 ]; then
-      escaped_value="${value//\'/\'\\\'\'}"
-      printf "export %s='%s'\n" "$key_name" "$escaped_value"
-    fi
+    values+=("$value")
   else
     missing+=("$key_name")
   fi
 done
 
-if [ "$found" -eq 0 ]; then
-  log "no matching Bitwarden items found for configured item refs"
+if [ "${#missing[@]}" -gt 0 ]; then
+  log "missing keys: ${missing[*]}"
   exit 1
 fi
 
-if [ "${#missing[@]}" -gt 0 ]; then
-  log "missing keys: ${missing[*]}"
+if [ "$emit_shell_exports" -eq 1 ]; then
+  for i in "${!key_names[@]}"; do
+    escaped_value="${values[$i]//\'/\'\\\'\'}"
+    printf "export %s='%s'\n" "${key_names[$i]}" "$escaped_value"
+  done
 fi

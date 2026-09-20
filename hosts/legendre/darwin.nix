@@ -4,6 +4,7 @@ let
 in
 {
   imports = [
+    ./codex-mcp.nix
     ./homebrew.nix
     ./xcode.nix
   ];

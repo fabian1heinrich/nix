@@ -47,8 +47,21 @@ in
     if command -v bw-sync-api-keys >/dev/null 2>&1; then
       bw-refresh-api-keys() {
         local exports
-        exports="$(bw-sync-api-keys --export-shell "$@")" || return
+        local -a key_names=(
+          OPENAI_API_KEY
+          ANTHROPIC_API_KEY
+          GITHUB_PERSONAL_ACCESS_TOKEN
+          BRAVE_API_KEY
+          CONTEXT7_API_KEY
+        )
+
+        if ! exports="$(bw-sync-api-keys --export-shell "$@")"; then
+          unset "''${key_names[@]}"
+          unset BW_SESSION
+          return 1
+        fi
         eval "$exports"
+        unset BW_SESSION
       }
 
       alias bw-refresh-secrets='bw-refresh-api-keys'
