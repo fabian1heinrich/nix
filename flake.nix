@@ -92,6 +92,10 @@
           path = ./home-manager/scripts/bw-sync-api-keys.sh;
           name = "bw-sync-api-keys.sh";
         })
+        (builtins.path {
+          path = ./home-manager/scripts/storage-cleanup.sh;
+          name = "storage-cleanup.sh";
+        })
       ];
 
       mkShellcheck =

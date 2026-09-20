@@ -6,6 +6,7 @@
     ../../home-manager/stacks/kubernetes.nix
     ../../home-manager/programs/bitwarden-secrets.nix
     ../../home-manager/programs/snapzy.nix
+    ../../home-manager/programs/storage-cleanup.nix
   ];
 
   home = {
