@@ -6,6 +6,7 @@
 }:
 {
   imports = [
+    sofka.homeManagerModules.default
     ./containers.nix
     ../programs/hauler.nix
     ../programs/just.nix
@@ -24,12 +25,13 @@
     kubie # K8s context manager
     kustomize # K8s configuration
     kyverno # K8s policy engine
-    sofka.packages.${pkgs.stdenv.hostPlatform.system}.default # Kubernetes TUI
     stern # Multi-pod log tailing
     talhelper # Talos OS helper
     talosctl # Talos OS management
     zarf # Air-gap K8s deployments
   ];
+
+  programs.sofka.enable = true;
 
   programs.zsh = {
     oh-my-zsh.plugins = [

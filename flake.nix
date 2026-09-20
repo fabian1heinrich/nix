@@ -10,6 +10,7 @@
     system-manager.url = "github:numtide/system-manager";
     system-manager.inputs.nixpkgs.follows = "nixpkgs";
     sofka.url = "github:nklmilojevic/sofka";
+    sofka.inputs.home-manager.follows = "home-manager";
     sofka.inputs.nixpkgs.follows = "nixpkgs";
   };
 
