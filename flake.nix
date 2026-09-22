@@ -5,6 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    nix-vscode-extensions.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     system-manager.url = "github:numtide/system-manager";
@@ -17,6 +19,7 @@
     {
       nixpkgs,
       home-manager,
+      nix-vscode-extensions,
       darwin,
       system-manager,
       sofka,
@@ -54,6 +57,13 @@
 
       systems = lib.unique (lib.mapAttrsToList (_: host: host.system) hostSpecs);
 
+      nixpkgsConfig = {
+        allowUnfreePredicate =
+          pkg: lib.getName pkg == "vscode" || lib.hasPrefix "vscode-extension-" (lib.getName pkg);
+      };
+
+      nixpkgsOverlays = [ nix-vscode-extensions.overlays.default ];
+
       mkUser =
         host:
         {
@@ -81,6 +91,8 @@
         system:
         import nixpkgs {
           inherit system;
+          config = nixpkgsConfig;
+          overlays = nixpkgsOverlays;
         };
 
       mkEvalCheck =
@@ -150,6 +162,9 @@
           modules = host.darwinModules ++ [
             home-manager.darwinModules.home-manager
             {
+              nixpkgs.config = nixpkgsConfig;
+              nixpkgs.overlays = nixpkgsOverlays;
+
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;

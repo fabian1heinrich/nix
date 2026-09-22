@@ -1,0 +1,250 @@
+{
+  "[nix]": {
+    "editor.defaultFormatter": "jnoortheen.nix-ide"
+  },
+  "nix.enableLanguageServer": true,
+  "nix.formatterPath": "nixfmt",
+  "nix.serverPath": "nixd",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.showFoldingControls": "always",
+  "editor.folding": true,
+  "editor.foldingStrategy": "indentation",
+  "editor.fontFamily": "MesloLGL Nerd Font, monospace",
+  "editor.fontLigatures": true,
+  "terminal.integrated.fontFamily": "MesloLGS Nerd Font Mono, monospace",
+  "terminal.integrated.gpuAcceleration": "auto",
+  "terminal.integrated.lineHeight": 1,
+  "terminal.integrated.unicodeVersion": "11",
+  "[dockercompose]": {
+    "editor.autoIndent": "advanced",
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.insertSpaces": true,
+    "editor.quickSuggestions": {
+      "comments": false,
+      "other": true,
+      "strings": true
+    },
+    "editor.tabSize": 2
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "opentofu.vscode-opentofu"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[json]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.sort.json": "never"
+    },
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.sort.json": "never"
+    },
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2
+  },
+  "[markdown]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.markdownlint": "always"
+    },
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "chat.extensionUnification.enabled": true,
+  "codesnap.transparentBackground": true,
+  "containers.contexts.showInStatusBar": true,
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.inlineValues": "off",
+  "docker.extension.enableComposeLanguageServer": true,
+  "docsView.documentationView.updateMode": "sticky",
+  "editor.codeActionsOnSave": {
+    "source.sort.json": "always"
+  },
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  "editor.inlineSuggest.enabled": true,
+  "editor.minimap.enabled": false,
+  "editor.multiCursorModifier": "ctrlCmd",
+  "editor.wordWrap": "on",
+  "errorLens.enabledDiagnosticLevels": [
+    "warning",
+    "info",
+    "error"
+  ],
+  "explorer.sortOrderLexicographicOptions": "unicode",
+  "extensions.supportNodeGlobalNavigator": true,
+  "files.autoGuessEncoding": true,
+  "files.autoSave": "onFocusChange",
+  "files.autoSaveDelay": 500,
+  "files.exclude": {
+    ".ipynb_checkpoints": true,
+    ".neptune": true,
+    ".venv": true,
+    "__marimo__": true,
+    ".vscode-remote": true,
+    "**/__pycache__": true,
+    "**/.DS_Store": true,
+    "**/.mypy_cache": true,
+    "**/*.aux": true,
+    "**/*.fdb_latexmk": true,
+    "**/*.fls": true,
+    "**/*.synctex.gz": true,
+    ".uv-cache": true
+  },
+  "git.allowForcePush": true,
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.fetchOnPull": true,
+  "git.mergeEditor": true,
+  "git.replaceTagsWhenPull": true,
+  "github.codespaces.showPerformanceExplorer": true,
+  "github.copilot.chat.commitMessageGeneration.instructions": [],
+  "github.copilot.chat.localeOverride": "en",
+  "github.copilot.enable": {
+    "*": true,
+    "markdown": true,
+    "plaintext": true,
+    "scminput": false
+  },
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "notebook.codeActionsOnSave": {
+    "notebook.source.fixAll": "explicit",
+    "notebook.source.organizeImports": "explicit"
+  },
+  "notebook.formatOnSave.enabled": true,
+  "notebook.lineNumbers": "on",
+  "notebook.markup.fontFamily": "MesloLGL Nerd Font Mono",
+  "notebook.output.fontFamily": "MesloLGL Nerd Font Mono",
+  "redhat.telemetry.enabled": false,
+  "remote.autoForwardPortsSource": "hybrid",
+  "remote.SSH.connectTimeout": 1800,
+  "remote.SSH.remotePlatform": {
+    "*.gitpod.local": "linux",
+    "*.gitpod.remote": "linux"
+  },
+  "security.promptForRemoteFileProtocolHandling": false,
+  "settingsSync.ignoredSettings": [
+    "-dev.containers.copyGitConfig",
+    "chatgpt.cliExecutable",
+    "dev.containers.dockerSocketPath"
+  ],
+  "telemetry.telemetryLevel": "off",
+  "terminal.external.osxExec": "",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.env.osx": {
+    "CW_NEW_SESSION": "1"
+  },
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "/usr/bin/bash"
+    },
+    "zsh": {
+      "path": "zsh"
+    },
+    "fish": {
+      "path": "fish"
+    },
+    "tmux": {
+      "path": "tmux",
+      "icon": "terminal-tmux"
+    },
+    "pwsh": {
+      "path": "pwsh",
+      "icon": "terminal-powershell"
+    }
+  },
+  "terminal.integrated.rightClickBehavior": "copyPaste",
+  "terminal.integrated.tabs.focusMode": "singleClick",
+  "todo-tree.filtering.excludeGlobs": [
+    "**/node_modules/*/**",
+    "**/.venv/*/**"
+  ],
+  "todo-tree.filtering.ignoreGitSubmodules": true,
+  "todo-tree.general.periodicRefreshInterval": 1,
+  "todo-tree.general.showActivityBarBadge": true,
+  "todo-tree.general.statusBar": "current file",
+  "window.autoDetectColorScheme": true,
+  "window.newWindowProfile": "Default",
+  "window.restoreWindows": "none",
+  "workbench.colorTheme": "GitHub Dark Dimmed",
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.sideBar.location": "left",
+  "chat.editor.fontSize": 12,
+  "github.copilot.chat.notebook.enhancedNextEditSuggestions.enabled": true,
+  "peacock.affectActivityBar": false,
+  "peacock.affectTitleBar": false,
+  "peacock.affectStatusAndTitleBorders": false,
+  "peacock.favoriteColors": [
+    {
+      "name": "Pastel Teal",
+      "value": "#7FD8C5"
+    },
+    {
+      "name": "Misty Teal",
+      "value": "#A8DADC"
+    },
+    {
+      "name": "Lavender",
+      "value": "#C3B1E1"
+    },
+    {
+      "name": "Peach",
+      "value": "#F4C7C3"
+    }
+  ],
+  "peacock.darkenLightenPercentage": 1,
+  "notebook.markup.fontSize": 12,
+  "path-intellisense.autoTriggerNextSuggestion": true,
+  "chat.viewSessions.orientation": "stacked",
+  "terminal.integrated.shellIntegration.enabled": false,
+  "terminal.integrated.suggest.enabled": false,
+  "workbench.preferredDarkColorTheme": "GitHub Dark Dimmed",
+  "dev.containers.dockerPath": "podman",
+  "dev.containers.optimisticallyLaunchDocker": false,
+  "dev.containers.mountWaylandSocket": false,
+  "remote.SSH.reconnectionGraceTime": 28800,
+  "remote.SSH.serverShutdownTimeout": 28800,
+  "remote.SSH.maxReconnectionAttempts": null,
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/zarf-dev/zarf/main/zarf.schema.json": "zarf.yaml"
+  },
+  "chat.mcp.gallery.enabled": true,
+  "containers.containerClient": "com.microsoft.visualstudio.containers.podman",
+  "containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.podmancompose",
+  "git.detectWorktrees": true,
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  "excalidraw.theme": "auto"
+}
