@@ -125,6 +125,26 @@
         "type": "github"
       }
     },
+    "nix-vscode-extensions": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790050959,
+        "narHash": "sha256-Da0H2GvhUNcqpponLOAHMgUhcJsfxR36LXwcFL1d0ho=",
+        "owner": "nix-community",
+        "repo": "nix-vscode-extensions",
+        "rev": "6ffe8130661c7a5d28fa10cf344660652c443609",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nix-vscode-extensions",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789785513,
@@ -173,6 +193,7 @@
       "inputs": {
         "darwin": "darwin",
         "home-manager": "home-manager",
+        "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
         "sofka": "sofka",
         "system-manager": "system-manager"

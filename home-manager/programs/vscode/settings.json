@@ -71,12 +71,6 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "chat.extensionUnification.enabled": true,
-  "chat.tools.terminal.autoApprove": {
-    "nix": true,
-    "uv": true,
-    "zarf": true,
-    "docker run": true
-  },
   "codesnap.transparentBackground": true,
   "containers.contexts.showInStatusBar": true,
   "debug.allowBreakpointsEverywhere": true,
@@ -137,10 +131,6 @@
     "scminput": false
   },
   "github.copilot.nextEditSuggestions.enabled": true,
-  "jupyter.runStartupCommands": [
-    "%load_ext autoreload",
-    "%autoreload 2"
-  ],
   "notebook.codeActionsOnSave": {
     "notebook.source.fixAll": "explicit",
     "notebook.source.organizeImports": "explicit"
@@ -152,14 +142,24 @@
   "redhat.telemetry.enabled": false,
   "remote.autoForwardPortsSource": "hybrid",
   "remote.SSH.connectTimeout": 1800,
+  "remote.SSH.remotePlatform": {
+    "*.gitpod.local": "linux",
+    "*.gitpod.remote": "linux"
+  },
   "security.promptForRemoteFileProtocolHandling": false,
   "settingsSync.ignoredSettings": [
     "-dev.containers.copyGitConfig",
-    "chatgpt.cliExecutable"
+    "chatgpt.cliExecutable",
+    "dev.containers.dockerSocketPath"
   ],
   "telemetry.telemetryLevel": "off",
+  "terminal.external.osxExec": "",
   "terminal.integrated.copyOnSelection": true,
   "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.env.osx": {
+    "CW_NEW_SESSION": "1"
+  },
   "terminal.integrated.profiles.linux": {
     "bash": {
       "path": "/usr/bin/bash"
@@ -225,7 +225,6 @@
   "terminal.integrated.shellIntegration.enabled": false,
   "terminal.integrated.suggest.enabled": false,
   "workbench.preferredDarkColorTheme": "GitHub Dark Dimmed",
-  "ty.diagnosticMode": "workspace",
   "dev.containers.dockerPath": "podman",
   "dev.containers.optimisticallyLaunchDocker": false,
   "dev.containers.mountWaylandSocket": false,
@@ -239,7 +238,6 @@
   "containers.containerClient": "com.microsoft.visualstudio.containers.podman",
   "containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.podmancompose",
   "git.detectWorktrees": true,
-  "chat.permissions.default": "autoApprove",
   "yaml.disableSchemaDetection": [
     "**/.github/workflows/*.yml",
     "**/.github/workflows/*.yaml",
