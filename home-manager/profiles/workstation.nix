@@ -3,7 +3,6 @@
 {
   imports = [
     ./base.nix
-    ../programs/vscode
     ../stacks/containers.nix
     ../stacks/development.nix
     ../stacks/kubernetes.nix

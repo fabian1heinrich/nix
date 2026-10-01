@@ -33,6 +33,7 @@
       "logi-options+"
       "maccy"
       "nightfall"
+      "openvpn-connect"
       "raycast"
       "selfcontrol"
       "signal"

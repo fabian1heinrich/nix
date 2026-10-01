@@ -7,15 +7,16 @@
 {
   imports = [
     ../programs/hauler.nix
-    ../programs/just.nix
     ../programs/k9s.nix
     ../programs/kubecolor.nix
     ../programs/kubeswitch.nix
   ];
 
   home.packages = with pkgs; [
+    cloud-provider-kind # LoadBalancer implementation for kind clusters
     fluxcd # GitOps toolkit
     fluxcd-operator # GitOps toolkit
+    kind # Local Kubernetes clusters using container nodes
     kubectl # Kubernetes CLI
     kubectl-view-secret # View K8s secrets
     kubectx # Switch contexts/namespaces
