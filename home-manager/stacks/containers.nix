@@ -3,6 +3,7 @@
 {
   home.packages = with pkgs; [
     crane # Container registry tool
+    ctop # Container metrics and monitoring TUI
     docker-client # Docker-compatible CLI for project-local container endpoints
     docker-compose # Docker Compose CLI and plugin
     lazydocker # Docker TUI

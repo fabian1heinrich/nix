@@ -16,7 +16,6 @@
       tree # Directory tree viewer
       glow # Markdown renderer
       mawk # Fast awk implementation
-      worktrunk # Git Worktree Management
 
       # Disk & system utilities
       btop # System monitor
@@ -30,10 +29,6 @@
       yubikey-manager # YubiKey management CLI
       sops # Secrets management tool
       age # Simple, modern and secure file encryption
-
-      # Nix tooling
-      nixd # Nix language server
-      nixfmt # Nix formatter
 
     ])
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
