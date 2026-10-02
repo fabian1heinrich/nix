@@ -4,9 +4,9 @@
 }:
 {
   imports = [
-    ../../home-manager/profiles/workstation.nix
+    ../../home-manager/profiles/gnome.nix
+    ./gnome.nix
     ./podman.nix
-    ./ubuntu.nix
   ];
 
   home.packages = with pkgs; [

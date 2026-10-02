@@ -76,6 +76,11 @@
         default = lib.composeManyExtensions nixpkgsOverlays;
       };
 
+      homeModules = {
+        gnome = ./home-manager/profiles/gnome.nix;
+        workstation = ./home-manager/profiles/workstation.nix;
+      };
+
       mkUser =
         host:
         {
@@ -308,6 +313,7 @@
         homeConfigurations
         systemConfigs
         checks
+        homeModules
         overlays
         ;
     };
