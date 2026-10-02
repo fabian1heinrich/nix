@@ -1,7 +1,6 @@
 # Kubernetes tooling and related program configuration.
 {
   pkgs,
-  sofka,
   ...
 }:
 {
@@ -24,7 +23,7 @@
     kubie # K8s context manager
     kustomize # K8s configuration
     kyverno # K8s policy engine
-    sofka.packages.${pkgs.stdenv.hostPlatform.system}.default # Kubernetes TUI
+    sofka # Kubernetes TUI
     stern # Multi-pod log tailing
     talhelper # Talos OS helper
     talosctl # Talos OS management

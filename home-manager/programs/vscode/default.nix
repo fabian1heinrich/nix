@@ -29,10 +29,6 @@ in
         johnpapa.vscode-peacock
         mads-hartmann.bash-ide-vscode
         ms-azuretools.vscode-containers
-        ms-python.debugpy
-        ms-python.python
-        ms-python.vscode-pylance
-        ms-python.vscode-python-envs
         ms-vscode-remote.remote-containers
         ms-vscode-remote.remote-ssh
         ms-vscode-remote.remote-ssh-edit
@@ -43,7 +39,6 @@ in
         opentofu.vscode-opentofu
         pomdtr.excalidraw-editor
         redhat.vscode-yaml
-        sst-dev.opencode
         stkb.rewrap
         tamasfe.even-better-toml
         timonwong.shellcheck

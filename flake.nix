@@ -62,7 +62,19 @@
           pkg: lib.getName pkg == "vscode" || lib.hasPrefix "vscode-extension-" (lib.getName pkg);
       };
 
-      nixpkgsOverlays = [ nix-vscode-extensions.overlays.default ];
+      vscodeOverlay = nix-vscode-extensions.overlays.default;
+      sofkaOverlay = sofka.overlays.default;
+
+      nixpkgsOverlays = [
+        vscodeOverlay
+        sofkaOverlay
+      ];
+
+      overlays = {
+        vscode = vscodeOverlay;
+        sofka = sofkaOverlay;
+        default = lib.composeManyExtensions nixpkgsOverlays;
+      };
 
       mkUser =
         host:
@@ -145,7 +157,7 @@
         home-manager.lib.homeManagerConfiguration {
           pkgs = pkgsFor host.system;
           extraSpecialArgs = {
-            inherit sofka userConfig;
+            inherit userConfig;
           }
           // extraSpecialArgs;
           modules = host.homeModules;
@@ -170,7 +182,7 @@
                 useUserPackages = true;
                 backupFileExtension = "backup";
                 extraSpecialArgs = {
-                  inherit sofka userConfig;
+                  inherit userConfig;
                 };
                 users.${host.username}.imports = host.homeModules;
               };
@@ -296,6 +308,7 @@
         homeConfigurations
         systemConfigs
         checks
+        overlays
         ;
     };
 }
