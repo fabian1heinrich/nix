@@ -1,6 +1,5 @@
 set shell := ["bash", "-uc"]
 
-podman_machine := env("PODMAN_MACHINE", "podman")
 podman := "env -u CONTAINER_CONNECTION -u CONTAINER_HOST podman"
 docker := "env -u DOCKER_CONTEXT -u DOCKER_HOST docker"
 machine_format := "{{.Rootful}} {{.ConnectionInfo.PodmanSocket.Path}}"
@@ -33,15 +32,14 @@ nix-update:
     nix flake update
 
 # Create a macOS Podman VM and Docker context
-podman-create: _podman-machine-host
+podman-create mode="rootless": _podman-machine-host
     #!/usr/bin/env bash
     set -eu
-    machine="{{ podman_machine }}"
-    case "$machine" in
-      podman) rootful=false; args=() ;;
-      podman-rootful) rootful=true; args=(--rootful) ;;
-      *) echo "unsupported PODMAN_MACHINE: $machine" >&2; exit 2 ;;
-    esac
+    mode={{ quote(mode) }}
+    machine=podman
+    rootful=false
+    args=()
+    if [[ "$mode" == rootful ]]; then machine=podman-rootful; rootful=true; args=(--rootful); fi
     {{ podman }} machine inspect "$machine" >/dev/null 2>&1 || {{ podman }} machine init "${args[@]}" "$machine"
     read -r actual socket < <({{ podman }} machine inspect --format '{{ machine_format }}' "$machine")
     [[ "$actual" == "$rootful" ]] || { echo "$machine has Rootful=$actual" >&2; exit 1; }
@@ -49,21 +47,27 @@ podman-create: _podman-machine-host
     {{ docker }} context "$action" "$machine" --docker "host=unix://$socket" >/dev/null
 
 # Create if necessary and start a macOS Podman VM
-podman-start: podman-create
+podman-start mode="rootless": (podman-create mode)
     #!/usr/bin/env bash
     set -eu
+    mode={{ quote(mode) }}
+    machine=podman
+    [[ "$mode" == rootful ]] && machine=podman-rootful
     running="$({{ podman }} machine list --format '{{ running_format }}' | sed '/^$/d')"
-    if [[ -n "$running" && "$running" != "{{ podman_machine }}" ]]; then
+    if [[ -n "$running" && "$running" != "$machine" ]]; then
       {{ podman }} machine stop "$running"
     fi
-    [[ "$running" == "{{ podman_machine }}" ]] || {{ podman }} machine start "{{ podman_machine }}"
+    [[ "$running" == "$machine" ]] || {{ podman }} machine start "$machine"
 
 # Stop a macOS Podman VM
-podman-stop: _podman-machine-host
+podman-stop mode="rootless": _podman-machine-host
     #!/usr/bin/env bash
     set -eu
-    if state="$({{ podman }} machine inspect --format '{{ state_format }}' '{{ podman_machine }}' 2>/dev/null)" && [[ "$state" != stopped ]]; then
-      {{ podman }} machine stop "{{ podman_machine }}"
+    mode={{ quote(mode) }}
+    machine=podman
+    [[ "$mode" == rootful ]] && machine=podman-rootful
+    if state="$({{ podman }} machine inspect --format '{{ state_format }}' "$machine" 2>/dev/null)" && [[ "$state" != stopped ]]; then
+      {{ podman }} machine stop "$machine"
     fi
 
 # Delete all macOS Podman VMs and their matching Docker contexts
