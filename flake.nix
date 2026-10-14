@@ -62,39 +62,30 @@
           pkg: lib.getName pkg == "vscode" || lib.hasPrefix "vscode-extension-" (lib.getName pkg);
       };
 
-      vscodeOverlay = nix-vscode-extensions.overlays.default;
-      sofkaOverlay = sofka.overlays.default;
-
       nixpkgsOverlays = [
-        vscodeOverlay
-        sofkaOverlay
+        nix-vscode-extensions.overlays.default
+        sofka.overlays.default
       ];
 
-      overlays = {
-        vscode = vscodeOverlay;
-        sofka = sofkaOverlay;
-        default = lib.composeManyExtensions nixpkgsOverlays;
-      };
+      overlays.default = lib.composeManyExtensions nixpkgsOverlays;
 
-      homeModules = {
+      # Exported as the `homeModules` output. Named differently here so it does
+      # not read like each host's own `homeModules` list, which is unrelated.
+      profileModules = {
         gnome = ./home-manager/profiles/gnome.nix;
         workstation = ./home-manager/profiles/workstation.nix;
       };
 
-      mkUser =
-        host:
-        {
-          inherit (host)
-            username
-            primaryGroup
-            homeDirectory
-            homeStateVersion
-            system
-            ;
-          inherit (owner) name email;
-        }
-        // lib.optionalAttrs (host ? name) { inherit (host) name; }
-        // lib.optionalAttrs (host ? email) { inherit (host) email; };
+      mkUser = host: {
+        inherit (host)
+          username
+          primaryGroup
+          homeDirectory
+          homeStateVersion
+          system
+          ;
+        inherit (owner) name email;
+      };
 
       users = lib.mapAttrs (_: mkUser) hostSpecs;
 
@@ -103,52 +94,24 @@
       systemHostSpecs = lib.filterAttrs (_: host: host ? systemModules) hostSpecs;
       systemManagerSystems = lib.unique (lib.mapAttrsToList (_: host: host.system) systemHostSpecs);
 
-      # Helper to create pkgs for a system
-      pkgsFor =
+      # One nixpkgs instance per system. Nix memoises thunks but not function
+      # application, so this must stay an attrset: as a plain function, each of
+      # the ten or so `pkgsFor` call sites re-ran the whole nixpkgs fixpoint and
+      # re-applied every overlay. Measured at 35% slower (9.6s -> 13.0s on
+      # `nix flake check --all-systems --no-build --no-eval-cache`), mostly from
+      # re-evaluating the nix-vscode-extensions marketplace index.
+      pkgsBySystem = lib.genAttrs systems (
         system:
         import nixpkgs {
           inherit system;
           config = nixpkgsConfig;
           overlays = nixpkgsOverlays;
-        };
+        }
+      );
 
-      mkEvalCheck =
-        checkSystem: name: drv:
-        let
-          # Force the complete derivation to evaluate without adding a foreign-
-          # platform build dependency to this lightweight check.
-          drvPath = builtins.unsafeDiscardStringContext drv.drvPath;
-        in
-        (pkgsFor checkSystem).runCommand name { } ''
-          printf '%s\n' ${lib.escapeShellArg drvPath} > "$out"
-        '';
+      pkgsFor = system: pkgsBySystem.${system};
 
-      shellScripts = [
-        (builtins.path {
-          path = ./.envrc;
-          name = "envrc.sh";
-        })
-      ];
-
-      mkShellcheck =
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.runCommand "shellcheck" { nativeBuildInputs = [ pkgs.shellcheck ]; } ''
-          shellcheck ${lib.concatMapStringsSep " " (script: ''"${script}"'') shellScripts}
-          touch "$out"
-        '';
-
-      mkActionlint =
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
-        pkgs.runCommand "actionlint" { nativeBuildInputs = [ pkgs.actionlint ]; } ''
-          actionlint ${./.github/workflows/flake-check.yml}
-          touch "$out"
-        '';
+      checkLib = import ./checks.nix { inherit lib pkgsFor; };
 
       mkHomeConfiguration =
         {
@@ -237,45 +200,39 @@
 
       systemConfigs = lib.mapAttrs mkSystemConfiguration systemHostSpecs;
 
-      darwinCheckTargets = lib.mapAttrs' (
-        hostName: configuration:
-        lib.nameValuePair "${hostName}-system" {
-          system = hostSpecs.${hostName}.system;
-          drv = configuration.config.system.build.toplevel;
-        }
-      ) darwinConfigurations;
+      # Each configuration kind differs only in its check-name suffix and where
+      # its buildable derivation lives.
+      mkCheckTargets =
+        suffix: toplevelOf: configurations:
+        lib.mapAttrs' (
+          hostName: configuration:
+          lib.nameValuePair "${hostName}-${suffix}" {
+            system = hostSpecs.${hostName}.system;
+            drv = toplevelOf configuration;
+          }
+        ) configurations;
 
-      homeCheckTargets = lib.mapAttrs' (
-        hostName: configuration:
-        lib.nameValuePair "${hostName}-home" {
-          system = hostSpecs.${hostName}.system;
-          drv = configuration.activationPackage;
-        }
-      ) homeConfigurations;
+      checkTargets =
+        mkCheckTargets "darwin" (c: c.config.system.build.toplevel) darwinConfigurations
+        // mkCheckTargets "home" (c: c.activationPackage) homeConfigurations
+        // mkCheckTargets "sysmgr" lib.id systemConfigs;
 
-      systemCheckTargets = lib.mapAttrs' (
-        hostName: configuration:
-        lib.nameValuePair "${hostName}-system" {
-          system = hostSpecs.${hostName}.system;
-          drv = configuration;
-        }
-      ) systemConfigs;
+      # Home Manager is nested inside the system config on darwin hosts and
+      # stands alone everywhere else.
+      hmConfigFor =
+        hostName:
+        if hostSpecs.${hostName} ? darwinModules then
+          darwinConfigurations.${hostName}.config.home-manager.users.${hostSpecs.${hostName}.username}
+        else
+          homeConfigurations.${hostName}.config;
 
-      checkTargets = darwinCheckTargets // homeCheckTargets // systemCheckTargets;
+      zshrcTargets = lib.mapAttrsToList (hostName: host: {
+        inherit (host) system;
+        path = (hmConfigFor hostName).home.file.".config/zsh/.zshrc".source;
+      }) hostSpecs;
 
       checks = lib.genAttrs systems (
-        checkSystem:
-        let
-          nativeTargets = lib.filterAttrs (_: target: target.system == checkSystem) checkTargets;
-        in
-        (lib.mapAttrs' (
-          name: target: lib.nameValuePair "${name}-eval" (mkEvalCheck checkSystem "${name}-eval" target.drv)
-        ) checkTargets)
-        // (lib.mapAttrs' (name: target: lib.nameValuePair "${name}-build" target.drv) nativeTargets)
-        // {
-          actionlint = mkActionlint checkSystem;
-          shellcheck = mkShellcheck checkSystem;
-        }
+        checkSystem: checkLib.forSystem { inherit checkSystem checkTargets zshrcTargets; }
       );
 
       apps = lib.genAttrs systems (
@@ -306,6 +263,8 @@
     {
       devShells = lib.genAttrs systems mkDevShells;
 
+      homeModules = profileModules;
+
       inherit
         apps
         formatter
@@ -313,7 +272,6 @@
         homeConfigurations
         systemConfigs
         checks
-        homeModules
         overlays
         ;
     };

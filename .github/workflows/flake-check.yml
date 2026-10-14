@@ -17,17 +17,16 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: Run flake checks
+      - name: Evaluate every host on every system
         run: nix flake check --all-systems --no-build
 
       - name: Check formatting
         run: nix fmt -- --ci
 
-      - name: Build Linux checks
-        run: |
-          nix build .#checks.x86_64-linux.shellcheck
-          nix build .#checks.x86_64-linux.ubuntu-dev-home-build
-          nix build .#checks.x86_64-linux.ubuntu-dev-system-build
+      # Without --all-systems this builds exactly the x86_64-linux checks,
+      # which checks.nix has already filtered to the native hosts.
+      - name: Build native checks
+        run: nix flake check -L
 
   macos:
     runs-on: macos-15
@@ -39,7 +38,5 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: Build macOS checks
-        run: |
-          nix build .#checks.aarch64-darwin.shellcheck
-          nix build .#checks.aarch64-darwin.legendre-system-build
+      - name: Build native checks
+        run: nix flake check -L

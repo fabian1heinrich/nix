@@ -44,7 +44,6 @@
       "utm"
       "visual-studio-code"
       "yubico-authenticator"
-      "zed"
       "zen"
       "zoom"
     ];

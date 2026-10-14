@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   version = "2.0.1";
 
@@ -15,7 +15,7 @@ let
     };
   };
 
-  asset = assets.${pkgs.stdenv.hostPlatform.system};
+  asset = assets.${pkgs.stdenv.hostPlatform.system} or null;
 
   hauler = pkgs.stdenvNoCC.mkDerivation {
     pname = "hauler";
@@ -45,14 +45,15 @@ let
     meta = {
       description = "Airgap Swiss Army Knife";
       homepage = "https://github.com/hauler-dev/hauler";
-      license = pkgs.lib.licenses.asl20;
+      license = lib.licenses.asl20;
       mainProgram = "hauler";
       platforms = builtins.attrNames assets;
     };
   };
 in
 {
-  home.packages = [
+  # Unlisted platforms get no hauler instead of an evaluation failure.
+  home.packages = lib.optionals (asset != null) [
     hauler
   ];
 }

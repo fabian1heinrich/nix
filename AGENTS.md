@@ -23,28 +23,38 @@ configuration. Keep changes small, explicit, and easy to review.
 
 ## Repo Layout
 
-- `flake.nix` defines systems, hosts, checks, and development shells.
+- `flake.nix` defines systems, hosts, and development shells.
+- `checks.nix` defines the flake checks.
 - `hosts/` contains host-specific macOS and Linux configuration.
-- `home-manager/` contains user profiles, reusable capability stacks, program
-  configuration, and scripts.
+- `home-manager/` contains user profiles, reusable capability stacks, and
+  program configuration.
 - `Justfile` is the primary task runner entry point.
 
 ## Commands
 
 - List available recipes: `just`
 - Format Nix files: `just nix-fmt`
-- Run flake evaluation checks: `just nix-check`
+- Evaluate every host on every platform without building: `just nix-eval`
+- Build every check native to this platform: `just nix-check`
 - Run shellcheck checks: `just nix-shellcheck`
+- Run actionlint checks: `just nix-actionlint`
+- Check Justfile formatting: `just nix-just`
 - Switch the macOS host: `just switch-legendre`
 - Switch the Linux Home Manager profile: `just switch-ubuntu-dev`
 
 Run the narrowest relevant checks for the change. For broad Nix or module
 changes, prefer `just nix-fmt` and `just nix-check`; run `just nix-shellcheck`
-when shell scripts change.
+when `.envrc` changes, `just nix-actionlint` when a workflow changes, and
+`just nix-just` when the Justfile changes. New files must be `git add`ed
+before Nix can see them.
 
 ## Conventions
 
 - Follow existing Nix style and module structure.
+- Prefer letting a command fail over adding validation. Add a guard only where
+  continuing would cause real damage or silently target the wrong thing, and
+  put the check in one place rather than at every call site.
+- Keep Justfile recipe logic in the Justfile; do not add shell scripts for it.
 - Prefer profiles for complete user environments and stacks for reusable
   capabilities. Hosts should select a profile and add host-specific modules.
 - Keep host-specific behavior under the relevant `hosts/<name>/` directory.

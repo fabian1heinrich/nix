@@ -8,12 +8,18 @@ in
     enable = true;
     mutableExtensionsDir = false;
 
+    # VS Code is installed as a Homebrew cask on macOS; Home Manager owns
+    # config and extensions. Extensions stay pinned to pkgs.vscode.version,
+    # which is the fallback the module itself uses when package is null.
+    package = if pkgs.stdenv.hostPlatform.isDarwin then null else pkgs.vscode;
+
     profiles.default = {
       extensions = with extensions; [
         aaron-bond.better-comments
         adpyke.codesnap
         alefragnani.bookmarks
         alefragnani.project-manager
+        anthropic.claude-code
         bierner.docs-view
         christian-kohler.path-intellisense
         davidanson.vscode-markdownlint

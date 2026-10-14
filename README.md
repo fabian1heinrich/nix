@@ -5,11 +5,11 @@ and Linux (`ubuntu-dev`).
 
 ## Layout
 
-- `flake.nix`: host inventory, generated outputs, checks, and development shells
+- `flake.nix`: host inventory, generated outputs, and development shells
+- `checks.nix`: how the flake checks are built
 - `home-manager/profiles/`: complete user environment profiles
 - `home-manager/stacks/`: reusable capability bundles
 - `home-manager/programs/`: individual program configuration
-- `home-manager/scripts/`: user-facing scripts and tests
 - `hosts/<name>/home.nix`: host-specific user configuration
 - `hosts/<name>/system.nix`: host-specific system configuration
 
@@ -74,21 +74,29 @@ VMs and matching Docker contexts:
 | Rootless | `podman`            | `podman`              |
 | Rootful  | `podman-rootful`    | `podman-rootful-root` |
 
-Rootless is the checked-in default. Create if necessary and start the selected
-VM with:
+Create if necessary and start a VM with the mode as its argument, rootless by
+default:
 
 ```bash
-just podman-start
+just podman-create
+just podman-create rootful
 ```
 
-Set `podman_mode=rootful` in the ignored `.env` file and rerun `direnv allow`
-to select the rootful VM without dirtying the checkout. `podman-create` and
-`podman-stop` operate on the same selection.
+Starting a VM stops whichever other machine is running, since only one may
+forward the Docker API socket, so switching modes is just the other invocation.
 `podman-delete` removes every Podman VM and its matching Docker context,
-destroying their containers, images, and volumes. These recipes are macOS-only.
+destroying their containers, images, and volumes. Both recipes are macOS-only.
 
-Direnv selects the native Podman connection and Docker context. Keep Docker's
-persisted global context at `default` so it is restored outside the project:
+The recipes share one mode lookup through the `select_machine` variable, so an
+unsupported mode fails there rather than falling back to the rootless machine.
+
+Direnv follows whichever machine is running, so `podman-create` needs no second
+declaration of the mode anywhere; it exports that machine's Podman connection
+and Docker context, and watches Podman's machine directory so creating or
+removing a VM reloads the environment. With no machine running it falls back to
+the first one, which leaves the prompt reporting the socket as asleep rather
+than dropping its Podman module. Keep Docker's persisted global context at
+`default` so it is restored outside the project:
 
 ```bash
 env -u DOCKER_CONTEXT docker context use default
@@ -103,8 +111,9 @@ storage. `.envrc` exposes the socket to Docker-compatible tools through
 
 Both rootless and rootful storage require `/media/data` to be a real mounted
 filesystem. System Manager refuses to prepare Podman storage when it is not
-mounted, and Home Manager refuses activation when the rootless storage
-directory is unavailable. Apply the System Manager configuration first after
+mounted, so it never seeds the store onto the root filesystem, and the user
+socket and API service carry `ConditionPathIsMountPoint` so they do not start
+against a missing volume. Apply the System Manager configuration first after
 mounting or replacing the data volume.
 
 System Manager installs rootful Podman, Compose, a socket-activated API service,
@@ -120,9 +129,25 @@ just nix-fmt
 just nix-eval
 just nix-check
 just nix-shellcheck
+just nix-actionlint
+just nix-just
 ```
 
 `nix-eval` evaluates every host on every configured platform without building.
-`nix-check` builds all checks native to the current platform. CI builds the
-macOS system and both Ubuntu Home Manager and System Manager configurations,
-along with formatting, ShellCheck, and behavioral shell-script tests.
+`nix-check` builds all checks native to the current platform.
+
+Beyond the host configurations, the flake checks cover formatting (`nix fmt
+-- --ci`), ShellCheck over `.envrc`, actionlint over the
+workflows, `just --fmt --check` over the Justfile, and `zsh -n` over each
+host's generated `.zshrc`, so a syntax error in `programs/zsh.nix` fails the
+build rather than the next login shell.
+
+CI runs `nix flake check --all-systems --no-build` once and `nix flake check`
+on each runner. Without `--all-systems` that builds exactly the checks native
+to the runner, so adding a host to `flake.nix` needs no workflow change. The
+`zsh -n` check is native-only because the generated `.zshrc` is built by its
+own host's `pkgs`.
+
+Runtime guards are deliberately sparse: the configuration only refuses to
+proceed where continuing would write to the wrong place or silently pick the
+wrong target, and otherwise lets the underlying tool fail on its own.

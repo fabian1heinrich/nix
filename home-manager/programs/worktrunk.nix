@@ -6,6 +6,7 @@
     [list]
     full = true
     branches = false
+    json-schema = 2
 
     [switch]
     cd = true

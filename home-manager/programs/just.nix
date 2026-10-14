@@ -5,6 +5,4 @@
     just-lsp
     just-formatter
   ];
-
-  xdg.configFile."just/justfile".source = ../../Justfile;
 }

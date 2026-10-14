@@ -9,7 +9,6 @@
     ../programs/just.nix
     ../programs/nh.nix
     ../programs/vscode
-    ../programs/zed.nix
     ../programs/worktrunk.nix
   ];
 

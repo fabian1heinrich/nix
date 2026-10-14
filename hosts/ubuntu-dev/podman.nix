@@ -1,5 +1,4 @@
 {
-  lib,
   pkgs,
   ...
 }:
@@ -12,17 +11,6 @@ in
     gvproxy
     podman
   ];
-
-  home.activation.requirePodmanStorage = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-    if ! ${pkgs.util-linux}/bin/mountpoint -q ${dataMount}; then
-      echo "Podman storage requires ${dataMount} to be mounted; refusing to use the root filesystem." >&2
-      exit 1
-    fi
-    if [ ! -d ${rootlessStorage} ] || [ ! -w ${rootlessStorage} ]; then
-      echo "Podman storage ${rootlessStorage} is missing or not writable; apply the System Manager configuration first." >&2
-      exit 1
-    fi
-  '';
 
   systemd.user = {
     sockets.podman = {
