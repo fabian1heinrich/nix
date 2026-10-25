@@ -34,6 +34,7 @@ show_cursor = false
 freeze_area = false
 show_selection_area_overlay = true
 reverse_magnifier_zoom_direction = false
+include_window_shadow = false
 
 [capture.scrolling]
 show_hints = true
