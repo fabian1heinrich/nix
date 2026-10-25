@@ -107,6 +107,9 @@ in
         DSDontWriteNetworkStores = true;
         DSDontWriteUSBStores = true;
       };
+      "com.trongduong.snapzy" = {
+        "capture.includeWindowShadow" = false;
+      };
       "com.apple.AdLib".allowApplePersonalizedAdvertising = false;
       "com.apple.SoftwareUpdate" = {
         AutomaticCheckEnabled = true;
