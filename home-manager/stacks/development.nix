@@ -7,6 +7,7 @@
     ../programs/gh.nix
     ../programs/git.nix
     ../programs/just.nix
+    ../programs/mise.nix
     ../programs/nh.nix
     ../programs/vscode
     ../programs/worktrunk.nix

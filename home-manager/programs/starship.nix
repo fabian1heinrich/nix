@@ -29,7 +29,7 @@ in
     enable = true;
     settings = {
       add_newline = false;
-      format = "([╭─](dimmed white) $direnv$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
+      format = "([╭─](dimmed white) $direnv$mise$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
       username = {
         format = "[$user]($style)[@]($style)";
         disabled = false;
@@ -91,6 +91,12 @@ in
         format = "[$symbol]($style) ";
         style = "bold yellow";
         symbol = "🌿";
+      };
+      mise = {
+        disabled = false;
+        format = "[$symbol]($style) ";
+        style = "bold purple";
+        symbol = "🔪";
       };
       kubernetes = {
         symbol = "🪐";

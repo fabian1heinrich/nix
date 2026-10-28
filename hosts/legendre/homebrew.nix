@@ -11,10 +11,10 @@
     extraConfig = "";
     prefix = "/opt/homebrew";
     brews = [
+      "colima"
       "cowsay"
       "lima-additional-guestagents"
       "mas"
-      "mise"
       "mole"
       "podman"
       "qemu"
