@@ -16,6 +16,10 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          extra-conf: |
+            extra-substituters = https://nkl-sofka.cachix.org
+            extra-trusted-public-keys = nkl-sofka.cachix.org-1:hLg9frFNJynrxe7SSBb/p6pbawlpZmG10bw+wLsTufw=
 
       - name: Evaluate every host on every system
         run: nix flake check --all-systems --no-build
@@ -37,6 +41,10 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
+        with:
+          extra-conf: |
+            extra-substituters = https://nkl-sofka.cachix.org
+            extra-trusted-public-keys = nkl-sofka.cachix.org-1:hLg9frFNJynrxe7SSBb/p6pbawlpZmG10bw+wLsTufw=
 
       - name: Build native checks
         run: nix flake check -L

@@ -93,7 +93,7 @@ podman-delete: _podman-machine-host
     done <<< "$machines"
 
 switch-legendre:
-    sudo nix run .#darwin-rebuild -- switch --flake .#legendre
+    sudo env NIX_CONFIG="$(cat nix.conf)" nix run .#darwin-rebuild -- switch --flake .#legendre
 
 switch-ubuntu-dev:
     nix run .#home-manager -- switch --flake .#ubuntu-dev

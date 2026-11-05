@@ -5,7 +5,7 @@ platform = "github"
 format = "nix fmt -- --ci"
 
 [[pre-commit]]
-whitespace = "git diff --check"
+whitespace = "git --no-pager diff --check"
 
 [[pre-merge]]
 format = "nix fmt -- --ci"

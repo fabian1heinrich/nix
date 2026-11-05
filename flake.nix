@@ -11,8 +11,7 @@
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     system-manager.url = "github:numtide/system-manager";
     system-manager.inputs.nixpkgs.follows = "nixpkgs";
-    sofka.url = "github:nklmilojevic/sofka";
-    sofka.inputs.nixpkgs.follows = "nixpkgs";
+    sofka.url = "github:nklmilojevic/sofka/v0.34.0";
   };
 
   outputs =
@@ -64,7 +63,10 @@
 
       nixpkgsOverlays = [
         nix-vscode-extensions.overlays.default
-        sofka.overlays.default
+        # Use the upstream package unchanged so Sofka's binary cache matches.
+        (final: _: {
+          sofka = sofka.packages.${final.stdenv.hostPlatform.system}.sofka;
+        })
       ];
 
       overlays.default = lib.composeManyExtensions nixpkgsOverlays;
@@ -175,6 +177,7 @@
         {
           default = pkgs.mkShell {
             name = "nix-config";
+            NIX_CONFIG = builtins.readFile ./nix.conf;
             packages =
               (with pkgs; [
                 git

@@ -6,6 +6,7 @@ in
   nix = {
     enable = true;
     channel.enable = false;
+    distributedBuilds = false;
     gc = {
       automatic = true;
       options = "--delete-older-than 30d";
@@ -15,6 +16,10 @@ in
       experimental-features = [
         "nix-command"
         "flakes"
+      ];
+      extra-substituters = [ "https://nkl-sofka.cachix.org" ];
+      extra-trusted-public-keys = [
+        "nkl-sofka.cachix.org-1:hLg9frFNJynrxe7SSBb/p6pbawlpZmG10bw+wLsTufw="
       ];
       trusted-users = [
         "@admin"
