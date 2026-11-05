@@ -29,6 +29,8 @@ in
     enable = true;
     settings = {
       add_newline = false;
+      # Allow brief Git startup delays after development-shell updates.
+      command_timeout = 1000;
       format = "([╭─](dimmed white) $direnv$mise$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname$directory$git_branch$git_status$cmd_duration$character";
       username = {
         format = "[$user]($style)[@]($style)";
