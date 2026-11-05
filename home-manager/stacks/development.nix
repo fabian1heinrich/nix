@@ -6,6 +6,7 @@
     ../programs/direnv.nix
     ../programs/gh.nix
     ../programs/git.nix
+    ../programs/herdr.nix
     ../programs/just.nix
     ../programs/mise.nix
     ../programs/nh.nix
@@ -18,7 +19,6 @@
     lazygit # Git TUI
     nixd # Nix language server
     nixfmt # Nix formatter
-    opencode # AI coding agent
     opentofu # Infrastructure as Code tool
     shellcheck # Shell script linter
     worktrunk # Git worktree manager

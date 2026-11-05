@@ -21,7 +21,8 @@
             "${pkgs.gitFull}/bin/git-credential-libsecret";
       };
       # Useful defaults
-      pull.rebase = true;
+      pull.rebase = false;
+      merge.ff = false;
       push.autoSetupRemote = true;
       core.autocrlf = "input";
     };

@@ -1,17 +1,17 @@
 { lib, pkgs, ... }:
 let
-  version = "2.0.1";
+  version = "2.1.2";
 
   assets = {
     x86_64-linux = {
       platform = "linux";
       arch = "amd64";
-      hash = "sha256-yLZepX8QoD8CEE677L8SScQfSZvIV3FIiCS3D2zPx2w=";
+      hash = "sha256-XExbVKSiSbuv69Bp3aPfhmIlFck/pmV7BF4IHYK3ss4=";
     };
     aarch64-darwin = {
       platform = "darwin";
       arch = "arm64";
-      hash = "sha256-QBCbAU7G/Sj/il0xKPrKcyILj3ccf85iaGfnaa1M0qI=";
+      hash = "sha256-nRWhMOBh7wHZDwgV/WJcx3a5IRc30bgYrpH3bXs/0r0=";
     };
   };
 
