@@ -22,6 +22,12 @@ The shell provides `just` and loads the settings from `nix.conf` automatically.
 
 ### macOS
 
+When migrating an existing installation, remove an empty
+`/opt/homebrew/Library/Taps` directory once with
+`rmdir /opt/homebrew/Library/Taps` before switching. This lets nix-homebrew
+replace it with a Nix-managed symlink. If it contains taps, declare and preserve
+those before moving the directory aside.
+
 ```bash
 just switch-legendre
 ```
@@ -29,8 +35,18 @@ just switch-legendre
 Activation installs Homebrew or migrates an existing installation while
 preserving installed packages.
 
-Apply later changes with `just switch-legendre`. Upgrade Homebrew packages
-explicitly with `just homebrew-upgrade` or `just homebrew-upgrade-greedy`.
+Apply later changes with `just switch-legendre`. Homebrew Core and Cask catalogs
+are pinned as flake inputs and managed by Nix. Refresh the catalogs before
+upgrading packages:
+
+```bash
+nix flake update homebrew-core homebrew-cask
+just switch-legendre
+just homebrew-upgrade # Or just homebrew-upgrade-greedy
+```
+
+Add any additional taps declaratively in `hosts/legendre/homebrew.nix`;
+imperative `brew tap` is disabled.
 
 ### Ubuntu
 
