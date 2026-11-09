@@ -129,6 +129,7 @@ in
       onboarding = false;
       # Nix owns binary updates; keep agent-detection manifest updates enabled.
       update.version_check = false;
+      theme.name = "terminal";
       terminal.default_shell = lib.getExe pkgs.zsh;
       # Start fresh sessions in Herdr's launch directory; "follow" falls back to $HOME.
       terminal.new_cwd = "current";
@@ -190,6 +191,10 @@ in
         ];
       };
       ui = {
+        sidebar_width = 32;
+        pane_gaps = false;
+        pane_outer_borders = false;
+        pane_scrollbars = false;
         agent_panel_sort = "priority";
         status_indicators = "symbols";
         prompt_new_tab_name = false;
@@ -198,8 +203,12 @@ in
         sidebar.agents.rows = [
           [
             "state_icon"
-            "agent"
             "workspace"
+            "tab"
+          ]
+          [
+            "agent"
+            "terminal_title_stripped"
           ]
           [
             "$limit_high"

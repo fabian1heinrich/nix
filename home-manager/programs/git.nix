@@ -22,6 +22,7 @@
       };
       # Useful defaults
       pull.rebase = false;
+      pull.ff = "only";
       merge.ff = false;
       push.autoSetupRemote = true;
       core.autocrlf = "input";

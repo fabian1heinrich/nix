@@ -35,6 +35,7 @@
       "ghostty"
       "gifox"
       "gpg-suite"
+      "herdr-app"
       "languagetool-desktop"
       "logi-options+"
       "maccy"
