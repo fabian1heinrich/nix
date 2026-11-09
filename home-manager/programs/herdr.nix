@@ -22,6 +22,7 @@ let
       "-X main.version=${version}"
     ];
     nativeBuildInputs = [ pkgs.jaq ];
+    buildInputs = [ pkgs.bash ];
     postInstall = ''
       pluginDir="$out/share/herdr/plugins/usagebar"
       mkdir -p "$pluginDir"
@@ -44,6 +45,36 @@ let
     };
   };
 
+  worktrunkPlugin =
+    pkgs.runCommand "herdr-worktrunk"
+      {
+        src = pkgs.fetchFromGitHub {
+          owner = "devashish2203";
+          repo = "herdr-worktrunk";
+          rev = "f9df9ba700b8a4f4d97ddfe3ea3eb345e80b880b";
+          hash = "sha256-puZWyvtBt2svov0NIVJTzdfHzm/k1EglbXsTGsm8N7I=";
+        };
+      }
+      ''
+        mkdir -p "$out"
+        cp "$src"/*.sh "$src"/*.ps1 "$src/herdr-plugin.toml" "$out/"
+        # Herdr launches every entrypoint through the manifest's Bash command.
+        substituteInPlace "$out/herdr-plugin.toml" \
+          --replace-fail '"bash"' '"${lib.getExe pkgs.bash}"' \
+          --replace-fail 'exec bash ' 'export PATH=${
+            lib.makeBinPath [
+              pkgs.bash
+              pkgs.coreutils
+              pkgs.fzf
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnused
+              pkgs.jq
+              pkgs.worktrunk
+            ]
+          }:$PATH; exec ${lib.getExe pkgs.bash} '
+      '';
+
   hookPath = lib.makeBinPath [
     pkgs.python3
     pkgs.coreutils
@@ -58,9 +89,19 @@ let
 in
 {
   home.packages = [ usagebar ];
-  home.activation.herdrAgentUsage = lib.hm.dag.entryAfter [ "herdrMutableSettings" ] ''
+  home.activation.herdrAgentUsage = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     run ${lib.getExe config.programs.herdr.package} plugin link ${usagebar}/share/herdr/plugins/usagebar
   '';
+  home.activation.herdrWorktrunk = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    run ${lib.getExe config.programs.herdr.package} plugin link ${worktrunkPlugin}
+  '';
+
+  xdg.configFile."herdr/plugins/config/worktrunk/config.toml".source =
+    (pkgs.formats.toml { }).generate "herdr-worktrunk-config.toml"
+      {
+        open_mode = "workspace";
+        picker_placement = "popup";
+      };
 
   xdg.configFile."herdr/plugins/config/usagebar/config.toml".source =
     (pkgs.formats.toml { }).generate "usagebar-config.toml"
@@ -82,20 +123,30 @@ in
 
   programs.herdr = {
     enable = true;
-    mutableSettings = true;
+    # Keep Herdr settings declarative, including removal of obsolete values.
+    mutableSettings = false;
     settings = {
       onboarding = false;
       # Nix owns binary updates; keep agent-detection manifest updates enabled.
       update.version_check = false;
       terminal.default_shell = lib.getExe pkgs.zsh;
+      # Start fresh sessions in Herdr's launch directory; "follow" falls back to $HOME.
+      terminal.new_cwd = "current";
       keys = {
         next_agent = "prefix+alt+j";
         previous_agent = "prefix+alt+k";
         focus_agent = "prefix+alt+1..9";
-        # Create checkouts with Worktrunk; open them in Herdr afterwards.
+        last_pane = "prefix+backtick";
+        # Use Worktrunk's picker for both creating and opening checkouts.
         new_worktree = "";
-        open_worktree = "prefix+shift+g";
+        open_worktree = "";
         command = [
+          {
+            key = "prefix+shift+g";
+            type = "plugin_action";
+            command = "worktrunk.open";
+            description = "Worktrunk: switch or create worktree";
+          }
           {
             key = "prefix+a";
             type = "pane";
@@ -103,10 +154,26 @@ in
             description = "Start Codex";
           }
           {
-            key = "prefix+alt+g";
+            key = "prefix+shift+a";
             type = "pane";
+            command = "${lib.getExe config.programs.codex.package} resume --all";
+            description = "Resume Codex";
+          }
+          {
+            key = "prefix+t";
+            type = "popup";
+            command = "exec ${lib.getExe pkgs.zsh}";
+            description = "Open scratch shell";
+            width = "90%";
+            height = "90%";
+          }
+          {
+            key = "prefix+alt+g";
+            type = "popup";
             command = lib.getExe pkgs.lazygit;
             description = "Open lazygit";
+            width = "90%";
+            height = "90%";
           }
           {
             key = "prefix+u";
@@ -125,17 +192,14 @@ in
       ui = {
         agent_panel_sort = "priority";
         status_indicators = "symbols";
+        prompt_new_tab_name = false;
+        show_agent_labels_on_pane_borders = true;
+        hide_tab_bar_when_single_tab = true;
         sidebar.agents.rows = [
           [
             "state_icon"
             "agent"
-            "state_text"
-          ]
-          [
-            "machine"
             "workspace"
-            "tab"
-            "pane"
           ]
           [
             "$limit_high"
@@ -149,17 +213,6 @@ in
             }
             "$context"
           ]
-          [
-            "$cache_high"
-            {
-              token = "$cache_mid";
-              fg = "#e0af68";
-            }
-            {
-              token = "$cache_low";
-              fg = "#f7768e";
-            }
-          ]
         ];
         toast = {
           delivery = "terminal";
@@ -168,6 +221,7 @@ in
         sound.enabled = false;
       };
       session.resume_agents_on_restore = true;
+      experimental.pane_history = true;
     };
   };
 

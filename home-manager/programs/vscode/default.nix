@@ -6,7 +6,7 @@ in
 {
   programs.vscode = {
     enable = true;
-    mutableExtensionsDir = false;
+    mutableExtensionsDir = true;
     package = if pkgs.stdenv.hostPlatform.isDarwin then null else pkgs.vscode;
     profiles.default = {
       extensions =

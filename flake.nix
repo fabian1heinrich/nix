@@ -76,8 +76,8 @@
       # Exported as the `homeModules` output. Named differently here so it does
       # not read like each host's own `homeModules` list, which is unrelated.
       profileModules = {
-        gnome = ./home-manager/profiles/gnome.nix;
-        workstation = ./home-manager/profiles/workstation.nix;
+        gnome = import ./home-manager/profiles/gnome.nix;
+        workstation = import ./home-manager/profiles/workstation.nix;
       };
 
       mkUser = host: {
