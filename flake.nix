@@ -9,6 +9,7 @@
     nix-vscode-extensions.inputs.nixpkgs.follows = "nixpkgs";
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     system-manager.url = "github:numtide/system-manager";
     system-manager.inputs.nixpkgs.follows = "nixpkgs";
     sofka.url = "github:nklmilojevic/sofka/v0.34.0";
@@ -20,6 +21,7 @@
       home-manager,
       nix-vscode-extensions,
       darwin,
+      nix-homebrew,
       system-manager,
       sofka,
       ...
@@ -142,6 +144,7 @@
           inherit (host) system;
           specialArgs = { inherit userConfig; };
           modules = host.darwinModules ++ [
+            nix-homebrew.darwinModules.nix-homebrew
             home-manager.darwinModules.home-manager
             {
               nixpkgs.config = nixpkgsConfig;

@@ -1,5 +1,11 @@
-{ ... }:
+{ userConfig, ... }:
 {
+  nix-homebrew = {
+    enable = true;
+    user = userConfig.username;
+    autoMigrate = true;
+  };
+
   homebrew = {
     enable = true;
     onActivation = {

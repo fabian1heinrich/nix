@@ -5,8 +5,8 @@ and Linux (`ubuntu-dev`).
 
 ## Getting started
 
-Requirements are Nix, Git, and administrator access. macOS also needs Homebrew
-and the Xcode Command Line Tools. The configured hosts are Apple Silicon
+Requirements are Nix, Git, and administrator access. macOS also needs the
+Xcode Command Line Tools. The configured hosts are Apple Silicon
 macOS (`fabian`) and x86_64 Ubuntu (`ubuntu-dev`); adjust `hostSpecs` in
 `flake.nix` and the host modules before applying this to another machine.
 
@@ -25,6 +25,9 @@ The shell provides `just` and loads the settings from `nix.conf` automatically.
 ```bash
 just switch-legendre
 ```
+
+Activation installs Homebrew or migrates an existing installation while
+preserving installed packages.
 
 Apply later changes with `just switch-legendre`. Upgrade Homebrew packages
 explicitly with `just homebrew-upgrade` or `just homebrew-upgrade-greedy`.
