@@ -5,10 +5,16 @@ configuration. Keep changes small, explicit, and easy to review.
 
 ## Worktree Workflow
 
-- Use one Worktrunk worktree per task.
-- Do not make agent changes in the default-branch trunk checkout.
+- Use one Worktrunk worktree per coding task. When starting from the
+  default-branch trunk checkout, create a task worktree automatically before
+  the first edit, choosing a descriptive branch name. The user does not need
+  to request worktree creation separately.
+- Reuse the task worktree for follow-up requests on the same task.
+- Keep agent changes out of the default-branch trunk checkout unless the user
+  explicitly requests working there.
 - Do not edit sibling worktrees unless the user explicitly asks.
-- Treat each Codex thread as owning only the worktree it was started in.
+- Treat each Codex thread as owning only the task worktree it started in or
+  created for its task.
 - Prefer `wt switch --create <branch>` for new work and `wt merge` or a PR flow
   when the change is ready.
 - If `wt` is unavailable in the agent shell, use
