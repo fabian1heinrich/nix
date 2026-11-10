@@ -131,8 +131,8 @@ in
       update.version_check = false;
       theme.name = "terminal";
       terminal.default_shell = lib.getExe pkgs.zsh;
-      # Start fresh sessions in Herdr's launch directory; "follow" falls back to $HOME.
-      terminal.new_cwd = "current";
+      # New panes, tabs, and workspaces inherit the source pane or workspace's directory.
+      terminal.new_cwd = "follow";
       keys = {
         next_agent = "prefix+alt+j";
         previous_agent = "prefix+alt+k";
