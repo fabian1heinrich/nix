@@ -6,7 +6,6 @@ in
   nix = {
     enable = true;
     channel.enable = false;
-    distributedBuilds = false;
     gc = {
       automatic = true;
       options = "--delete-older-than 30d";

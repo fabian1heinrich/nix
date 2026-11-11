@@ -1,13 +1,25 @@
-{ userConfig, ... }:
+{
+  config,
+  userConfig,
+  homebrew-core,
+  homebrew-cask,
+  ...
+}:
 {
   nix-homebrew = {
     enable = true;
     user = userConfig.username;
     autoMigrate = true;
+    taps = {
+      "homebrew/homebrew-core" = homebrew-core;
+      "homebrew/homebrew-cask" = homebrew-cask;
+    };
+    mutableTaps = false;
   };
 
   homebrew = {
     enable = true;
+    taps = builtins.attrNames config.nix-homebrew.taps;
     onActivation = {
       autoUpdate = false;
       cleanup = "uninstall";
@@ -35,6 +47,7 @@
       "ghostty"
       "gifox"
       "gpg-suite"
+      "herdr-app"
       "languagetool-desktop"
       "logi-options+"
       "maccy"
