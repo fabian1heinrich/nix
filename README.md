@@ -110,6 +110,10 @@ just nix-actionlint # Check GitHub Actions workflows
 just nix-just       # Check Justfile formatting
 ```
 
+CI uses one Linux job to evaluate every host configuration, check formatting,
+and lint shell scripts, workflows, the Justfile, and the generated Linux zshrc.
+Full host builds run locally with `just nix-check` or when applying a configuration.
+
 Stage new files with `git add` before running Nix so the flake can see them.
 Update dependencies only when intended with `just nix-update`.
 
