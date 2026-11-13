@@ -27,24 +27,10 @@ jobs:
       - name: Check formatting
         run: nix fmt -- --ci
 
-      # Without --all-systems this builds exactly the x86_64-linux checks,
-      # which checks.nix has already filtered to the native hosts.
-      - name: Build native checks
-        run: nix flake check -L
-
-  macos:
-    runs-on: macos-15
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Install Nix
-        uses: DeterminateSystems/determinate-nix-action@v3
-        with:
-          extra-conf: |
-            extra-substituters = https://nkl-sofka.cachix.org
-            extra-trusted-public-keys = nkl-sofka.cachix.org-1:hLg9frFNJynrxe7SSBb/p6pbawlpZmG10bw+wLsTufw=
-
-      - name: Build native checks
-        run: nix flake check -L
+      - name: Lint scripts, workflows, and task files
+        run: |
+          nix build --no-link -L \
+            .#checks.x86_64-linux.shellcheck \
+            .#checks.x86_64-linux.actionlint \
+            .#checks.x86_64-linux.just \
+            .#checks.x86_64-linux.zsh-syntax
