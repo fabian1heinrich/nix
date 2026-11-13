@@ -1,4 +1,4 @@
-name: flake-check
+name: Nix checks
 
 on:
   pull_request:
@@ -6,9 +6,15 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  linux:
+  checks:
+    name: Evaluate and lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
