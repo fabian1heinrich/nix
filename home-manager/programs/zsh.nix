@@ -76,6 +76,10 @@
 
         if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
 
+        # Keep Worktrunk's worktree-first, newest-commit order in the Tab menu.
+        zstyle ':completion:*:wt:*' sort false
+        zstyle ':fzf-tab:complete:wt:*' fzf-flags --no-sort
+
         # Use fd (https://github.com/sharkdp/fd) for listing path candidates.
         # - The first argument to the function ($1) is the base path to start traversal
         # - See the source code (completion.{bash,zsh}) for the details.
