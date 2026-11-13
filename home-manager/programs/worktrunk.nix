@@ -20,7 +20,8 @@
 
     [list]
     full = true
-    branches = false
+    branches = true
+    remotes = true
     json-schema = 2
 
     [switch]
