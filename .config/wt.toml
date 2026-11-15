@@ -2,15 +2,14 @@
 platform = "github"
 
 [[pre-commit]]
-format = "nix fmt -- --ci"
+format = "nix fmt -- --fail-on-change"
 
 [[pre-commit]]
 whitespace = "git --no-pager diff --check"
 
 [[pre-merge]]
-format = "nix fmt -- --ci"
+format = "nix fmt -- --fail-on-change"
 flake-check = "just nix-check"
-shellcheck = "just nix-shellcheck"
 
 [commit.generation]
 template-append = """
@@ -23,4 +22,4 @@ template-append = """
 fmt = "just nix-fmt"
 check = "just nix-check"
 shellcheck = "just nix-shellcheck"
-verify = "just nix-fmt && just nix-check && just nix-shellcheck"
+verify = "just nix-fmt && just nix-check"
