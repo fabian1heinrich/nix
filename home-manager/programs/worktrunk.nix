@@ -1,9 +1,20 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 {
+  home.packages = [ pkgs.worktrunk ];
+
+  programs.zsh.initContent = ''
+    if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
+    # Keep Worktrunk's worktree-first, newest-commit order in the Tab menu.
+    zstyle ':completion:*:wt:*' sort false
+    zstyle ':fzf-tab:complete:wt:*' fzf-flags --no-sort
+  '';
+
   xdg.configFile."worktrunk/config.toml".text = ''
     worktree-path = "~/worktrees/{{ owner }}/{{ repo }}/{{ branch | sanitize }}"
 

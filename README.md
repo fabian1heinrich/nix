@@ -117,6 +117,25 @@ Full host builds run locally with `just nix-check` or when applying a configurat
 Stage new files with `git add` before running Nix so the flake can see them.
 Update dependencies only when intended with `just nix-update`.
 
+## Reusable Home Manager modules
+
+`homeModules` exports every top-level `.nix` file in `home-manager/programs/`
+(except its index) and each program directory containing `default.nix`, including
+`vscode/`. For example, another flake can select
+`imports = with nixRepo.homeModules; [ core zsh fzf git helix tmux ];`.
+Exports make modules available; only imported modules apply their settings.
+Program filenames determine export names, so keep them stable and put helpers
+inside program directories. Non-Nix assets are ignored by discovery.
+
+`core` supplies shared home settings and uses the caller's `userConfig`.
+`gnome-settings` supplies desktop preferences without the complete GNOME profile.
+The existing `gnome` and `workstation` exports remain complete profiles.
+Importing these modules does not apply the source overlay; add it only when
+selected packages need it. Program modules own their helper packages and shell
+integrations: FZF supplies its previews/completions and fzf-tab, Helix selects
+the command-line editor, Git supplies its Oh My Zsh plugin, and Worktrunk sets
+up its shell integration. Broot uses Home Manager's native shell integration.
+
 ## Containers
 
 The `.envrc` also configures project-local Docker/Podman connections.

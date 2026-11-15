@@ -21,6 +21,5 @@
     nixfmt # Nix formatter
     opentofu # Infrastructure as Code tool
     shellcheck # Shell script linter
-    worktrunk # Git worktree manager
   ];
 }

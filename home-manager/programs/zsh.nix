@@ -19,16 +19,10 @@
       theme = "robbyrussell";
       plugins = [
         "dirhistory"
-        "git"
       ];
     };
 
     plugins = [
-      {
-        name = "fzf-tab";
-        src = pkgs.zsh-fzf-tab;
-        file = "share/fzf-tab/fzf-tab.plugin.zsh";
-      }
       {
         name = "you-should-use";
         src = pkgs.zsh-you-should-use;
@@ -51,7 +45,7 @@
       }
     ];
     shellAliases = {
-      cat = "bat";
+      cat = lib.getExe pkgs.bat;
     };
     initContent = lib.mkMerge [
       # Homebrew completions live outside the Nix profile paths. This must run
@@ -72,47 +66,10 @@
           export LC_CTYPE="en_US.UTF-8"
         ''}
 
-        export FZF_COMPLETION_TRIGGER='~~'
-
-        if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
-
-        # Keep Worktrunk's worktree-first, newest-commit order in the Tab menu.
-        zstyle ':completion:*:wt:*' sort false
-        zstyle ':fzf-tab:complete:wt:*' fzf-flags --no-sort
-
-        # Use fd (https://github.com/sharkdp/fd) for listing path candidates.
-        # - The first argument to the function ($1) is the base path to start traversal
-        # - See the source code (completion.{bash,zsh}) for the details.
-        _fzf_compgen_path() {
-          fd --hidden --follow --exclude ".git" . "$1"
-        }
-
-        # Use fd to generate the list for directory completion
-        _fzf_compgen_dir() {
-          fd --type d --hidden --follow --exclude ".git" . "$1"
-        }
-
-        # Advanced customization of fzf options via _fzf_comprun function
-        # - The first argument to the function is the name of the command.
-        # - You should make sure to pass the rest of the arguments to fzf.
-        _fzf_comprun() {
-          local command=$1
-          shift
-
-          case "$command" in
-          cd) fzf --preview 'tree -C {} | head -200' "$@" ;;
-          export | unset) fzf --preview "eval 'echo \$'{}" "$@" ;;
-          ssh) fzf --preview 'dig {}' "$@" ;;
-          *) fzf --preview 'bat -n --color=always {}' "$@" ;;
-          esac
-        }
-
-        bindkey "ç" fzf-cd-widget
         bindkey "^[[1;3C" forward-word
         bindkey "^[[1;3D" backward-word
         bindkey "^U" backward-kill-line
         autoload -Uz edit-command-line
-        zstyle ':zle:edit-command-line' editor hx
         zle -N edit-command-line
         bindkey "^E" edit-command-line
 
@@ -158,20 +115,6 @@
         bindkey "^[[1;2D" _select_backward_char
         bindkey "^[[1;2C" _select_forward_char
         bindkey "^[[99;9u" _copy_region_to_clipboard
-
-        function br {
-            local cmd cmd_file code
-            cmd_file=$(mktemp)
-            if broot --outcmd "$cmd_file" "$@"; then
-                cmd=$(<"$cmd_file")
-                command rm -f "$cmd_file"
-                eval "$cmd"
-            else
-                code=$?
-                command rm -f "$cmd_file"
-                return "$code"
-            fi
-        }
 
       ''
     ];

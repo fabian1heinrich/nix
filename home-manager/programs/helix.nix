@@ -1,5 +1,16 @@
-{ lib, pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  programs.zsh.initContent =
+    lib.mkIf (config.programs.helix.enable && config.programs.helix.defaultEditor)
+      ''
+        zstyle ':zle:edit-command-line' editor hx
+      '';
+
   programs.helix = {
     enable = true;
     defaultEditor = true;

@@ -1,5 +1,11 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
+  cfg = config.programs.fzf;
   clipboardCopyScript =
     if pkgs.stdenv.hostPlatform.isLinux then
       pkgs.writeShellScript "fzf-copy-to-clipboard" ''
@@ -23,6 +29,52 @@ let
       null;
 in
 {
+  home.packages = lib.mkIf cfg.enable (
+    with pkgs;
+    [
+      bat
+      dnsutils
+      fd
+      tree
+    ]
+  );
+
+  programs.zsh = lib.mkIf (cfg.enable && cfg.enableZshIntegration) {
+    # fzf-tab must load before plugins that wrap ZLE widgets.
+    plugins = lib.mkBefore [
+      {
+        name = "fzf-tab";
+        src = pkgs.zsh-fzf-tab;
+        file = "share/fzf-tab/fzf-tab.plugin.zsh";
+      }
+    ];
+    initContent = ''
+      export FZF_COMPLETION_TRIGGER='~~'
+
+      _fzf_compgen_path() {
+        fd --hidden --follow --exclude ".git" . "$1"
+      }
+
+      _fzf_compgen_dir() {
+        fd --type d --hidden --follow --exclude ".git" . "$1"
+      }
+
+      _fzf_comprun() {
+        local command=$1
+        shift
+
+        case "$command" in
+        cd) fzf --preview 'tree -C {} | head -200' "$@" ;;
+        export | unset) fzf --preview "eval 'echo \$'{}" "$@" ;;
+        ssh) fzf --preview 'dig {}' "$@" ;;
+        *) fzf --preview 'bat -n --color=always {}' "$@" ;;
+        esac
+      }
+
+      bindkey "ç" fzf-cd-widget
+    '';
+  };
+
   programs.fzf = {
     enable = true;
     enableZshIntegration = true;
