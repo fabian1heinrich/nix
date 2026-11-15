@@ -27,7 +27,7 @@
 
     [merge]
     ff = false
-    squash = false
+    squash = true
 
     [list]
     full = true
