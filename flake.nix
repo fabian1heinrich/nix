@@ -281,7 +281,13 @@
     {
       devShells = lib.genAttrs systems mkDevShells;
 
-      homeModules = profileModules;
+      homeModules =
+        profileModules
+        // import ./home-manager/programs
+        // {
+          core = ./home-manager/home.nix;
+          gnome-settings = ./home-manager/desktops/gnome.nix;
+        };
 
       inherit
         apps

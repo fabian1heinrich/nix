@@ -1,5 +1,13 @@
-{ pkgs, userConfig, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  userConfig,
+  ...
+}:
+{
+  programs.zsh.oh-my-zsh.plugins = lib.mkIf config.programs.git.enable [ "git" ];
+
   programs.git = {
     enable = true;
     settings = {
