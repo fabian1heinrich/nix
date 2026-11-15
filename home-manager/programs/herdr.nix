@@ -90,10 +90,16 @@ in
 {
   home.packages = [ usagebar ];
   home.activation.herdrAgentUsage = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    run ${lib.getExe config.programs.herdr.package} plugin link ${usagebar}/share/herdr/plugins/usagebar
+    run --quiet ${lib.getExe config.programs.herdr.package} plugin link ${usagebar}/share/herdr/plugins/usagebar
   '';
   home.activation.herdrWorktrunk = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    run ${lib.getExe config.programs.herdr.package} plugin link ${worktrunkPlugin}
+    run --quiet ${lib.getExe config.programs.herdr.package} plugin link ${worktrunkPlugin}
+  '';
+
+  xdg.configFile."herdr/config.toml".onChange = lib.mkForce ''
+    if ${lib.getExe config.programs.herdr.package} status server --json | ${lib.getExe pkgs.jq} -e '.running' > /dev/null; then
+      ${lib.getExe config.programs.herdr.package} server reload-config > /dev/null || true
+    fi
   '';
 
   xdg.configFile."herdr/plugins/config/worktrunk/config.toml".source =
