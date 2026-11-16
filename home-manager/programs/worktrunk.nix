@@ -37,5 +37,9 @@
 
     [switch]
     cd = true
+
+    [post-switch]
+    # Keep VS Code's opened folder aligned with switches from its terminal.
+    vscode = 'if [ "$TERM_PROGRAM" = vscode ]; then code --reuse-window {{ worktree_path }}; fi'
   '';
 }
