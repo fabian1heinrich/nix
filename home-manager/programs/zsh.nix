@@ -66,6 +66,28 @@
           export LC_CTYPE="en_US.UTF-8"
         ''}
 
+        # One title owner across Ghostty, Herdr, and other terminals.
+        DISABLE_AUTO_TITLE=true
+        _worktree_terminal_title() {
+          emulate -L zsh
+          local terminal_title="''${(%):-%~}"
+          local repo_name
+          local -a git_paths
+          if git_paths=("''${(@f)$(command git rev-parse --path-format=absolute --git-dir --git-common-dir --show-toplevel 2>/dev/null)}"); then
+            terminal_title="''${git_paths[3]:t}"
+            if [[ "''${git_paths[1]}" != "''${git_paths[2]}" ]]; then
+              repo_name="''${git_paths[2]:t}"
+              [[ "$repo_name" == .git ]] && repo_name="''${git_paths[2]:h:t}"
+              terminal_title="''${repo_name%.git} · $terminal_title"
+            fi
+          fi
+          # Paths are literal text, never prompt escapes or terminal controls.
+          terminal_title="''${terminal_title//[[:cntrl:]]/}"
+          printf '\033]2;%s\007\033]1;%s\007' "$terminal_title" "$terminal_title"
+        }
+        autoload -Uz add-zsh-hook
+        add-zsh-hook precmd _worktree_terminal_title
+
         bindkey "^[[1;3C" forward-word
         bindkey "^[[1;3D" backward-word
         bindkey "^U" backward-kill-line
