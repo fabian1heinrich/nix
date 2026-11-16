@@ -18,7 +18,7 @@ in
       add_newline = false;
       # Allow brief Git startup delays after development-shell updates.
       command_timeout = 1000;
-      format = "([╭─](dimmed white) $direnv$mise$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname$directory\${custom.git_worktree}$git_branch$git_state$git_status$character";
+      format = "([╭─](dimmed white) $direnv$mise$nix_shell$python$custom$kubernetes\n[╰─](dimmed white) )$username$hostname\${custom.location}$git_state$git_status$character";
       right_format = "$status$cmd_duration";
       username = {
         format = "[$user]($style)[@]($style)";
@@ -35,29 +35,50 @@ in
         style = "bold green";
       };
       git_branch = {
-        symbol = "🌱";
         truncation_length = 40;
         truncation_symbol = "…";
-        format = "[$symbol$branch(:$remote_branch)]($style) ";
+        # The location renderer selects the symbol for ordinary or linked checkouts.
+        format = "[$branch(:$remote_branch)]($style) ";
       };
-      custom.git_worktree = {
-        description = "Linked Git worktree";
-        require_repo = true;
+      custom.location = {
+        description = "Directory and branch with project names in linked Git worktrees";
         shell = [ "sh" ];
-        # Linked worktrees have their own Git directory but share the common directory.
-        when = ''
-          git rev-parse --path-format=absolute --git-dir --git-common-dir | {
+        when = true;
+        # Replace the worktree folder with its project; retain the relative path.
+        command = ''
+          git rev-parse --path-format=absolute --git-dir --git-common-dir --show-prefix 2>/dev/null | {
             IFS= read -r git_dir
             IFS= read -r common_dir
-            test "$git_dir" != "$common_dir"
+            IFS= read -r prefix
+            if [ "$git_dir" = "$common_dir" ]; then
+              # The outer custom module applies shell escaping exactly once.
+              STARSHIP_SHELL="" starship module directory
+              [ -z "$git_dir" ] || printf '\033[1;35m🌱\033[0m'
+            else
+              case "$common_dir" in
+                */.git)
+                  project_dir="''${common_dir%/.git}"
+                  project_name="''${project_dir##*/}"
+                  ;;
+                *)
+                  project_name="''${common_dir##*/}"
+                  project_name="''${project_name%.git}"
+                  ;;
+              esac
+              printf '\033[1;36m%s' "$project_name"
+              [ -z "$prefix" ] || printf '/%s' "''${prefix%/}"
+              printf '\033[0m'
+              [ -w . ] || printf '\033[1;31m🔒\033[0m'
+              printf ' \033[1;32m🌳\033[0m'
+            fi
           }
+          # The selected symbol sits directly beside the branch name.
+          STARSHIP_SHELL="" starship module git_branch
         '';
-        symbol = "🌳";
-        style = "bold green";
-        format = "[$symbol]($style) ";
+        format = "($output )";
       };
       git_status = {
-        format = "[$all_status$ahead_behind]($style) ";
+        format = "([$all_status$ahead_behind]($style) )";
         style = "bold red";
         conflicted = "!";
         ahead = "⇡$count";
