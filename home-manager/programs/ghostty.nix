@@ -4,10 +4,13 @@
     force = true;
     text = ''
       theme = GitHub Dark Dimmed
+      # Match VS Code's terminal color rendering defaults.
+      bold-color = bright
+      minimum-contrast = 4.5
       shell-integration = zsh
       # Zsh sets repository/worktree titles consistently across terminals.
       shell-integration-features = no-title
-      font-family = MesloLGM Nerd Font Mono
+      font-family = MesloLGS Nerd Font Mono
       keybind = alt+left=unbind
       keybind = alt+right=unbind
       keybind = cmd+c=copy_to_clipboard
