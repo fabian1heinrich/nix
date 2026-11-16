@@ -5,6 +5,8 @@
     text = ''
       theme = GitHub Dark Dimmed
       shell-integration = zsh
+      # Zsh sets repository/worktree titles consistently across terminals.
+      shell-integration-features = no-title
       font-family = MesloLGM Nerd Font Mono
       keybind = alt+left=unbind
       keybind = alt+right=unbind
