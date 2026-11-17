@@ -8,9 +8,19 @@ in
     channel.enable = false;
     gc = {
       automatic = true;
-      options = "--delete-older-than 30d";
+      interval = {
+        Hour = 3;
+        Minute = 15;
+      };
+      options = "--delete-older-than 7d";
     };
-    optimise.automatic = true;
+    optimise = {
+      automatic = true;
+      interval = {
+        Hour = 4;
+        Minute = 15;
+      };
+    };
     settings = {
       experimental-features = [
         "nix-command"

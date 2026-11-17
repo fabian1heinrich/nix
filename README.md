@@ -35,18 +35,44 @@ just switch-legendre
 Activation installs Homebrew or migrates an existing installation while
 preserving installed packages.
 
-Apply later changes with `just switch-legendre`. Homebrew Core and Cask catalogs
-are pinned as flake inputs and managed by Nix. Refresh the catalogs before
-upgrading packages:
+Each `just switch-legendre` applies the pinned Nix configuration and upgrades
+configured Homebrew formulae, casks (including self-updating and unversioned
+casks), and apps listed in `homebrew.masApps`. Mac App Store apps use the latest
+available store versions and require being signed in to the App Store.
+Activation also uninstalls undeclared Homebrew packages through Bundle cleanup,
+which finishes by running `brew cleanup` to remove old versions and cached
+downloads using Homebrew's default cleanup policy.
+Separate Homebrew upgrade and cleanup recipes are no longer needed. App Store
+apps outside `homebrew.masApps` are not upgraded by activation.
+
+Daily maintenance runs through launchd in the `Europe/Berlin` timezone:
+
+| Time | Task |
+| --- | --- |
+| 03:15 | Nix garbage collection, keeping seven days of rollback history |
+| 03:45 | `brew cleanup --prune=all` as `fabian`, pruning cached downloads regardless of age |
+| 04:15 | Nix store optimisation to deduplicate identical files |
+
+These jobs run independently of `just switch-legendre`. If the Mac is asleep
+at the scheduled time, launchd runs the missed jobs when it wakes.
+Nix preserves active and referenced store paths, including the newest generation
+older than the seven-day cutoff. Homebrew keeps installed apps and required
+packages while removing old versions and cached downloads.
+
+Nix packages and Homebrew Core and Cask catalogs are pinned in `flake.lock`;
+switching alone does not refresh those pins. To update them together and apply:
 
 ```bash
-nix flake update homebrew-core homebrew-cask
+just nix-update
 just switch-legendre
-just homebrew-upgrade # Or just homebrew-upgrade-greedy
 ```
 
 Add any additional taps declaratively in `hosts/legendre/homebrew.nix`;
 imperative `brew tap` is disabled.
+
+For a catalog-only refresh, use `nix flake update homebrew-core homebrew-cask`
+before switching. Do not run `brew update`: it cannot modify the read-only taps
+in the Nix store. nix-homebrew also disables Homebrew's automatic updates.
 
 ### Ubuntu
 
