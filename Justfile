@@ -102,16 +102,3 @@ switch-ubuntu-system:
     nix run .#system-manager -- switch --flake .#ubuntu-dev --sudo
 
 switch-ubuntu: switch-ubuntu-system switch-ubuntu-dev
-
-homebrew-upgrade:
-    brew update
-    brew upgrade
-    mas upgrade
-
-homebrew-upgrade-greedy:
-    brew update
-    brew upgrade --greedy
-    mas upgrade
-
-homebrew-cleanup:
-    brew cleanup --prune=all -s

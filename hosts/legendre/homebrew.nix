@@ -23,8 +23,7 @@
     onActivation = {
       autoUpdate = false;
       cleanup = "uninstall";
-      extraFlags = [ "--force-cleanup" ];
-      upgrade = false;
+      upgrade = true;
     };
     extraConfig = "";
     prefix = "/opt/homebrew";
@@ -38,7 +37,7 @@
       "qemu"
       "socket_vmnet"
     ];
-    greedyCasks = false;
+    greedyCasks = true;
     casks = [
       "aldente"
       "betterdisplay"
@@ -68,6 +67,19 @@
     ];
     masApps = {
       "prime-instant-video" = 545519333; # Amazon Prime Video
+    };
+  };
+
+  # Clean daily even when no packages are installed or upgraded.
+  launchd.daemons.homebrew-cleanup = {
+    command = "${config.homebrew.prefix}/bin/brew cleanup --prune=all";
+    environment.HOME = userConfig.homeDirectory;
+    serviceConfig = {
+      UserName = config.homebrew.user;
+      StartCalendarInterval = {
+        Hour = 3;
+        Minute = 45;
+      };
     };
   };
 }
