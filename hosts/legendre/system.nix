@@ -12,7 +12,7 @@ in
         Hour = 3;
         Minute = 15;
       };
-      options = "--delete-older-than 7d";
+      options = "--delete-older-than 1d";
     };
     optimise = {
       automatic = true;

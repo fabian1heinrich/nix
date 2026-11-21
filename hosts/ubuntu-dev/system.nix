@@ -68,6 +68,16 @@ in
   };
 
   systemd = {
+    services.nix-gc = {
+      description = "Nix garbage collection";
+      startAt = "03:15";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.nix}/bin/nix-collect-garbage --delete-older-than 1d";
+      };
+    };
+    timers.nix-gc.timerConfig.Persistent = true;
+
     sockets.podman = {
       description = "Podman API socket";
       documentation = [ "man:podman-system-service(1)" ];
