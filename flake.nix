@@ -190,21 +190,19 @@
           pkgs = pkgsFor system;
         in
         {
-          default = pkgs.mkShell {
+          default = pkgs.mkShellNoCC {
             name = "nix-config";
             NIX_CONFIG = builtins.readFile ./nix.conf;
             packages =
               (with pkgs; [
-                git
                 just
                 nixd
                 nixfmt
                 nixfmt-tree
-                actionlint
-                shellcheck
                 worktrunk
               ])
               ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+                pkgs.git
                 system-manager.packages.${system}.default
               ];
           };
