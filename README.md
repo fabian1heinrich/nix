@@ -42,22 +42,22 @@ available store versions and require being signed in to the App Store.
 Activation also uninstalls undeclared Homebrew packages through Bundle cleanup,
 which finishes by running `brew cleanup` to remove old versions and cached
 downloads using Homebrew's default cleanup policy.
-Separate Homebrew upgrade and cleanup recipes are no longer needed. App Store
+Manual cache cleanup is also available through `just clean-homebrew`. App Store
 apps outside `homebrew.masApps` are not upgraded by activation.
 
 Daily maintenance runs through launchd in the `Europe/Berlin` timezone:
 
 | Time | Task |
 | --- | --- |
-| 03:15 | Nix garbage collection, keeping seven days of rollback history |
+| 03:15 | System profile cleanup and Nix garbage collection with `--delete-older-than 1d` |
 | 03:45 | `brew cleanup --prune=all` as `fabian`, pruning cached downloads regardless of age |
 | 04:15 | Nix store optimisation to deduplicate identical files |
 
 These jobs run independently of `just switch-legendre`. If the Mac is asleep
 at the scheduled time, launchd runs the missed jobs when it wakes.
-Nix preserves active and referenced store paths, including the newest generation
-older than the seven-day cutoff. Homebrew keeps installed apps and required
-packages while removing old versions and cached downloads.
+Run `just clean-nix` to include profiles in your home directory.
+Homebrew keeps installed apps and required packages while removing old versions
+and downloads.
 
 Nix packages and Homebrew Core and Cask catalogs are pinned in `flake.lock`;
 switching alone does not refresh those pins. To update them together and apply:
@@ -85,6 +85,8 @@ just switch-ubuntu
 
 Apply both system and user changes later with `just switch-ubuntu`, or use
 `just switch-ubuntu-system` and `just switch-ubuntu-dev` separately.
+The user and system Nix cleanup timers run daily at midnight and 03:15
+respectively, using the same 24-hour cutoff as macOS.
 
 ## Development
 
@@ -107,6 +109,14 @@ Build scratch files use the writable disk instead of the RAM-backed root filesys
 Its state is machine-wide,
 independent of individual repositories' `.cache/` directories.
 
+The guest runs `nix-collect-garbage --delete-older-than 1d` daily. A separate
+NixOS timer trims supported filesystems daily so the sparse VM disk can
+release space on the Mac when the virtual disk supports discard.
+Its Nix daemon also starts GC below 8 GiB free, aiming to restore 12 GiB free.
+Both timers run inside the VM. Disk-pressure GC can reclaim unreferenced build
+outputs between scheduled runs. Use `just storage-report` to check the space
+the builder disk occupies on the Mac.
+
 Install Rosetta if needed, then apply the Mac configuration:
 
 ```bash
@@ -125,6 +135,64 @@ For migration from an existing QEMU Linux builder, follow the upstream
 different writable disk format. The 2.54x published speedup compares Rosetta
 with QEMU emulation, not with an existing Rosetta-backed Podman builder.
 
+## Storage maintenance
+
+Nix has daily cleanup jobs. Podman VM deletion and VS Code cache cleanup
+run only when invoked.
+
+`just clean` runs all five cleanups on macOS. Quit VS Code and its updater
+first. The final step permanently deletes every Podman VM and its data
+without prompting. On Linux, `just clean` runs `clean-nix`.
+
+```bash
+just storage-report                        # Five labeled sizes in GiB
+just storage-report-nix                    # Optional slow scan of /nix/store
+just storage-roots                         # List Nix GC roots
+just storage-why /nix/store/…               # Explain why a store path is retained
+just clean-nix                             # One-day profile cleanup, store GC and optimisation
+just clean-builder                         # Collect unreachable paths in the Linux builder now
+just clean-podman                          # Permanently delete all macOS Podman VMs and their data
+just clean-vscode                          # Quit VS Code and its updater first
+just clean-homebrew                        # Homebrew's native cleanup
+```
+
+`clean-nix` runs `nix-collect-garbage --delete-older-than 1d` as the
+current user and as root, then deduplicates the store. Nix keeps the current
+generation, generations from the past 24 hours, and the most recent generation
+before the cutoff. A live `result` link or direnv GC root keeps its dependencies
+regardless of age. GC can reclaim any unreachable store object immediately.
+Nix's download and lookup cache settings control when it checks for fresh data.
+Files in the user cache can remain on disk beyond 24 hours.
+
+`just clean-builder` uses the Mac's root-owned builder SSH key to run
+`nix-store --gc` as the guest's `builder` user. Guest profile pruning and
+filesystem trim run on their daily timers.
+
+`clean-podman` runs `podman-delete`. It forcibly removes every running or
+stopped Podman VM and its disk, including containers, images, pods, and
+volumes in both rootful and rootless storage. It also removes each VM's
+matching Docker context. There is no age filter or confirmation prompt.
+`just podman-create` creates a fresh VM when needed.
+
+`clean-vscode` removes only `Cache`, `Code Cache`, `GPUCache`, `CachedData`,
+`WebStorage/*/CacheStorage`, and the `com.microsoft.VSCode.ShipIt` updater cache.
+It refuses to run while VS Code or its updater is running. Settings, extensions,
+workspace/global state, local history, other web storage, and unsaved backups
+are preserved.
+
+`clean-homebrew` uses `brew cleanup --prune=all`. Other Library caches are left alone.
+Commands fail normally on missing tools or inaccessible paths.
+`storage-report` uses `df` for the Nix filesystem rather than walking every store
+file. This reports filesystem usage, not the exact size of `/nix/store`.
+It prints one labeled size per area in GiB, without command traces or VM details.
+Missing directories count as zero.
+The cache total covers readable files only; protected-cache errors are suppressed.
+Use `storage-report-nix` for an exact directory scan; its first result can take
+a minute or longer on a large store.
+Just's `[macos]` attribute limits the Mac-specific recipes to macOS;
+`clean-nix`, `storage-report-nix`, `storage-roots`, and `storage-why`
+also work on Linux.
+
 ## Checks
 
 ```bash
@@ -133,7 +201,7 @@ just nix-eval       # Evaluate every host on every platform without building
 just nix-check      # Build all checks native to the current platform
 just nix-shellcheck # Check .envrc
 just nix-actionlint # Check GitHub Actions workflows
-just nix-just       # Check Justfile formatting
+just check-justfile # Check Justfile formatting
 ```
 
 CI uses one Linux job to evaluate every host configuration, check formatting,

@@ -1,5 +1,9 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 {
+  # Pin the same guest host key for SSH in `just clean-builder`.
+  programs.ssh.knownHosts.linux-builder.publicKeyFile =
+    config.nix.linux-builder.package.nixosConfig.environment.etc."ssh/ssh_host_ed25519_key.pub".source;
+
   # Native ARM Linux guest; Rosetta executes x86_64 Linux build processes.
   # This builds amd64 installation media but cannot boot its x86_64 kernel.
   nix.linux-builder = {
@@ -17,6 +21,12 @@
       "benchmark"
       "big-parallel"
     ];
+    config.nix.gc = {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-older-than 1d";
+    };
+    config.services.fstrim.interval = "daily";
     config.nix.settings = {
       # Concurrent downloads can exhaust this small guest's memory.
       max-substitution-jobs = 1;
@@ -28,6 +38,8 @@
       darwin-builder = {
         memorySize = 4 * 1024;
         diskSize = 40 * 1024;
+        min-free = 8 * 1024 * 1024 * 1024;
+        max-free = 12 * 1024 * 1024 * 1024;
       };
     };
   };

@@ -1,7 +1,7 @@
 # Repository Guidance
 
-This repository contains Fabian's Nix, nix-darwin, and Home Manager
-configuration. Keep changes small, explicit, and easy to review.
+This repository contains the Nix, nix-darwin, and Home Manager configuration.
+Keep changes small, explicit, and easy to review.
 
 ## Worktree Workflow
 
@@ -44,23 +44,28 @@ configuration. Keep changes small, explicit, and easy to review.
 - Build every check native to this platform: `just nix-check`
 - Run shellcheck checks: `just nix-shellcheck`
 - Run actionlint checks: `just nix-actionlint`
-- Check Justfile formatting: `just nix-just`
+- Check Justfile formatting: `just check-justfile`
 - Switch the macOS host: `just switch-legendre`
 - Switch the Linux Home Manager profile: `just switch-ubuntu-dev`
 
 Run the narrowest relevant checks for the change. For broad Nix or module
 changes, prefer `just nix-fmt` and `just nix-check`; run `just nix-shellcheck`
 when `.envrc` changes, `just nix-actionlint` when a workflow changes, and
-`just nix-just` when the Justfile changes. New files must be `git add`ed
+`just check-justfile` when the Justfile changes. New files must be `git add`ed
 before Nix can see them.
 
 ## Conventions
 
 - Follow existing Nix style and module structure.
+- When renaming or replacing an interface, remove the old version and update
+  its callers and documentation in the same change. Skip backward-compatibility
+  aliases, wrappers, and legacy code paths.
 - Prefer letting a command fail over adding validation. Add a guard only where
   continuing would cause real damage or silently target the wrong thing, and
   put the check in one place rather than at every call site.
 - Keep Justfile recipe logic in the Justfile; do not add shell scripts for it.
+- Prefer native Nix tools and short Bash commands. Ask for approval before
+  adding any Python file or other script to the repository.
 - Prefer profiles for complete user environments and stacks for reusable
   capabilities. Hosts should select a profile and add host-specific modules.
 - Keep host-specific behavior under the relevant `hosts/<name>/` directory.
