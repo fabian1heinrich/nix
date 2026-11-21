@@ -48,7 +48,6 @@ in
         ++ (with marketplaceExtensions; [
           exiasr.hadolint
           ms-vscode.remote-server
-          openai.chatgpt
           opentofu.vscode-opentofu
           pomdtr.excalidraw-editor
           zh9528.file-size

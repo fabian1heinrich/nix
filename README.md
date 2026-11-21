@@ -35,9 +35,10 @@ just switch-legendre
 Activation installs Homebrew or migrates an existing installation while
 preserving installed packages.
 
-Each `just switch-legendre` applies the pinned Nix configuration and upgrades
-configured Homebrew formulae, casks (including self-updating and unversioned
-casks), and apps listed in `homebrew.masApps`. Mac App Store apps use the latest
+Each `just switch-legendre` checks configured Homebrew formulae and casks
+against the catalogs in `flake.lock` and upgrades outdated entries, including
+self-updating casks. Apps with built-in updaters can still advance between
+switches. Mac App Store apps listed in `homebrew.masApps` use the latest
 available store versions and require being signed in to the App Store.
 Activation also uninstalls undeclared Homebrew packages through Bundle cleanup,
 which finishes by running `brew cleanup` to remove old versions and cached
@@ -59,8 +60,8 @@ Run `just clean-nix` to include profiles in your home directory.
 Homebrew keeps installed apps and required packages while removing old versions
 and downloads.
 
-Nix packages and Homebrew Core and Cask catalogs are pinned in `flake.lock`;
-switching alone does not refresh those pins. To update them together and apply:
+To refresh the locked Nix inputs and Homebrew catalogs and apply the new versions,
+run:
 
 ```bash
 just nix-update
@@ -69,10 +70,6 @@ just switch-legendre
 
 Add any additional taps declaratively in `hosts/legendre/homebrew.nix`;
 imperative `brew tap` is disabled.
-
-For a catalog-only refresh, use `nix flake update homebrew-core homebrew-cask`
-before switching. Do not run `brew update`: it cannot modify the read-only taps
-in the Nix store. nix-homebrew also disables Homebrew's automatic updates.
 
 ### Ubuntu
 
@@ -98,75 +95,38 @@ the settings change.
 You can also enter the development shell manually with `nix develop`.
 The shell provides `just` and the development tools. Run `just` to list tasks.
 
-## Linux installer builds from Legendre
-
-`hosts/legendre/linux-builder.nix` enables the nix-darwin Linux builder using
-`pkgs.darwin.linux-builder-vz`. Its ARM Linux guest uses Rosetta to execute
-`x86_64-linux` builds, including the offline workstation ISOs in `byo-nixos`.
-The builder retains its writable Nix store across restarts and uses 2 cores,
-4 GiB RAM, a 40 GiB sparse disk limit, one build job and one parallel download.
-Build scratch files use the writable disk instead of the RAM-backed root filesystem.
-Its state is machine-wide,
-independent of individual repositories' `.cache/` directories.
-
-The guest runs `nix-collect-garbage --delete-older-than 1d` daily. A separate
-NixOS timer trims supported filesystems daily so the sparse VM disk can
-release space on the Mac when the virtual disk supports discard.
-Its Nix daemon also starts GC below 8 GiB free, aiming to restore 12 GiB free.
-Both timers run inside the VM. Disk-pressure GC can reclaim unreferenced build
-outputs between scheduled runs. Use `just storage-report` to check the space
-the builder disk occupies on the Mac.
-
-Install Rosetta if needed, then apply the Mac configuration:
-
-```bash
-softwareupdate --install-rosetta --agree-to-license
-just switch-legendre
-```
-
-From the deployment repository, `just build-baremetal-iso` then uses this
-builder automatically. The target remains `x86_64-linux`; this is execution
-through Rosetta, not cross-compilation. The builder does not advertise KVM,
-since ARM nested virtualisation cannot accelerate the x86 installer VM. Rehearse
-that installer on x86 Linux and commission it on the actual physical host.
-
-For migration from an existing QEMU Linux builder, follow the upstream
-[VZ builder documentation](https://github.com/applicative-systems/vzvm) for its
-different writable disk format. The 2.54x published speedup compares Rosetta
-with QEMU emulation, not with an existing Rosetta-backed Podman builder.
+Linux installer builds use the project-owned foreground VM in `byo-nixos`.
+Run `just builder` from that repository when building on Apple Silicon.
 
 ## Storage maintenance
 
 Nix has daily cleanup jobs. Podman VM deletion and VS Code cache cleanup
 run only when invoked.
 
-`just clean` runs all five cleanups on macOS. Quit VS Code and its updater
+`just clean` runs all four cleanups on macOS. Quit VS Code and its updater
 first. The final step permanently deletes every Podman VM and its data
 without prompting. On Linux, `just clean` runs `clean-nix`.
 
 ```bash
-just storage-report                        # Five labeled sizes in GiB
+just storage-report                        # Four labeled sizes in GiB
 just storage-report-nix                    # Optional slow scan of /nix/store
 just storage-roots                         # List Nix GC roots
 just storage-why /nix/store/…               # Explain why a store path is retained
 just clean-nix                             # One-day profile cleanup, store GC and optimisation
-just clean-builder                         # Collect unreachable paths in the Linux builder now
 just clean-podman                          # Permanently delete all macOS Podman VMs and their data
 just clean-vscode                          # Quit VS Code and its updater first
 just clean-homebrew                        # Homebrew's native cleanup
 ```
 
-`clean-nix` runs `nix-collect-garbage --delete-older-than 1d` as the
-current user and as root, then deduplicates the store. Nix keeps the current
+`clean-nix` prunes profiles in the user's Nix state directory with
+`nix-env --delete-generations 1d`. It then runs
+`nix-collect-garbage --delete-older-than 1d` as root to prune system profiles
+and collect garbage once, followed by full-store optimisation. Nix keeps the current
 generation, generations from the past 24 hours, and the most recent generation
 before the cutoff. A live `result` link or direnv GC root keeps its dependencies
 regardless of age. GC can reclaim any unreachable store object immediately.
 Nix's download and lookup cache settings control when it checks for fresh data.
 Files in the user cache can remain on disk beyond 24 hours.
-
-`just clean-builder` uses the Mac's root-owned builder SSH key to run
-`nix-store --gc` as the guest's `builder` user. Guest profile pruning and
-filesystem trim run on their daily timers.
 
 `clean-podman` runs `podman-delete`. It forcibly removes every running or
 stopped Podman VM and its disk, including containers, images, pods, and

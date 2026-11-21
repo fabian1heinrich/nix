@@ -58,7 +58,6 @@ storage-report:
       fi | awk -v label="$1" '{ printf "%-20s %6.1f GiB\n", label, $1 / 1048576 }'
     }
     df -k /nix | awk 'NR == 2 { printf "%-20s %6.1f GiB\n", "Nix volume", $3 / 1048576 }'
-    dir_size "Linux builder" /private/var/lib/linux-builder
     dir_size "Podman VMs" "$HOME/.local/share/containers/podman/machine"
     dir_size "VS Code" "$HOME/Library/Application Support/Code"
     dir_size "Caches (readable)" "$HOME/Library/Caches" 2>/dev/null || true
@@ -77,22 +76,24 @@ storage-why path:
 
 # Run all macOS cleanups, including permanent deletion of every Podman VM
 [macos]
-clean: clean-vscode clean-nix clean-builder clean-homebrew clean-podman
+clean: clean-vscode clean-nix clean-homebrew clean-podman
 
 # Run the Linux Nix cleanup
 [linux]
 clean: clean-nix
 
-# Run Nix's one-day profile cleanup for the user and system, then optimise
+# Prune user and system profiles, collect garbage once, then optimise
 clean-nix:
-    nix-collect-garbage --delete-older-than 1d
+    #!/usr/bin/env bash
+    set -euo pipefail
+    profiles="${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles"
+    if [[ -d "$profiles" ]]; then
+      # Nix profiles point to a sibling generation link, e.g. home-manager-93-link.
+      find -H "$profiles" -type l ! -lname '*/*' -lname '*-[0-9]*-link' -print0 \
+        | xargs -0 -r -n 1 nix-env --delete-generations 1d --profile
+    fi
     sudo -H "$(command -v nix-collect-garbage)" --delete-older-than 1d
-    sudo "$(command -v nix-store)" --optimise
-
-# Collect unreachable store paths in the Linux builder now
-[macos]
-clean-builder:
-    sudo ssh -o BatchMode=yes linux-builder nix-store --gc
+    sudo -H "$(command -v nix-store)" --optimise --log-format bar
 
 # Delete every macOS Podman VM, its disk and its matching Docker context
 [macos]

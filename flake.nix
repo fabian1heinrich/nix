@@ -10,6 +10,8 @@
     darwin.url = "github:nix-darwin/nix-darwin/master";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # The core tap uses manifest_sha256, which nix-homebrew's 7.0.11 cannot read.
+    nix-homebrew.inputs.brew-src.url = "github:Homebrew/brew/7.0.15";
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
